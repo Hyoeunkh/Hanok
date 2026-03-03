@@ -29,7 +29,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        ErrorResponse errorResponse = ErrorResponse.error(GlobalErrorCode.FORBIDDEN);
+        ErrorResponse errorResponse = ErrorResponse.from(GlobalErrorCode.FORBIDDEN);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }

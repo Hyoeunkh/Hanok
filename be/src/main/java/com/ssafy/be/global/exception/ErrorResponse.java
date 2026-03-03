@@ -28,7 +28,6 @@ public class ErrorResponse {
         return ErrorResponse.builder()
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
-                // errors를 세팅하지 않으면 자동으로 null → JSON 미포함
                 .build();
     }
 

@@ -30,7 +30,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        ErrorResponse errorResponse = ErrorResponse.error(GlobalErrorCode.UNAUTHORIZED);
+        ErrorResponse errorResponse = ErrorResponse.from(GlobalErrorCode.UNAUTHORIZED);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
