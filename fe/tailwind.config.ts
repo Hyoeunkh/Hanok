@@ -7,7 +7,7 @@ export default {
       colors: {
         background: '#0A0C13',
         point: '#F5F2EB',
-        gold: '#C7B282',
+        yel: '#C7B282',
       },
     },
   },
