@@ -1,7 +1,10 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse } from 'msw';
+
+import { mainHandlers } from './MainHandler';
 
 export const handlers = [
-  http.get("/api/health", () => {
+  ...mainHandlers,
+  http.get('/api/health', () => {
     return HttpResponse.json({ ok: true });
   }),
 ];
