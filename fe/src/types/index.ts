@@ -40,6 +40,10 @@ export type RegisterSellerResponse = {
   grade: string;
 };
 
+export type SellerStatusResponse = {
+  isSeller: boolean;
+};
+
 // ─── Bizno API ────────────────────────────────────────────────────────────────
 export interface BiznoResponse {
   resultCode: number; // 0: 성공, 그 외 에러

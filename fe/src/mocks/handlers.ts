@@ -17,4 +17,9 @@ export const handlers = [
     // API 명세서에 맞는 응답값 반환 (200 OK without body content)
     return new HttpResponse(null, { status: 200 });
   }),
+  http.get(`${BASE_URL}/v1/users/me/seller-status`, async () => {
+    return HttpResponse.json({
+      isSeller: false
+    });
+  }),
 ];
