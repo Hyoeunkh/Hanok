@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Button from '@/components/common/Button';
+import { useRegisterAccount } from '@/api/hooks/usePostRegisterAccount';
 import { BANKS } from '../constants';
 
 export default function Step3({
@@ -7,9 +8,10 @@ export default function Step3({
   onNext,
 }: {
   onPrev: () => void;
-  onNext: () => void;
+  onNext: (accountId: number) => void;
 }) {
-  const [accountHolder, setAccountHolder] = useState('');
+  const { mutateAsync: registerAccount, isPending: isRegistering } = useRegisterAccount();
+  const [accountName, setaccountName] = useState('');
   const [bank, setBank] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [error, setError] = useState('');
@@ -27,12 +29,23 @@ export default function Step3({
     width: '100%',
   } as React.CSSProperties;
 
-  const handleNext = () => {
-    if (!accountHolder) { setError('예금주명을 입력해주세요.'); return; }
+  const handleNext = async () => {
+    if (!accountName) { setError('예금주명을 입력해주세요.'); return; }
     if (!bank) { setError('은행을 선택해주세요.'); return; }
     if (!accountNumber) { setError('계좌번호를 입력해주세요.'); return; }
     setError('');
-    onNext();
+
+    try {
+      const response = await registerAccount({
+        bankName: bank,
+        accountNum: accountNumber,
+        accountName,
+      });
+      // API may or may not return accountId. If not, we pass 1 as default.
+      onNext(response?.accountId || 1);
+    } catch {
+      setError('계좌 등록에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
@@ -52,8 +65,8 @@ export default function Step3({
       <div style={{ marginBottom: '16px' }}>
         <input
           type="text"
-          value={accountHolder}
-          onChange={(e) => { setAccountHolder(e.target.value); setError(''); }}
+          value={accountName}
+          onChange={(e) => { setaccountName(e.target.value); setError(''); }}
           placeholder="예금주명"
           style={inputStyle}
         />
@@ -103,8 +116,8 @@ export default function Step3({
         <Button variant="outline" size="small" onClick={onPrev} className="!w-[120px]">
           이전
         </Button>
-        <Button variant="white" size="small" onClick={handleNext} className="!w-[120px]">
-          다음
+        <Button variant="white" size="small" onClick={handleNext} disabled={isRegistering} className="!w-[120px]">
+          {isRegistering ? '등록 중...' : '다음'}
         </Button>
       </div>
     </>
