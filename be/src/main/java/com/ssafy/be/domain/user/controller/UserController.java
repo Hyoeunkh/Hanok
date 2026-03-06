@@ -1,8 +1,10 @@
 package com.ssafy.be.domain.user.controller;
 
 import com.ssafy.be.domain.user.dto.request.IdentityVerificationRequestDto;
+import com.ssafy.be.domain.user.dto.request.LoginRequestDto;
 import com.ssafy.be.domain.user.dto.request.SignupRequestDto;
 import com.ssafy.be.domain.user.dto.response.IdentityVerificationResponseDto;
+import com.ssafy.be.domain.user.dto.response.LoginResponseDto;
 import com.ssafy.be.domain.user.dto.response.SignupResponseDto;
 import com.ssafy.be.domain.user.service.UserService;
 import com.ssafy.be.global.common.response.ApiResponse;
@@ -15,7 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpServletRequest;
+import com.ssafy.be.global.security.util.JwtUtil;
 
 // [Controller Layer]
 // HTTP 요청을 받아서 Service에 전달하고 응답을 반환
@@ -28,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-
+    private final JwtUtil jwtUtil;
     // -----------------------------------------------
     // 이메일 중복 확인
     // GET /api/v1/auth/check-email?email=xxx
@@ -79,5 +82,24 @@ public class UserController {
 
         IdentityVerificationResponseDto response = userService.verifyIdentity(requestDto);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(
+            @RequestBody @Valid LoginRequestDto requestDto) {
+        return ResponseEntity.ok(ApiResponse.success(userService.login(requestDto)));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+        String token = jwtUtil.resolveToken(request);
+        userService.logout(token);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> refresh(
+            @RequestBody String refreshToken) {
+        return ResponseEntity.ok(ApiResponse.success(userService.refresh(refreshToken)));
     }
 }
