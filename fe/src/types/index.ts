@@ -63,3 +63,8 @@ export type VerifySmsResponse = {
   sessionToken: string;
 };
 
+export type SideBarItem = {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+};
