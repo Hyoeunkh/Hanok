@@ -1,9 +1,12 @@
 package com.ssafy.be.domain.user.controller;
 
+import com.ssafy.be.domain.user.dto.request.IdentityVerificationRequestDto;
 import com.ssafy.be.domain.user.dto.request.SignupRequestDto;
+import com.ssafy.be.domain.user.dto.response.IdentityVerificationResponseDto;
 import com.ssafy.be.domain.user.dto.response.SignupResponseDto;
 import com.ssafy.be.domain.user.service.UserService;
 import com.ssafy.be.global.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 
 // [Controller Layer]
 // HTTP 요청을 받아서 Service에 전달하고 응답을 반환
@@ -29,6 +33,9 @@ public class AuthController {
     // 이메일 중복 확인
     // GET /api/v1/auth/check-email?email=xxx
     // -----------------------------------------------
+    @Operation(summary = "이메일 중복 확인", description = "이메일 중복 여부를 확인합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 가능한 이메일")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일")
     @GetMapping("/check-email")
     public ResponseEntity<ApiResponse<Void>> checkEmail(
             @RequestParam
@@ -48,6 +55,10 @@ public class AuthController {
     // 회원가입
     // POST /api/v1/auth/signup
     // -----------------------------------------------
+    @Operation(summary = "회원가입", description = "회원가입을 진행합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "회원가입 성공")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 파라미터")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 중복")
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(
             @RequestBody @Valid SignupRequestDto requestDto) {
@@ -60,5 +71,20 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(responseDto));
+    }
+
+    // -----------------------------------------------
+    // 본인인증 검증
+    // POST /api/v1/auth/identity-verification
+    // -----------------------------------------------
+    @Operation(summary = "본인인증 검증", description = "PortOne 본인인증 결과를 검증합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "본인인증 성공")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "본인인증 실패")
+    @PostMapping("/identity-verification")
+    public ResponseEntity<ApiResponse<IdentityVerificationResponseDto>> verifyIdentity(
+            @Valid @RequestBody IdentityVerificationRequestDto requestDto) {
+
+        IdentityVerificationResponseDto response = userService.verifyIdentity(requestDto);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
