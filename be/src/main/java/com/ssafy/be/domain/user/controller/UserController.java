@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
-public class AuthController {
+public class UserController {
 
     private final UserService userService;
 
@@ -34,8 +34,6 @@ public class AuthController {
     // GET /api/v1/auth/check-email?email=xxx
     // -----------------------------------------------
     @Operation(summary = "이메일 중복 확인", description = "이메일 중복 여부를 확인합니다.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 가능한 이메일")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일")
     @GetMapping("/check-email")
     public ResponseEntity<ApiResponse<Void>> checkEmail(
             @RequestParam
@@ -56,9 +54,6 @@ public class AuthController {
     // POST /api/v1/auth/signup
     // -----------------------------------------------
     @Operation(summary = "회원가입", description = "회원가입을 진행합니다.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "회원가입 성공")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 파라미터")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 중복")
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(
             @RequestBody @Valid SignupRequestDto requestDto) {
@@ -78,8 +73,6 @@ public class AuthController {
     // POST /api/v1/auth/identity-verification
     // -----------------------------------------------
     @Operation(summary = "본인인증 검증", description = "PortOne 본인인증 결과를 검증합니다.")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "본인인증 성공")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "본인인증 실패")
     @PostMapping("/identity-verification")
     public ResponseEntity<ApiResponse<IdentityVerificationResponseDto>> verifyIdentity(
             @Valid @RequestBody IdentityVerificationRequestDto requestDto) {

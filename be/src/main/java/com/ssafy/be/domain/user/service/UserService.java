@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 
 // [Service Layer]
 // 비즈니스 로직을 담당
@@ -71,16 +72,19 @@ public class UserService {
     }
 
     // -----------------------------------------------
-    // 본인인증 검증
-    // POST /api/v1/auth/identity-verification
-    // -----------------------------------------------
-    @Transactional(readOnly = true)
+// 본인인증 검증
+// POST /api/v1/auth/identity-verification
+// -----------------------------------------------
     public IdentityVerificationResponseDto verifyIdentity(
             IdentityVerificationRequestDto requestDto) {
 
         // 1. PortOne API로 인증 결과 조회
-        JsonNode result = portOneClient
-                .getIdentityVerification(requestDto.identityVerificationId());
+        JsonNode result;
+        try {
+            result = portOneClient.getIdentityVerification(requestDto.identityVerificationId());
+        } catch (RestClientException e) {
+            throw new GlobalException(UserErrorCode.IDENTITY_VERIFICATION_NOT_FOUND);
+        }
 
         // 2. 인증 상태 확인
         String status = result.path("status").asText();
