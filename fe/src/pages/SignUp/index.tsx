@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkEmailDuplicate, requestSmsCode, verifySmsCode, signUp } from './api';
+import { checkEmailDuplicate } from '@/api/hooks/useGetCheckEmailDuplicate';
+import { requestSmsCode } from '@/api/hooks/usePostRequestSmsCode';
+import { verifySmsCode } from '@/api/hooks/usePostVerifySmsCode';
+import { signUp } from '@/api/hooks/usePostSignUp';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
