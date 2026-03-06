@@ -1,5 +1,9 @@
 @import 'tailwindcss';
-@config '../tailwind.config.ts';
+@theme {
+  --color-background: #0a0c13;
+  --color-point: #f5f2eb;
+  --color-gold: #c7b282;
+}
 
 @font-face {
   font-family: 'MuseumCulturalFoundationClassic';
@@ -117,19 +121,6 @@ html {
     vertical-align: baseline;
     text-decoration: none;
   }
-}
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
-  display: block;
 }
 body {
   line-height: 1;
