@@ -9,12 +9,13 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
-
 
 @RequiredArgsConstructor
 @Configuration
 public class RedisConfig {
+
     private final RedisProperties redisProperties;
 
     @Bean
@@ -37,5 +38,9 @@ public class RedisConfig {
 
         return new LettuceConnectionFactory(standaloneConfig, clientConfig);
     }
-}
 
+    @Bean
+    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory factory) {
+        return new StringRedisTemplate(factory);
+    }
+}
