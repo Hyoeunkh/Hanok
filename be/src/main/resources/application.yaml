@@ -2,6 +2,11 @@ spring:
   application:
     name: be
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
 #  datasource:
 #    url:
 #    username: need_setting
@@ -26,19 +31,19 @@ spring:
       write-dates-as-timestamps: false
 
 ## JWT 설정
-#jwt:
-#  secret: need_setting
-#  expiration: need_setting
-#  refresh-expiration: need_setting
+jwt:
+  secret: ${JWT_SECRET:my-super-secret-key-for-local-development-must-be-long-enough-12345}
+  expiration: 3600000
+  refresh-expiration: 1209600000
 
-# Swagger 설정
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
-  api-docs:
-    path: /v3/api-docs
+  # Swagger 설정
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui.html
+      tags-sorter: alpha
+      operations-sorter: alpha
+    api-docs:
+      path: /v3/api-docs
 
 ## 로깅 설정
 #logging:

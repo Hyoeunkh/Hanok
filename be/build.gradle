@@ -67,6 +67,9 @@ dependencies {
 
     //Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+    //Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.4.3'
 }
 
 dependencyManagement {
@@ -116,5 +119,9 @@ spotless {
 
         // 6. 파일 끝부분 New Line 처리 (Git 등에서 파일 끝 EOF 경고 방지)
         endWithNewline()
+    }
+
+    tasks.named('test') {
+        outputs.upToDateWhen { false }
     }
 }
