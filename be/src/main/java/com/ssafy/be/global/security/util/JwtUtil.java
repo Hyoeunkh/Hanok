@@ -73,4 +73,8 @@ public class JwtUtil {
         Claims claims = validateToken(token);
         return claims.getExpiration().getTime() - System.currentTimeMillis();
     }
+
+    public long getRefreshExpiration() {
+        return refreshExpiration;
+    }
 }

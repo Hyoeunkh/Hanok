@@ -84,9 +84,9 @@ public class UserService {
     }
 
     // -----------------------------------------------
-// 본인인증 검증
-// POST /api/v1/auth/identity-verification
-// -----------------------------------------------
+    // 본인인증 검증
+    // POST /api/v1/auth/identity-verification
+    // -----------------------------------------------
     public IdentityVerificationResponseDto verifyIdentity(
             IdentityVerificationRequestDto requestDto) {
 
@@ -117,9 +117,9 @@ public class UserService {
         return new IdentityVerificationResponseDto(name, phoneNumber, birthDate);
     }
     // -----------------------------------------------
-// 로그인
-// POST /api/v1/auth/login
-// -----------------------------------------------
+    // 로그인
+    // POST /api/v1/auth/login
+    // -----------------------------------------------
     @Transactional(readOnly = true)
     public LoginResponseDto login(LoginRequestDto requestDto) {
 
@@ -137,36 +137,26 @@ public class UserService {
         String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
         // 4. Refresh Token Redis 저장 (7일)
-        redisService.save(
-                REFRESH_TOKEN_PREFIX + user.getId(),
-                refreshToken,
-                7,
-                TimeUnit.DAYS
-        );
+        redisService.save(REFRESH_TOKEN_PREFIX + user.getId(), refreshToken,
+                jwtUtil.getRefreshExpiration(), TimeUnit.MILLISECONDS);
 
         return new LoginResponseDto(accessToken, refreshToken);
     }
 
     // -----------------------------------------------
-// 로그아웃
-// POST /api/v1/auth/logout
-// -----------------------------------------------
+    // 로그아웃
+    // POST /api/v1/auth/logout
+    // -----------------------------------------------
     public void logout(String accessToken) {
 
-        // 1. Access Token 검증
-        Claims claims;
-        try {
-            claims = jwtUtil.validateToken(accessToken);
-        } catch (JwtException e) {
-            throw new GlobalException(UserErrorCode.INVALID_REFRESH_TOKEN);
-        }
-
+        // Access Token 검증 제거 (필터에서 이미 검증됨)
+        Claims claims = jwtUtil.validateToken(accessToken);
         Long userId = Long.parseLong(claims.getSubject());
 
-        // 2. Refresh Token 삭제
+        // Refresh Token 삭제
         redisService.delete(REFRESH_TOKEN_PREFIX + userId);
 
-        // 3. Access Token 블랙리스트 등록 (남은 만료 시간만큼)
+        // Access Token 블랙리스트 등록
         long expiration = jwtUtil.getExpiration(accessToken);
         if (expiration > 0) {
             redisService.save(BLACKLIST_PREFIX + accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
@@ -174,9 +164,9 @@ public class UserService {
     }
 
     // -----------------------------------------------
-// 토큰 재발급
-// POST /api/v1/auth/refresh
-// -----------------------------------------------
+    // 토큰 재발급
+    // POST /api/v1/auth/refresh
+    // -----------------------------------------------
     public LoginResponseDto refresh(String refreshToken) {
 
         // 1. Refresh Token 검증
@@ -200,7 +190,8 @@ public class UserService {
         String newRefreshToken = jwtUtil.generateRefreshToken(userId);
 
         // 4. Redis 업데이트
-        redisService.save(REFRESH_TOKEN_PREFIX + userId, newRefreshToken, 7, TimeUnit.DAYS);
+        redisService.save(REFRESH_TOKEN_PREFIX + userId, refreshToken,
+                jwtUtil.getRefreshExpiration(), TimeUnit.MILLISECONDS);
 
         return new LoginResponseDto(newAccessToken, newRefreshToken);
     }
