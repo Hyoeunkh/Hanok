@@ -26,6 +26,9 @@ jwt:
   expiration: ${JWT_EXPIRATION:}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:}
 
+was:
+  cors-allow-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -41,5 +44,5 @@ springdoc:
 portone:
   base-url: ${PORTONE_BASE_URL:}
   secret:
-    api: ${PORTONE_SECRET_API:}
-    webhook: ${PORTONE_SECRET_WEBHOOK:}
+      key: ${PORTONE_SECRET_KEY:}
+      webhook: ${PORTONE_SECRET_WEBHOOK:} # 추후 운영 서버 도메인으로 웹훅 재등록 필요
