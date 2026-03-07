@@ -1,37 +1,32 @@
-import type { ChatMessageType } from "@/types"
+import type { ChatMessageType } from "@/types";
 
 const dummyMessages: ChatMessageType[] = [
-    { id: 1, type: "system", message: "경매가 시작되었습니다" },
-    { id: 2, type: "chat", nickname: "고미술애호가", message: "상태 어떤가요? 오염 있나요?" },
-    { id: 3, type: "macro_request", nickname: "전통수집광", command: "@사이즈" },
-    { id: 4, type: "macro_response", label: "Seller Info", message: "해당 상품은 가로 45cm x 세로 60cm 입니다." },
-    { id: 5, type: "chat", nickname: "도자기마니아", message: "색감이 정말 예술이네요..." },
-    { id: 6, type: "macro_request", nickname: "골동품수집가", command: "@360도 보여주세요" },
+    { id: 1, type: "system", message: "한옥 고미술 경매에 오신 것을 환영합니다." },
+    { id: 2, type: "chat", nickname: "고미술애호가", message: "이거 보관 상태가 어떻게 되나요?" },
+    { id: 3, type: "macro_request", nickname: "나", command: "@소재" },
+    { id: 4, type: "macro_request", nickname: "나", command: "@작가소개" },
+    { id: 5, type: "macro_response", label: "Seller", message: "순도 높은 청자토를 사용하였으며, 유약은 전통 비색 기법으로 시유되었습니다." },
+    { id: 6, type: "macro_response", label: "Seller", message: "이 작품은 국가무형문화재 보유자의 감정을 통과한 인증 작품입니다." },
 ];
 
 export default function ChatMessage() {
     return (
-        <div className="flex-1 space-y-3 overflow-y-auto p-4" style={{ scrollbarWidth: "thin" }}>
+        <div className="chat-scroll flex flex-1 flex-col gap-2.5 overflow-y-auto p-4">
             {dummyMessages.map((msg) => {
                 if (msg.type === "system") {
                     return (
-                        <div key={msg.id} className="text-center">
-                            <span className="rounded-full bg-point/5 px-3 py-1 text-[10px] text-point/50">
-                                {msg.message}
-                            </span>
+                        <div key={msg.id} className="self-center text-[10px] font-medium tracking-wide text-[#3f3f46]">
+                            {msg.message}
                         </div>
                     );
                 }
 
                 if (msg.type === "macro_request") {
                     return (
-                        <div key={msg.id} className="flex flex-col items-start border-l-2 border-gold bg-gold/5 py-1 pl-3">
-                            <div className="mb-1 flex items-center gap-1.5">
-                                <span className="text-[11px] font-bold uppercase tracking-tighter text-gold">Request</span>
-                                <span className="text-[10px] font-medium text-gold/60">by {msg.nickname}</span>
-                            </div>
-                            <p className="text-[13px] font-semibold italic text-gold/90">
-                                "{msg.command}"
+                        <div key={msg.id} className="flex flex-col items-end">
+                            <span className="mb-0.5 px-1.5 text-[10px] font-bold text-[#52525b]">{msg.nickname}</span>
+                            <p className="inline-block max-w-[85%] rounded-[16px_4px_16px_16px] border border-[rgba(197,160,89,.2)] bg-[rgba(197,160,89,.07)] px-3 py-2 text-[13px] italic text-[rgba(197,160,89,.9)]">
+                                {msg.command}
                             </p>
                         </div>
                     );
@@ -39,23 +34,19 @@ export default function ChatMessage() {
 
                 if (msg.type === "macro_response") {
                     return (
-                        <div key={msg.id} className="flex justify-end">
-                            <div className="max-w-[90%] rounded-xl border border-blue-500/30 bg-blue-600/10 p-3">
-                                <div className="mb-1 flex items-center gap-2">
-                                    <span className="text-[11px] font-bold uppercase text-blue-400">{msg.label}</span>
-                                </div>
-                                <p className="text-[13px] leading-snug text-blue-100">
-                                    {msg.message}
-                                </p>
-                            </div>
+                        <div key={msg.id} className="flex flex-col items-end">
+                            <span className="mb-0.5 px-1.5 text-[10px] font-bold text-[#52525b]">{msg.label}</span>
+                            <p className="inline-block max-w-[90%] rounded-[16px_4px_16px_16px] border border-[rgba(59,130,246,.2)] bg-[rgba(59,130,246,.07)] px-3 py-2 text-[13px] leading-relaxed text-[rgba(191,219,254,.9)]">
+                                {msg.message}
+                            </p>
                         </div>
                     );
                 }
 
                 return (
-                    <div key={msg.id} className="flex flex-col">
-                        <span className="mb-0.5 text-[11px] font-bold text-point/50">{msg.nickname}</span>
-                        <p className="inline-block max-w-[85%] rounded-2xl rounded-tl-none border border-point/5 bg-point/5 px-3 py-2 text-[13px] text-point">
+                    <div key={msg.id} className="flex flex-col items-start">
+                        <span className="mb-0.5 px-1.5 text-[10px] font-bold text-[#52525b]">{msg.nickname}</span>
+                        <p className="inline-block max-w-[85%] rounded-[4px_16px_16px_16px] border border-[rgba(255,255,255,.05)] bg-[#18181b] px-3 py-2 text-[13px] leading-relaxed text-[#e4e4e7]">
                             {msg.message}
                         </p>
                     </div>

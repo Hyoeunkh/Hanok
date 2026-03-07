@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import { RiSendPlaneLine } from "react-icons/ri";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { useRef, useEffect } from "react";
+import { IoIosSend } from "react-icons/io";
+import { BsEmojiSmile } from "react-icons/bs";
 
 const macros = [
     "@사이즈", "@360도", "@소재", "@배송", "@진품인증",
@@ -10,55 +10,55 @@ const macros = [
 export default function ChatInput() {
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const scroll = (direction: "left" | "right") => {
-        if (scrollRef.current) {
-            const amount = direction === "left" ? -120 : 120;
-            scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
-        }
-    };
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            e.preventDefault();
+            el.scrollLeft += e.deltaY;
+        };
+
+        el.addEventListener("wheel", handleWheel, { passive: false });
+        return () => el.removeEventListener("wheel", handleWheel);
+    }, []);
 
     return (
-        <div className="border-t border-point/5 bg-background p-4">
-            {/* 매크로 버튼 (스크롤 가능) */}
-            <div className="mb-3 flex items-center gap-1">
-                <button
-                    onClick={() => scroll("left")}
-                    className="shrink-0 text-point/30 hover:text-point"
-                >
-                    <IoChevronBack size={14} />
-                </button>
+        <div className="border-t border-[rgba(255,255,255,.07)] bg-[rgba(24,24,27,.5)] px-4 py-3.5">
+            {/* 매크로 버튼 (스크롤 + 오른쪽 페이드) */}
+            <div className="relative mb-2.5">
                 <div
                     ref={scrollRef}
-                    className="flex gap-2 overflow-x-auto scrollbar-hide"
-                    style={{ scrollbarWidth: "none" }}
+                    className="macro-scroll flex gap-[7px] overflow-x-auto pb-2.5"
                 >
                     {macros.map((macro) => (
                         <button
                             key={macro}
-                            className="shrink-0 rounded-full border border-point/10 bg-point/5 px-3 py-1 text-[10px] font-semibold text-point/50 transition-all hover:bg-point/10 hover:text-point"
+                            className="shrink-0 rounded-full border border-[rgba(255,255,255,.05)] bg-[#27272a] px-3 py-1.5 text-[10px] font-bold text-[#a1a1aa] transition-all hover:border-[#C5A059] hover:text-white"
                         >
                             {macro}
                         </button>
                     ))}
                 </div>
-                <button
-                    onClick={() => scroll("right")}
-                    className="shrink-0 text-point/30 hover:text-point"
-                >
-                    <IoChevronForward size={14} />
-                </button>
+                {/* 오른쪽 페이드 그라데이션 */}
+                <div className="pointer-events-none absolute right-0 top-0 bottom-2.5 w-10 bg-gradient-to-r from-transparent to-[rgba(24,24,27,.95)]" />
             </div>
 
             {/* 입력창 */}
             <div className="relative flex items-center">
                 <input
                     type="text"
-                    placeholder="채팅하기..."
-                    className="w-full rounded-xl bg-[#2a2a2a] px-4 py-3 text-[13px] text-point placeholder:text-point/30 focus:outline-none focus:ring-1 focus:ring-gold/50"
+                    placeholder="메시지를 입력하세요..."
+                    className="w-full rounded-2xl border border-[rgba(255,255,255,.1)] bg-black px-4 py-3 pr-20 text-[13px] text-white placeholder:text-[#52525b] focus:border-[#C5A059] focus:outline-none"
                 />
-                <button className="absolute right-3 text-gold transition hover:scale-110">
-                    <RiSendPlaneLine size={16} />
-                </button>
+                <div className="absolute right-3 flex items-center gap-2">
+                    <button className="text-[#a1a1aa] transition hover:scale-110 hover:text-white">
+                        <BsEmojiSmile size={14} />
+                    </button>
+                    <button className="text-[#C5A059] transition hover:scale-110">
+                        <IoIosSend size={16} />
+                    </button>
+                </div>
             </div>
         </div>
     );
