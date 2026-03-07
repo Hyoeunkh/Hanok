@@ -68,3 +68,10 @@ export type SideBarItem = {
   label: string;
   icon?: React.ReactNode;
 };
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+export type ChatMessageType =
+    | { id: number; type: "chat"; nickname: string; message: string }
+    | { id: number; type: "macro_request"; nickname: string; command: string }
+    | { id: number; type: "macro_response"; label: string; message: string }
+    | { id: number; type: "system"; message: string };
