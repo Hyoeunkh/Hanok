@@ -52,21 +52,4 @@ public class Seller {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    public static Seller createSeller(String intro, SellerType type, String businessNumber,
-                                      String instaUrl, String youtubeUrl, String tiktokUrl,
-                                      Long userId) {
-        return Seller.builder()
-                .intro(intro != null ? intro : "")
-                .type(type)
-                .businessNumber(businessNumber)
-                .grade(SellerGrade.GENERAL)
-                .instaUrl(instaUrl)
-                .youtubeUrl(youtubeUrl)
-                .tiktokUrl(tiktokUrl)
-                .rating(0.0)
-                .userId(userId)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-    }
 }
