@@ -1,15 +1,20 @@
 import { useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { IconType } from 'react-icons';
 import { FiArrowDown, FiArrowUp, FiChevronLeft, FiCreditCard, FiInfo, FiZap } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetTradeReports } from '@/api/hooks/useGetTradeReports';
 import { useGetAccount } from '@/api/hooks/useGetAccount';
+import { completeWalletCharge } from '@/api/hooks/usePostCompleteWalletCharge';
+import { createWalletCharge } from '@/api/hooks/usePostWalletCharge';
+import { createWalletWithdrawal } from '@/api/hooks/usePostWalletWithdrawal';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
 import HistoryRowSkeleton from '@/components/Wallet/HistoryRowSkeleton';
 import PointManagementModal, { type PointModalType } from '@/components/Wallet/PointManagementModal';
 import Button from '@/components/common/Button';
 import type { TradeReportItem } from '@/types';
+import { requestPointChargePayment } from '@/utils/requestPointChargePayment';
 import coins from '@/assets/coins.png';
 
 type WalletType = 'charge' | 'withdraw' | 'settlement';
@@ -33,11 +38,13 @@ const walletTabs: Array<{ key: WalletType; label: string }> = [
 
 export default function WalletPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<WalletType>('withdraw');
   const [isPointModalOpen, setIsPointModalOpen] = useState(false);
   const [pointModalType, setPointModalType] = useState<PointModalType>('charge');
   const [pointAmountInput, setPointAmountInput] = useState('');
   const [isDirectInputMode, setIsDirectInputMode] = useState(false);
+  const [isPointSubmitting, setIsPointSubmitting] = useState(false);
   const pointInputRef = useRef<HTMLInputElement>(null);
   const { data: account } = useGetAccount();
   const { data: wallet, isLoading } = useGetWallet();
@@ -115,9 +122,65 @@ export default function WalletPage() {
     pointInputRef.current?.focus();
   };
 
-  const handlePointAction = () => {
+  const handlePointAction = async () => {
     if (numericPointAmount <= 0) return;
-    closePointModal();
+
+    if (isPointSubmitting) return;
+
+    setIsPointSubmitting(true);
+
+    try {
+      if (pointModalType === 'withdraw') {
+        await createWalletWithdrawal({
+          amount: numericPointAmount,
+        });
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['wallet'] }),
+          queryClient.invalidateQueries({ queryKey: ['tradeReports', 'WITHDRAW'] }),
+        ]);
+
+        alert('출금 요청이 완료되었습니다.');
+        closePointModal();
+        return;
+      }
+
+      const chargeResponse = await createWalletCharge({
+        amount: numericPointAmount,
+      });
+      const initialPaymentId = chargeResponse.paymentId;
+
+      const response = await requestPointChargePayment({
+        amount: numericPointAmount,
+        paymentId: initialPaymentId,
+      });
+
+      if (!response) {
+        alert('결제창을 열지 못했습니다. 팝업 차단 여부를 확인해주세요.');
+        return;
+      }
+
+      if (response.code) {
+        alert(response.message ?? '결제가 취소되었거나 실패했습니다.');
+        return;
+      }
+
+      await completeWalletCharge({
+        paymentId: initialPaymentId,
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['wallet'] }),
+        queryClient.invalidateQueries({ queryKey: ['tradeReports', 'CHARGE'] }),
+      ]);
+
+      alert('결제가 완료되었습니다.');
+      closePointModal();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '결제 요청 중 오류가 발생했습니다.');
+    } finally {
+      setIsPointSubmitting(false);
+    }
   };
 
   return (
@@ -254,6 +317,7 @@ export default function WalletPage() {
         amountInput={pointAmountInput}
         registeredWithdrawAccount={registeredWithdrawAccount}
         isDirectInputMode={isDirectInputMode}
+        isSubmitting={isPointSubmitting}
         inputRef={pointInputRef}
         onClose={closePointModal}
         onTabChange={handlePointModalTabChange}

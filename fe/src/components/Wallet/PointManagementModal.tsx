@@ -11,13 +11,14 @@ type PointManagementModalProps = {
   amountInput: string;
   registeredWithdrawAccount: string;
   isDirectInputMode: boolean;
+  isSubmitting?: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   onClose: () => void;
   onTabChange: (tab: PointModalType) => void;
   onAmountChange: (value: string) => void;
   onPresetClick: (amount: number) => void;
   onDirectInputClick: () => void;
-  onSubmit: () => void;
+  onSubmit: () => void | Promise<void>;
 };
 
 const pointPresetAmounts = [10000, 50000, 100000];
@@ -29,6 +30,7 @@ export default function PointManagementModal({
   amountInput,
   registeredWithdrawAccount,
   isDirectInputMode,
+  isSubmitting = false,
   inputRef,
   onClose,
   onTabChange,
@@ -167,7 +169,7 @@ export default function PointManagementModal({
           <Button
             variant="white"
             className="h-15 rounded-[18px] text-[18px] font-semibold"
-            disabled={!amountInput || Number(amountInput) <= 0}
+            disabled={isSubmitting || !amountInput || Number(amountInput) <= 0}
             onClick={onSubmit}
           >
             {submitLabel}
