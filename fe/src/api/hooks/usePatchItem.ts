@@ -2,9 +2,9 @@ import { useMutation } from '@tanstack/react-query';
 import { getFetchInstance, queryClient } from '@/api/instance';
 import type { UpdateItemPayload, UpdateItemResponse } from '@/types';
 
-const putItemPath = (itemId: number) => `/v1/items/${itemId}`;
+const patchItemPath = (itemId: number) => `/v1/items/${itemId}`;
 
-export const usePutItem = () => {
+export const usePatchItem = () => {
   return useMutation<UpdateItemResponse, Error, { itemId: number; payload: UpdateItemPayload }>({
     mutationFn: async ({ itemId, payload }) => {
       const formData = new FormData();
@@ -36,7 +36,7 @@ export const usePutItem = () => {
         });
       }
 
-      const response = await getFetchInstance().put(putItemPath(itemId), formData, {
+      const response = await getFetchInstance().patch(patchItemPath(itemId), formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

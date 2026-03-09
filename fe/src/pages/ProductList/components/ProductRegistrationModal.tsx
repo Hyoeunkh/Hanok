@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { FaTimes, FaCloudUploadAlt } from 'react-icons/fa';
 import Button from '@/components/common/Button';
 import { usePostItem } from '@/api/hooks/usePostItem';
-import { usePutItem } from '@/api/hooks/usePutItem';
+import { usePatchItem } from '@/api/hooks/usePatchItem';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
 import type { Product } from '@/types';
 
@@ -15,7 +15,7 @@ interface ProductRegistrationModalProps {
 
 export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, initialData }: ProductRegistrationModalProps) {
   const { mutateAsync: createItem, isPending: isCreating } = usePostItem();
-  const { mutateAsync: updateItem, isPending: isUpdating } = usePutItem();
+  const { mutateAsync: updateItem, isPending: isUpdating } = usePatchItem();
   
   const isPending = isCreating || isUpdating;
   
