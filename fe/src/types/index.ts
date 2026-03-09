@@ -254,6 +254,9 @@ export type AuctionDuration = 10 | 30 | 60;
 
 export type TimerPhase = "normal" | "urgent" | "ended";
 
+// ─── Stream ──────────────────────────────────────────────────────────────────
+export type StreamState = "live" | "disconnected" | "ended";
+
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 export type ChatMessageType =
   | { id: number; type: "chat"; nickname: string; message: string }

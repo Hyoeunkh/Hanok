@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdOutlineWifiOff } from "react-icons/md";
 
 interface Props {
@@ -7,15 +7,19 @@ interface Props {
 
 export default function StreamDisconnected({ onTimeout }: Props) {
   const [secs, setSecs] = useState(60);
+  const calledRef = useRef(false);
 
   useEffect(() => {
     if (secs <= 0) {
-      onTimeout?.();
+      if (!calledRef.current) {
+        calledRef.current = true;
+        onTimeout?.();
+      }
       return;
     }
     const t = setTimeout(() => setSecs((prev) => prev - 1), 1000);
     return () => clearTimeout(t);
-  }, [secs]);
+  }, [secs, onTimeout]);
 
   const mm = String(Math.floor(secs / 60)).padStart(2, "0");
   const ss = String(secs % 60).padStart(2, "0");
@@ -23,7 +27,7 @@ export default function StreamDisconnected({ onTimeout }: Props) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-[20px] animate-[fadeIn_.3s_ease]">
-      <div className="flex h-[550px] w-[550px] flex-col overflow-hidden rounded-3xl border border-white/[.07] bg-[#111113] shadow-[0_24px_60px_rgba(0,0,0,.6)]">
+      <div className="flex w-full max-w-[550px] mx-4 aspect-square flex-col overflow-hidden rounded-3xl border border-white/[.07] bg-[#111113] shadow-[0_24px_60px_rgba(0,0,0,.6)]">
         {/* 콘텐츠 영역 — 세로 중앙, 8px grid spacing */}
         <div className="flex flex-1 flex-col items-center justify-center gap-8">
           {/* 상단 그룹: 아이콘 + 타이틀 */}
