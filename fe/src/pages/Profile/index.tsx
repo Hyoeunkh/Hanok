@@ -183,6 +183,7 @@ export default function ProfilePage() {
                 팔로워 <strong style={{ color: '#fff' }}>{reputation?.followerCount ?? 0}</strong>
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 16 }}>
+                {/* TODO: 수정api연결 필요 */}
                 <button style={styles.textBtn}>수정</button>
                 <button style={styles.textBtn}>신고</button>
               </div>
