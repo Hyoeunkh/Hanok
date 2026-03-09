@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { IconType } from 'react-icons';
 import { FiArrowDown, FiArrowUp, FiChevronLeft, FiCreditCard, FiInfo, FiZap } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetTradeReports } from '@/api/hooks/useGetTradeReports';
+import { useGetAccount } from '@/api/hooks/useGetAccount';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
+import HistoryRowSkeleton from '@/components/Wallet/HistoryRowSkeleton';
+import PointManagementModal, { type PointModalType } from '@/components/Wallet/PointManagementModal';
 import Button from '@/components/common/Button';
 import type { TradeReportItem } from '@/types';
 import coins from '@/assets/coins.png';
@@ -31,6 +34,12 @@ const walletTabs: Array<{ key: WalletType; label: string }> = [
 export default function WalletPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<WalletType>('withdraw');
+  const [isPointModalOpen, setIsPointModalOpen] = useState(false);
+  const [pointModalType, setPointModalType] = useState<PointModalType>('charge');
+  const [pointAmountInput, setPointAmountInput] = useState('');
+  const [isDirectInputMode, setIsDirectInputMode] = useState(false);
+  const pointInputRef = useRef<HTMLInputElement>(null);
+  const { data: account } = useGetAccount();
   const { data: wallet, isLoading } = useGetWallet();
 
   const chargeReportsQuery = useGetTradeReports('CHARGE', activeTab === 'charge');
@@ -39,6 +48,12 @@ export default function WalletPage() {
 
   const balance = wallet?.balance ?? 0;
   const depositedAuctionBalance = wallet?.depositedAuctionBalance ?? 0;
+  const registeredWithdrawAccount = account ? `${account.bankName} ${account.accountNumber}(등록됨)` : '';
+  const numericPointAmount = Number(pointAmountInput || 0);
+  const clampWithdrawAmount = (amount: number) => {
+    if (pointModalType !== 'withdraw') return amount;
+    return Math.min(amount, balance);
+  };
 
   const chargeHistory = mapTradeReportsToHistory('charge', chargeReportsQuery.data ?? []);
   const withdrawHistory = mapTradeReportsToHistory('withdraw', withdrawReportsQuery.data ?? []);
@@ -59,129 +74,195 @@ export default function WalletPage() {
   const currentHistory = historyByTab[activeTab];
   const isHistoryLoading = historyLoadingByTab[activeTab];
 
-  return (
-    <section className="w-full text-[#f5f2eb]">
-      <div className="mx-auto flex w-full max-w-300 flex-col gap-8 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#f5f2eb] transition hover:bg-white/6"
-              aria-label="이전 페이지로 이동"
-            >
-              <FiChevronLeft className="h-6 w-6" />
-            </button>
-            <h1 className="text-[24px] font-bold tracking-[-0.02em]">내 가상머니</h1>
-          </div>
-          <p className="pl-12 text-[14px] text-[#b7ada0]">경매 입찰을 위한 가상머니 충전 및 정산 내역을 관리합니다.</p>
-        </div>
+  const openPointModal = (type: PointModalType) => {
+    setPointModalType(type);
+    setPointAmountInput('');
+    setIsDirectInputMode(false);
+    setIsPointModalOpen(true);
+  };
 
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <article className="relative overflow-hidden rounded-[28px] border border-[#77623d]/70 bg-[#05070f] px-8 py-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
-            <div className="relative z-10 flex max-w-67.5 flex-col gap-5">
+  const closePointModal = () => {
+    setIsPointModalOpen(false);
+    setPointAmountInput('');
+    setIsDirectInputMode(false);
+  };
+
+  const handlePointModalTabChange = (type: PointModalType) => {
+    setPointModalType(type);
+    setPointAmountInput('');
+    setIsDirectInputMode(false);
+  };
+
+  const handlePointAmountChange = (value: string) => {
+    const sanitizedValue = value.replace(/\D/g, '');
+    const nextAmount = clampWithdrawAmount(Number(sanitizedValue || 0));
+    setPointAmountInput(sanitizedValue ? String(nextAmount) : '');
+    setIsDirectInputMode(true);
+  };
+
+  const handlePointPresetClick = (amount: number) => {
+    setPointAmountInput(String(clampWithdrawAmount(amount)));
+    setIsDirectInputMode(false);
+  };
+
+  const handleDirectInputClick = () => {
+    if (pointModalType === 'withdraw') {
+      setPointAmountInput(String(balance));
+      setIsDirectInputMode(false);
+      return;
+    }
+    setIsDirectInputMode(true);
+    pointInputRef.current?.focus();
+  };
+
+  const handlePointAction = () => {
+    if (numericPointAmount <= 0) return;
+    closePointModal();
+  };
+
+  return (
+    <>
+      <section className="w-full text-[#f5f2eb]">
+        <div className="mx-auto flex w-full max-w-300 flex-col gap-8 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#f5f2eb] transition hover:bg-white/6"
+                aria-label="이전 페이지로 이동"
+              >
+                <FiChevronLeft className="h-6 w-6" />
+              </button>
+              <h1 className="text-[24px] font-bold tracking-[-0.02em]">내 가상머니</h1>
+            </div>
+            <p className="pl-12 text-[14px] text-[#b7ada0]">
+              경매 입찰을 위한 가상머니 충전 및 정산 내역을 관리합니다.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <article className="relative overflow-hidden rounded-[28px] border border-[#77623d]/70 bg-[#05070f] px-8 py-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
+              <div className="relative z-10 flex max-w-67.5 flex-col gap-5">
+                <div className="space-y-3">
+                  <p className="text-lg font-semibold text-white">보유 머니</p>
+                  <div className="space-y-2">
+                    {isLoading ? (
+                      <>
+                        <div className="h-10 w-52.5 animate-pulse rounded-xl bg-white/10 sm:h-12 sm:w-62.5" />
+                        <div className="h-4 w-32.5 animate-pulse rounded-md bg-white/8" />
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[32px] font-bold tracking-[-0.03em] text-[#d8c59a]">
+                          {formatMoney(balance)} 원
+                        </p>
+                        <p className="text-[14px] text-[#b8ab99]">= {formatMoney(balance)} KRW</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-row gap-3">
+                  <div className="w-full">
+                    <Button variant="white" className="gap-2 font-semibold" onClick={() => openPointModal('charge')}>
+                      <FiZap className="h-4 w-4" />
+                      충전하기
+                    </Button>
+                  </div>
+                  <div className="w-full">
+                    <Button
+                      variant="outline"
+                      className="gap-2 font-semibold shadow-[0_0_0_1px_rgba(255,255,255,0.65)_inset]"
+                      onClick={() => openPointModal('withdraw')}
+                    >
+                      <FiCreditCard className="h-4 w-4" />
+                      출금하기
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <img src={coins} alt="coins" className="absolute right-10 bottom-6 w-50 md:block" />
+            </article>
+
+            <article className="flex flex-col justify-between rounded-[28px] border border-[#77623d]/70 bg-[#05070f] px-8 py-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
               <div className="space-y-3">
-                <p className="text-lg font-semibold text-white">보유 머니</p>
+                <p className="text-lg font-semibold text-white">경매 예치 머니</p>
                 <div className="space-y-2">
                   {isLoading ? (
                     <>
-                      <div className="h-10 w-52.5 animate-pulse rounded-xl bg-white/10 sm:h-12 sm:w-62.5" />
-                      <div className="h-4 w-32.5 animate-pulse rounded-md bg-white/8" />
+                      <div className="h-10 w-45 animate-pulse rounded-xl bg-white/10 sm:h-12 sm:w-55" />
+                      <div className="h-4 w-42.5 animate-pulse rounded-md bg-white/8" />
                     </>
                   ) : (
                     <>
-                      <p className="text-[32px] font-bold tracking-[-0.03em] text-[#d8c59a]">
-                        {formatMoney(balance)} 원
+                      <p className="text-[32px] font-bold tracking-[-0.03em] text-[#e29b47]">
+                        {formatMoney(depositedAuctionBalance)} 원
                       </p>
-                      <p className="text-[14px] text-[#b8ab99]"> = {formatMoney(balance)} KRW</p>
+                      <p className="text-[14px] text-[#8f8a84]">현재 거래 대기 중인 금액입니다.</p>
                     </>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-row gap-3">
-                <div className="w-full">
-                  <Button variant="white" className="gap-2 font-semibold">
-                    <FiZap className="h-4 w-4" />
-                    충전하기
-                  </Button>
-                </div>
-                <div className="w-full">
-                  <Button
-                    variant="outline"
-                    className="gap-2 font-semibold shadow-[0_0_0_1px_rgba(255,255,255,0.65)_inset]"
-                  >
-                    <FiCreditCard className="h-4 w-4" />
-                    출금하기
-                  </Button>
-                </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#5a4632]/70 bg-[linear-gradient(90deg,rgba(63,47,28,0.68),rgba(32,27,22,0.9))] px-4 py-3 text-[14px] text-[#dfa24f]">
+                <FiInfo className="h-4 w-4 shrink-0" />
+                <p>거래 완료 또는 유찰 시 자동 반환/정산됩니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <article className="rounded-[30px] border border-[#6f5a37]/65 bg-[#04070d] px-5 py-5 shadow-[0_26px_70px_rgba(0,0,0,0.24)] sm:px-7 sm:py-6">
+            <div className="border-b border-[#4a402f]">
+              <div className="macro-scroll flex gap-2 overflow-x-auto">
+                {walletTabs.map((tab) => {
+                  const isActive = activeTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`relative shrink-0 px-3 py-4 text-sm font-semibold transition sm:px-4 sm:text-[15px] ${
+                        isActive ? 'text-[#d7c08f]' : 'text-[#8d8579] hover:text-[#d4c8b8]'
+                      }`}
+                    >
+                      {tab.label}
+                      {isActive && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#d7c08f]" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <img src={coins} alt="coins" className="absolute right-10 bottom-6 md:block w-50" />
-          </article>
-
-          <article className="flex flex-col justify-between rounded-[28px] border border-[#77623d]/70 bg-[#05070f] px-8 py-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
-            <div className="space-y-3">
-              <p className="text-lg font-semibold text-white">경매 예치 머니</p>
-              <div className="space-y-2">
-                {isLoading ? (
-                  <>
-                    <div className="h-10 w-45 animate-pulse rounded-xl bg-white/10 sm:h-12 sm:w-55" />
-                    <div className="h-4 w-42.5 animate-pulse rounded-md bg-white/8" />
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[32px] font-bold tracking-[-0.03em] text-[#e29b47]">
-                      {formatMoney(depositedAuctionBalance)} 원
-                    </p>
-                    <p className="text-[14px] text-[#8f8a84]">현재 거래 대기 중인 금액입니다.</p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-2xl border border-[#5a4632]/70 bg-[linear-gradient(90deg,rgba(63,47,28,0.68),rgba(32,27,22,0.9))] px-4 py-3 text-[14px] text-[#dfa24f]">
-              <FiInfo className="h-4 w-4 shrink-0" />
-              <p>거래 완료 또는 유찰 시 자동 반환/정산됩니다.</p>
+            <div className="flex flex-col pt-6">
+              {isHistoryLoading ? (
+                Array.from({ length: 3 }, (_, index) => <HistoryRowSkeleton key={index} />)
+              ) : currentHistory.length > 0 ? (
+                currentHistory.map((item) => <HistoryRow key={item.id} item={item} />)
+              ) : (
+                <div className="px-2 py-10 text-center text-sm text-[#8d8579]">내역이 없습니다.</div>
+              )}
             </div>
           </article>
         </div>
+      </section>
 
-        <article className="rounded-[30px] border border-[#6f5a37]/65 bg-[#04070d] px-5 py-5 shadow-[0_26px_70px_rgba(0,0,0,0.24)] sm:px-7 sm:py-6">
-          <div className="border-b border-[#4a402f]">
-            <div className="macro-scroll flex gap-2 overflow-x-auto">
-              {walletTabs.map((tab) => {
-                const isActive = activeTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`relative shrink-0 px-3 py-4 text-sm font-semibold transition sm:px-4 sm:text-[15px] ${
-                      isActive ? 'text-[#d7c08f]' : 'text-[#8d8579] hover:text-[#d4c8b8]'
-                    }`}
-                  >
-                    {tab.label}
-                    {isActive && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#d7c08f]" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col pt-6">
-            {isHistoryLoading ? (
-              Array.from({ length: 3 }, (_, index) => <HistoryRowSkeleton key={index} />)
-            ) : currentHistory.length > 0 ? (
-              currentHistory.map((item) => <HistoryRow key={item.id} item={item} />)
-            ) : (
-              <div className="px-2 py-10 text-center text-sm text-[#8d8579]">내역이 없습니다.</div>
-            )}
-          </div>
-        </article>
-      </div>
-    </section>
+      <PointManagementModal
+        isOpen={isPointModalOpen}
+        activeTab={pointModalType}
+        amountInput={pointAmountInput}
+        registeredWithdrawAccount={registeredWithdrawAccount}
+        isDirectInputMode={isDirectInputMode}
+        inputRef={pointInputRef}
+        onClose={closePointModal}
+        onTabChange={handlePointModalTabChange}
+        onAmountChange={handlePointAmountChange}
+        onPresetClick={handlePointPresetClick}
+        onDirectInputClick={handleDirectInputClick}
+        onSubmit={handlePointAction}
+      />
+    </>
   );
 }
 
@@ -228,25 +309,6 @@ function HistoryRow({ item }: { item: WalletHistoryItem }) {
           {formatTransactionAmount(item.amount)}
         </p>
         <p className="mt-2 text-sm text-[#8d8579]">{item.status}</p>
-      </div>
-    </div>
-  );
-}
-
-function HistoryRowSkeleton() {
-  return (
-    <div className="flex flex-col items-start gap-4 rounded-[22px] px-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-3">
-      <div className="flex min-w-0 items-center gap-4">
-        <div className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-white/10" />
-        <div className="space-y-2">
-          <div className="h-5 w-28 animate-pulse rounded-md bg-white/10" />
-          <div className="h-4 w-32 animate-pulse rounded-md bg-white/8" />
-        </div>
-      </div>
-
-      <div className="w-full shrink-0 space-y-2 text-left sm:w-auto sm:text-right">
-        <div className="h-5 w-28 animate-pulse rounded-md bg-white/10 sm:ml-auto" />
-        <div className="h-4 w-20 animate-pulse rounded-md bg-white/8 sm:ml-auto" />
       </div>
     </div>
   );
