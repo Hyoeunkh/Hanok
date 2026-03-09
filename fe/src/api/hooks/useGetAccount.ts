@@ -14,6 +14,6 @@ export const useGetAccount = () => {
   return useQuery({
     queryKey: ['account'],
     queryFn: getAccount,
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60,
   });
 };
