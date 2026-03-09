@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'hanok-backend'
         CONTAINER_NAME = 'hanok-backend-prod'
-        COMPOSE_FILE = 'infra/docker-compose.yml'
+        COMPOSE_FILE = 'infra/docker-compose.yaml'
         ENV_FILE = 'infra/.env.prod'
     }
 
