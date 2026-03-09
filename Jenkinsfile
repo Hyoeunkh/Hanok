@@ -24,7 +24,23 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    dir('be') {
+                        sh './gradlew sonar --no-daemon \
+                            -Dsonar.projectKey=hanok \
+                            -Dsonar.projectName=hanok \
+                            -Dsonar.host.url=http://j14d105.p.ssafy.io:9000'
+                    }
+                }
+            }
+        }
+
         stage('Docker Build') {
+            when {
+                branch 'master'
+            }
             steps {
                 dir('be') {
                     sh "docker build -t ${IMAGE_NAME}:prod ."
@@ -33,10 +49,14 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                branch 'master'
+            }
             steps {
                 sh '''
                     cp /var/jenkins_home/env/.env.prod infra/.env.prod
-                    docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps backend-prod
+                    docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis
+                    docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-prod
                 '''
             }
         }
