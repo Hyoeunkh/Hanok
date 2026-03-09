@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import { Route, Routes } from "react-router-dom";
+
 import MainPage from "./pages/Main";
 import TrakingInputPage from "./pages/TrackingInput";
 import MyPage from "./pages/My";
@@ -15,22 +17,24 @@ import MainLayout from "@/components/common/layouts/MainLayout";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<MainPage />} />
-        <Route path="tracking" element={<TrakingInputPage />} />
-        <Route path="my" element={<MyPage />} />
-        <Route path="seller/:id" element={<SellerProfilePage />} />
-        <Route path="seller/register" element={<SellerOnboardingPage />} />
-        <Route path="live/:id" element={<LivePage />} />
-        <Route path="live/new" element={<LiveCreatePage />} />
-        <Route path="products" element={<ProductListPage />} />
-        <Route path="signup" element={<SignUpPage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="wallet" element={<WalletPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={<div style={{ color: 'white', padding: '20px' }}>Loading...</div>}>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<MainPage />} />
+          <Route path="tracking" element={<TrakingInputPage />} />
+          <Route path="my" element={<MyPage />} />
+          <Route path="seller/:id" element={<SellerProfilePage />} />
+          <Route path="seller/register" element={<SellerOnboardingPage />} />
+          <Route path="live/:id" element={<LivePage />} />
+          <Route path="live/new" element={<LiveCreatePage />} />
+          <Route path="products" element={<ProductListPage />} />
+          <Route path="signup" element={<SignUpPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="wallet" element={<WalletPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 
