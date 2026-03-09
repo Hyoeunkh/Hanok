@@ -1,7 +1,7 @@
-// ─── Example ──────────────────────────────────────────────────────────────────
-export type ExData = {
-  id: number;
-  name: string;
+export type ApiResponse<T> = {
+  status: string;
+  message: string;
+  data: T;
 };
 
 // ─── Auth / Login ─────────────────────────────────────────────────────────────
@@ -186,23 +186,35 @@ export type SellerStatusResponse = {
   isSeller: boolean;
 };
 
+export type WalletResponse = {
+  balance: number;
+  depositedAuctionBalance: number;
+};
+
+export type TradeReportType = 'CHARGE' | 'WITHDRAW' | 'SETTLEMENT';
+
+export type TradeReportItem = {
+  itemName: string | null;
+  amount: number;
+  createdAt: string;
+};
+
 // ─── Bizno API ────────────────────────────────────────────────────────────────
 export interface BiznoResponse {
   resultCode: number; // 0: 성공, 그 외 에러
   resultMsg: string;
   totalCount: number;
   items: Array<{
-    bno: string;      // 사업자등록번호
-    company: string;   // 상호명
-    bstt: string;      // 사업자상태 (계속사업자, 휴업, 폐업 등)
-    taxtype: string;   // 과세유형
+    bno: string; // 사업자등록번호
+    company: string; // 상호명
+    bstt: string; // 사업자상태 (계속사업자, 휴업, 폐업 등)
+    taxtype: string; // 과세유형
   } | null>;
 }
 
-
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 export type ChatMessageType =
-    | { id: number; type: "chat"; nickname: string; message: string }
-    | { id: number; type: "macro_request"; nickname: string; command: string }
-    | { id: number; type: "macro_response"; label: string; message: string }
-    | { id: number; type: "system"; message: string };
+  | { id: number; type: 'chat'; nickname: string; message: string }
+  | { id: number; type: 'macro_request'; nickname: string; command: string }
+  | { id: number; type: 'macro_response'; label: string; message: string }
+  | { id: number; type: 'system'; message: string };

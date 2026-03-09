@@ -1,9 +1,52 @@
 import { mainHandlers } from './MainHandler';
 
-import { http, HttpResponse, delay } from "msw";
-import { BASE_URL } from "@/api/instance";
+import { http, HttpResponse } from 'msw';
+import { BASE_URL } from '@/api/instance';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockItems: any[] = [];
+const mockWallet = {
+  balance: 1250000,
+  depositedAuctionBalance: 250000,
+};
+const mockTradeReports = {
+  CHARGE: [
+    {
+      itemName: null,
+      amount: 100000,
+      createdAt: '2026-03-05 08:15:30',
+    },
+    {
+      itemName: null,
+      amount: 50000,
+      createdAt: '2026-03-04 14:22:10',
+    },
+  ],
+  WITHDRAW: [
+    {
+      itemName: null,
+      amount: 500000,
+      createdAt: '2026-03-02 14:20:00',
+    },
+    {
+      itemName: null,
+      amount: 250000,
+      createdAt: '2026-03-01 10:24:00',
+    },
+  ],
+  SETTLEMENT: [
+    {
+      itemName: '빈티지 카메라',
+      amount: -500000,
+      createdAt: '2026-03-05 11:32:00',
+    },
+    {
+      itemName: '빈티지 카메라',
+      amount: 320000,
+      createdAt: '2026-03-02 19:40:00',
+    },
+  ],
+};
 
 export const handlers = [
   ...mainHandlers,
@@ -13,27 +56,42 @@ export const handlers = [
 
   // -- Item CRUD Mocks --
   http.get(`${BASE_URL}/v1/items`, async () => {
-    await delay(300);
     return HttpResponse.json(mockItems);
   }),
 
+  http.get(`${BASE_URL}/v1/wallet`, async () => {
+    return HttpResponse.json({
+      status: 'SUCCESS',
+      message: '요청이 성공적으로 처리되었습니다.',
+      data: mockWallet,
+    });
+  }),
+
+  http.get(`${BASE_URL}/v1/trade/reports`, async ({ request }) => {
+    const url = new URL(request.url);
+    const type = (url.searchParams.get('type') ?? 'CHARGE').toUpperCase() as keyof typeof mockTradeReports;
+
+    return HttpResponse.json({
+      status: 'SUCCESS',
+      message: '요청이 성공적으로 처리되었습니다.',
+      data: mockTradeReports[type] ?? [],
+    });
+  }),
+
   http.post(`${BASE_URL}/v1/items`, async ({ request }) => {
-    await delay(500);
-    // Simulate getting form data
     const formData = await request.formData();
-    const title = formData.get('title') as string || 'Mock Uploaded Item';
-    const description = formData.get('description') as string || 'Mock Description';
+    const title = (formData.get('title') as string) || 'Mock Uploaded Item';
+    const description = (formData.get('description') as string) || 'Mock Description';
     const startPrice = Number(formData.get('startPrice')) || 0;
     const bidUnit = Number(formData.get('bidUnit'));
     const auctionTime = Number(formData.get('auctionDuration'));
     const category = Number(formData.get('categoryId'));
     const categoryName = category === 1 ? '패션/잡화' : category === 3 ? '수집품' : '전자기기';
-    
-    // Check if there are newImages
+
     const newImages = formData.getAll('newImages');
     let imageUrls: string[] = [];
     if (newImages.length > 0) {
-      imageUrls = newImages.map(file => URL.createObjectURL(file as Blob));
+      imageUrls = newImages.map((file) => URL.createObjectURL(file as Blob));
     } else {
       imageUrls = ['https://via.placeholder.com/160x160?text=Mock+Image'];
     }
@@ -54,25 +112,24 @@ export const handlers = [
       category: categoryName,
       auctionMethod: '영국식',
     };
-    
+
     mockItems.push(newItem);
 
     return HttpResponse.json({
       itemId: newItem.id,
       title: newItem.title,
-      status: newItem.status
+      status: newItem.status,
     });
   }),
-  
+
   http.put(`${BASE_URL}/v1/items/:itemId`, async ({ request, params }) => {
-    await delay(500);
     const id = Number(params.itemId);
     const formData = await request.formData();
-    
+
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const tags = formData.getAll('tags') as string[];
-    
+
     // Additional editable fields
     const startPrice = formData.get('startPrice') ? Number(formData.get('startPrice')) : undefined;
     const bidUnit = formData.get('bidUnit') ? Number(formData.get('bidUnit')) : undefined;
@@ -81,30 +138,37 @@ export const handlers = [
     const conditionRaw = formData.get('condition') as string;
     const auctionMethodRaw = formData.get('auctionMethod') as string;
 
-    const condition = conditionRaw === 'new' ? '새상품' : conditionRaw === 'like-new' ? '거의 새것' : conditionRaw === 'used' ? '사용감 있음' : undefined;
-    const auctionMethod = auctionMethodRaw === 'english' ? '영국식' : auctionMethodRaw === 'dutch' ? '내림차순' : undefined;
+    const condition =
+      conditionRaw === 'new'
+        ? '새상품'
+        : conditionRaw === 'like-new'
+          ? '거의 새것'
+          : conditionRaw === 'used'
+            ? '사용감 있음'
+            : undefined;
+    const auctionMethod =
+      auctionMethodRaw === 'english' ? '영국식' : auctionMethodRaw === 'dutch' ? '내림차순' : undefined;
     const categoryName = category ? (category === 1 ? '패션/잡화' : category === 3 ? '수집품' : '전자기기') : undefined;
 
-    const itemIndex = mockItems.findIndex(i => i.id === id);
+    const itemIndex = mockItems.findIndex((i) => i.id === id);
     if (itemIndex > -1) {
       const itemToUpdate = mockItems[itemIndex];
-      // Keep existing logic for images but add it here if need be...
-      
+
       const newImages = formData.getAll('newImages');
       const existingImageUrls = formData.getAll('existingImageUrls') as string[];
       let imageUrls: string[] = existingImageUrls.length > 0 ? [...existingImageUrls] : [];
-      
+
       if (newImages && newImages.length > 0) {
-        newImages.forEach(file => {
-           imageUrls.push(URL.createObjectURL(file as Blob));
+        newImages.forEach((file) => {
+          imageUrls.push(URL.createObjectURL(file as Blob));
         });
       }
       if (imageUrls.length === 0 && itemToUpdate.imageUrls && itemToUpdate.imageUrls.length > 0) {
-          imageUrls = itemToUpdate.imageUrls;
+        imageUrls = itemToUpdate.imageUrls;
       }
 
-      mockItems[itemIndex] = { 
-        ...itemToUpdate, 
+      mockItems[itemIndex] = {
+        ...itemToUpdate,
         title: title || itemToUpdate.title,
         description: description || itemToUpdate.description,
         tags: tags.length > 0 ? tags : itemToUpdate.tags, // override tags or keep old
@@ -116,42 +180,42 @@ export const handlers = [
         category: categoryName !== undefined ? categoryName : itemToUpdate.category,
         auctionMethod: auctionMethod !== undefined ? auctionMethod : itemToUpdate.auctionMethod,
       };
-      
+
       return HttpResponse.json({
         itemId: id,
         title: mockItems[itemIndex].title,
-        status: "ready"
+        status: 'ready',
       });
     }
 
-    return HttpResponse.json({ error: "Item not found" }, { status: 404 });
+    return HttpResponse.json({ error: 'Item not found' }, { status: 404 });
   }),
 
   http.delete(`${BASE_URL}/v1/items/:itemId`, async ({ params }) => {
-    await delay(500);
     const id = Number(params.itemId);
-    mockItems = mockItems.filter(i => i.id !== id);
+    mockItems = mockItems.filter((i) => i.id !== id);
     return HttpResponse.json({
       itemId: id,
-      status: "cancelled"
+      status: 'cancelled',
     });
   }),
 
   http.post(`${BASE_URL}/v1/sellers/register`, async () => {
-    // API 명세서에 맞는 응답값 반환
-    return HttpResponse.json({
-      sellerId: 101,
-      nickname: "Mock 판매자",
-      grade: "A"
-    }, { status: 200 });
+    return HttpResponse.json(
+      {
+        sellerId: 101,
+        nickname: 'Mock 판매자',
+        grade: 'A',
+      },
+      { status: 200 },
+    );
   }),
   http.post(`${BASE_URL}/v1/sellers/account`, async () => {
-    // API 명세서에 맞는 응답값 반환 (200 OK without body content)
     return new HttpResponse(null, { status: 200 });
   }),
   http.get(`${BASE_URL}/v1/users/me/seller-status`, async () => {
     return HttpResponse.json({
-      isSeller: false
+      isSeller: false,
     });
   }),
 ];
