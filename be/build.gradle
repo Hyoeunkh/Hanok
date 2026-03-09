@@ -87,6 +87,17 @@ dependencies {
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // testcontainers
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation "org.testcontainers:testcontainers:2.0.3"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter:2.0.2"
+    testImplementation "org.testcontainers:testcontainers-mysql:2.0.3"
+    testImplementation("com.redis:testcontainers-redis:2.2.4")
+
+    // lombok(test)
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 dependencyManagement {
