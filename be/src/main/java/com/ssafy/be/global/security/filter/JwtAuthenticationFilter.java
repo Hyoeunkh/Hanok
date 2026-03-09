@@ -51,6 +51,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 null,
                                 List.of() // 권한 목록
                         );
+
+                //nickname 추가
+                authentication.setDetails(claims.get("nickname", String.class));
+
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (JwtException | IllegalArgumentException e) {
