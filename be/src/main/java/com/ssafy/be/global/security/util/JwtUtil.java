@@ -59,6 +59,13 @@ public class JwtUtil {
         return null;
     }
 
+    // 헤더에서 userId 추출
+    public Long resolveUserId(HttpServletRequest request) {
+        String token = resolveToken(request);
+        Claims claims = validateToken(token);
+        return Long.parseLong(claims.getSubject());
+    }
+
     // 토큰 검증 및 Claims 반환
     public Claims validateToken(String token) {
         return Jwts.parserBuilder()

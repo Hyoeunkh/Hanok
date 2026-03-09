@@ -10,7 +10,9 @@ import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.exception.UserErrorCode;
 import com.ssafy.be.domain.user.repository.UserRepository;
 import com.ssafy.be.global.exception.GlobalException;
-import com.ssafy.be.global.infra.portone.PortoneClient;
+import com.ssafy.be.global.infra.gcs.GcsService;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;import com.ssafy.be.global.infra.portone.PortoneClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class UserService {
     private final PortoneClient portOneClient;
     private final RedisService redisService;
     private final JwtUtil jwtUtil;
+    private final GcsService gcsService;
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
@@ -194,5 +197,30 @@ public class UserService {
                 jwtUtil.getRefreshExpiration(), TimeUnit.MILLISECONDS);
 
         return new LoginResponseDto(newAccessToken, newRefreshToken);
+    }
+
+    // -----------------------------------------------
+// 프로필 이미지 업로드
+// PATCH /api/v1/users/me/profile-image
+// -----------------------------------------------
+    @Transactional
+    public String uploadProfileImage(Long userId, MultipartFile file) throws IOException {
+
+        // 1. 유저 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
+
+        // 2. 기존 이미지 삭제 (있을 경우)
+        if (user.getProfileImage() != null) {
+            gcsService.deleteProfileImage(user.getProfileImage());
+        }
+
+        // 3. 새 이미지 업로드
+        String imageUrl = gcsService.uploadProfileImage(file, userId);
+
+        // 4. DB 업데이트
+        user.updateProfileImage(imageUrl);
+
+        return imageUrl;
     }
 }
