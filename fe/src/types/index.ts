@@ -199,6 +199,12 @@ export interface BiznoResponse {
   } | null>;
 }
 
+// ─── Auction ──────────────────────────────────────────────────────────────────
+export type AuctionDuration = 10 | 30 | 60 | 600;
+
+export type SellerGrade = "General" | "MVP";
+
+export type TimerPhase = "normal" | "urgent" | "ended";
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 export type ChatMessageType =
