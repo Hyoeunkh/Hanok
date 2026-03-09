@@ -1,25 +1,28 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-background: #0A0C13;
+  --color-point: #F5F2EB;
+  --color-gold: #C7B282;
+}
+
 @font-face {
   font-family: 'MuseumCulturalFoundationClassic';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식L.woff')
-    format('woff');
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식L.woff') format('woff');
   font-weight: 300;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'MuseumCulturalFoundationClassic';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식M.woff')
-    format('woff');
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식M.woff') format('woff');
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'MuseumCulturalFoundationClassic';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식B.woff')
-    format('woff');
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/국립박물관문화재단클래식B.woff') format('woff');
   font-weight: 700;
   font-display: swap;
 }
@@ -27,7 +30,9 @@
 html {
   background-color: #0b0c10;
 }
+
 @layer base {
+
   html,
   body,
   div,
@@ -117,6 +122,7 @@ html {
     text-decoration: none;
   }
 }
+
 article,
 aside,
 details,
@@ -130,11 +136,13 @@ nav,
 section {
   display: block;
 }
+
 body {
   line-height: 1;
   font-family: 'MuseumCulturalFoundationClassic', sans-serif;
   color: black;
 }
+
 ol,
 ul {
   user-select: none;
@@ -157,10 +165,12 @@ ul {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3A3A3C; 
 }
+
 blockquote,
 q {
   quotes: none;
 }
+
 blockquote:before,
 blockquote:after,
 q:before,
@@ -168,6 +178,7 @@ q:after {
   content: '';
   content: none;
 }
+
 table {
   border-collapse: collapse;
   border-spacing: 0;
