@@ -2,11 +2,13 @@ spring:
   application:
     name: be
 
-  autoconfigure:
-    exclude:
-      - com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration
-      - com.google.cloud.spring.autoconfigure.storage.GcpStorageAutoConfiguration
-      - com.google.cloud.spring.autoconfigure.secretmanager.GcpSecretManagerAutoConfiguration
+  cloud:
+    gcp:
+      storage:
+        bucket: ${GCS_BUCKET_NAME:hanok-storage}
+        credentials:
+          location: ${GCS_CREDENTIALS_PATH:classpath:gcs-key.json}
+
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -49,6 +51,7 @@ springdoc:
 
 portone:
   base-url: ${PORTONE_BASE_URL:}
+  store-id: ${PORTONE_STORE_ID:}
   secret:
       key: ${PORTONE_SECRET_KEY:}
       webhook: ${PORTONE_SECRET_WEBHOOK:} # 추후 운영 서버 도메인으로 웹훅 재등록 필요
