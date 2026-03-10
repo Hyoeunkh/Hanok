@@ -1,8 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import MainPage from './pages/Main';
 import TrakingInputPage from './pages/TrackingInput';
-import MyPage from './pages/My';
-import SellerProfilePage from './pages/SellerProfile';
+import ProfilePage from './pages/Profile';
 import SellerOnboardingPage from './pages/SellerOnboarding';
 import LivePage from './pages/Live';
 import LiveCreatePage from './pages/LiveCreate';
@@ -16,13 +15,14 @@ import MainLayout from '@/components/common/layouts/MainLayout';
 function App() {
   return (
     <Routes>
+      {/* 풀스크린 (Header/Footer 없음) */}
+      <Route path="live/:id" element={<LivePage />} />
+
       <Route path="/" element={<MainLayout />}>
         <Route index element={<MainPage />} />
         <Route path="tracking" element={<TrakingInputPage />} />
-        <Route path="my" element={<MyPage />} />
-        <Route path="seller/:id" element={<SellerProfilePage />} />
+        <Route path="profile/:id" element={<ProfilePage />} />
         <Route path="seller/register" element={<SellerOnboardingPage />} />
-        <Route path="live/:id" element={<LivePage />} />
         <Route path="live/new" element={<LiveCreatePage />} />
         <Route path="products" element={<ProductListPage />} />
         <Route path="signup" element={<SignUpPage />} />

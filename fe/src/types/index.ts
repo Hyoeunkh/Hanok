@@ -4,6 +4,14 @@ export type ApiResponse<T> = {
   data: T;
 };
 
+export type PageResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  hasNext: boolean;
+};
+
 // ─── Auth / Login ─────────────────────────────────────────────────────────────
 export type LoginPayload = {
   email: string;
@@ -114,8 +122,8 @@ export type EscrowDetailResponse = {
 
 // ─── Tracking ─────────────────────────────────────────────────────────────────
 export type PostTrackingInfoPayload = {
-  carrierName: string;    // 택배사 이름 ("CJ대한통운" 등)
-  trackingNumber: string; // 송장 번호
+  carrierName: string;
+  trackingNumber: string;
 };
 
 export type LiveSeller = {
@@ -136,13 +144,32 @@ export type LiveCardData = {
   seller: LiveSeller;
 };
 
-export type MainLiveResponse = {
-  content: LiveCardData[];
-  page: number;
-  size: number;
-  totalElements: number;
-  hasNext: boolean;
+// ─── Follow / Unfollow ────────────────────────────────────────────────────────
+export type FollowPayload = {
+  userId: number;
 };
+
+export type FollowResponse = {
+  following: boolean;
+  followerCount: number;
+  followingCount: number;
+};
+
+// ─── Seller Reputation ────────────────────────────────────────────────────────
+export type SellerReputationData = {
+  followerCount: number;
+  totalTrades?: number;
+  completionRate?: number;
+  cancelCount?: number;
+  avgShipDays?: number;
+};
+
+export type SellerReputationResponse = {
+  status: string;
+  message: string;
+  data: SellerReputationData;
+};
+
 // ─── Item (Product) CRUD ──────────────────────────────────────────────────────
 export type CreateItemPayload = {
   title: string;
@@ -200,11 +227,12 @@ export interface Product {
   imageUrls: string[];
   startPrice: number;
   bidUnit: number;
-  auctionTime: number; // in seconds
+  auctionTime: number;
   condition: string;
   category: string;
   auctionMethod: string;
 }
+
 // ─── Seller Onboarding ───────────────────────────────────────────────────────
 export type BusinessType = 'individual' | 'corporate';
 
@@ -272,7 +300,7 @@ export type TradeReportItem = {
 
 // ─── Bizno API ────────────────────────────────────────────────────────────────
 export interface BiznoResponse {
-  resultCode: number; // 0: 성공, 그 외 에러
+  resultCode: number;
   resultMsg: string;
   totalCount: number;
   items: Array<{
@@ -283,19 +311,98 @@ export interface BiznoResponse {
   } | null>;
 }
 
+// ─── Seller Profile ───────────────────────────────────────────────────────────
+export type SellerProfileStats = {
+  rating: number;
+  avgShipDays: number;
+  followerCount: number;
+};
+
+export type SellerRecentSale = {
+  itemId: number;
+  title: string;
+  finalPrice: number;
+  soldAt: string;
+};
+
+export type SellerPost = {
+  postId: number;
+  title: string;
+  context: string;
+  createdAt: string;
+};
+
+export type SellerProfileResponse = {
+  sellerId: number;
+  nickname: string;
+  intro: string;
+  profile_image: string | null;
+  instagramUrl: string | null;
+  youtubeUrl: string | null;
+  tiktokUrl: string | null;
+  stats: SellerProfileStats;
+  recentSales: SellerRecentSale[];
+  posts: SellerPost[];
+};
+
+// ─── Seller Notice ───────────────────────────────────────────────────────────
+export type GetSellerNoticeParams = {
+  page: number;
+  limit: number;
+};
+
+export type NoticeItem = {
+  postId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type GetSellerNoticeResponse = {
+  items: NoticeItem[];
+  total: number;
+};
+
+export type PostSellerNoticePayload = {
+  title: string;
+  content: string;
+};
+
+export type PostSellerNoticeResponse = {
+  postId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+};
+
+export type PatchSellerNoticePayload = {
+  title?: string;
+  content?: string;
+};
+
+export type PatchSellerNoticeResponse = {
+  postId: number;
+  title: string;
+  content: string;
+  updatedAt: string;
+};
+
+export type DeleteSellerNoticeResponse = {
+  success: boolean;
+};
 
 // ─── Auction ──────────────────────────────────────────────────────────────────
 export type AuctionDuration = 10 | 30 | 60;
 
-export type TimerPhase = "normal" | "urgent" | "ended";
+export type TimerPhase = 'normal' | 'urgent' | 'ended';
 
 // ─── Stream ──────────────────────────────────────────────────────────────────
-export type StreamState = "live" | "disconnected" | "ended";
+export type StreamState = 'live' | 'disconnected' | 'ended';
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 export type ChatMessageType =
-  | { id: number; type: "chat"; nickname: string; message: string }
-  | { id: number; type: "macro_request"; nickname: string; command: string }
-  | { id: number; type: "macro_response"; label: string; message: string }
-  | { id: number; type: "system"; message: string };
-
+  | { id: number; type: 'chat'; nickname: string; message: string }
+  | { id: number; type: 'macro_request'; nickname: string; command: string }
+  | { id: number; type: 'macro_response'; label: string; message: string }
+  | { id: number; type: 'system'; message: string };
