@@ -34,7 +34,24 @@ public class ItemService {
         Seller seller = sellerRepository.findByUserId(userId)
                 .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
-        Item item = Item.builder()
+        Item saved = itemRepository.save(buildItem(request, seller));
+
+        if (images != null && !images.isEmpty()) {
+            try {
+                String image1 = getImage(images, 0, seller.getId(), saved.getId());
+                String image2 = getImage(images, 1, seller.getId(), saved.getId());
+                String image3 = getImage(images, 2, seller.getId(), saved.getId());
+                saved.updateImages(image1, image2, image3);
+            } catch (IOException e) {
+                throw new GlobalException(ItemErrorCode.FILE_UPLOAD_FAILED);
+            }
+        }
+
+        return new ItemRegisterResponse(saved.getId(), saved.getName(), saved.getStatus());
+    }
+
+    private Item buildItem(ItemRegisterRequest request, Seller seller) {
+        return Item.builder()
                 .name(request.name())
                 .description(request.description())
                 .category(request.category())
@@ -45,22 +62,13 @@ public class ItemService {
                 .condition(request.itemCondition())
                 .seller(seller)
                 .build();
+    }
 
-        Item saved = itemRepository.save(item);
-
-        // 이미지 업로드
-        if (images != null && !images.isEmpty()) {
-            try {
-                String image1 = images.size() > 0 ? gcsClient.uploadItemImage(images.get(0), seller.getId(), saved.getId()) : null;
-                String image2 = images.size() > 1 ? gcsClient.uploadItemImage(images.get(1), seller.getId(), saved.getId()) : null;
-                String image3 = images.size() > 2 ? gcsClient.uploadItemImage(images.get(2), seller.getId(), saved.getId()) : null;
-                saved.updateImages(image1, image2, image3);
-            } catch (IOException e) {
-                throw new GlobalException(ItemErrorCode.FILE_UPLOAD_FAILED);
-            }
+    private String getImage(List<MultipartFile> images, int index, Long sellerId, Long itemId) throws IOException {
+        if (images.size() > index) {
+            return gcsClient.uploadItemImage(images.get(index), sellerId, itemId);
         }
-
-        return new ItemRegisterResponse(saved.getId(), saved.getName(), saved.getStatus());
+        return null;
     }
 
     @Transactional(readOnly = true)
@@ -94,7 +102,9 @@ public class ItemService {
         Item item = itemRepository.findByIdAndSellerId(itemId, seller.getId())
                 .orElseThrow(() -> new GlobalException(ItemErrorCode.ITEM_NOT_FOUND));
 
-        item.update(request);
+        item.update(request.name(), request.description(), request.category(),
+                request.startPrice(), request.bidUnit(), request.auctionDuration(),
+                request.itemCondition());
 
         if (images != null && !images.isEmpty()) {
             // 기존 이미지 삭제
@@ -103,9 +113,9 @@ public class ItemService {
             gcsClient.deleteItemImage(item.getImage3());
 
             try {
-                String image1 = images.size() > 0 ? gcsClient.uploadItemImage(images.get(0), seller.getId(), itemId) : null;
-                String image2 = images.size() > 1 ? gcsClient.uploadItemImage(images.get(1), seller.getId(), itemId) : null;
-                String image3 = images.size() > 2 ? gcsClient.uploadItemImage(images.get(2), seller.getId(), itemId) : null;
+                String image1 = getImage(images, 0, seller.getId(), itemId);
+                String image2 = getImage(images, 1, seller.getId(), itemId);
+                String image3 = getImage(images, 2, seller.getId(), itemId);
                 item.updateImages(image1, image2, image3);
             } catch (IOException e) {
                 throw new GlobalException(ItemErrorCode.FILE_UPLOAD_FAILED);

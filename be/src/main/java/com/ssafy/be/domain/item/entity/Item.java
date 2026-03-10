@@ -1,8 +1,6 @@
 package com.ssafy.be.domain.item.entity;
 
-import com.ssafy.be.domain.item.dto.request.ItemUpdateRequest;
 import com.ssafy.be.domain.seller.entity.Seller;
-import com.ssafy.be.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -102,13 +101,15 @@ public class Item {
         if (image3 != null) this.image3 = image3;
     }
 
-    public void update(ItemUpdateRequest request) {
-        if (request.name() != null) this.name = request.name();
-        if (request.description() != null) this.description = request.description();
-        if (request.category() != null) this.category = request.category();
-        if (request.startPrice() != null) this.startPrice = request.startPrice();
-        if (request.bidUnit() != null) this.bidUnit = request.bidUnit();
-        if (request.auctionDuration() != null) this.auctionDuration = request.auctionDuration();
-        if (request.itemCondition() != null) this.itemCondition = request.itemCondition();
+    public void update(String name, String description, Category category,
+                       Long startPrice, Integer bidUnit, Integer auctionDuration,
+                       Condition itemCondition) {
+        Optional.ofNullable(name).ifPresent(v -> this.name = v);
+        Optional.ofNullable(description).ifPresent(v -> this.description = v);
+        Optional.ofNullable(category).ifPresent(v -> this.category = v);
+        Optional.ofNullable(startPrice).ifPresent(v -> this.startPrice = v);
+        Optional.ofNullable(bidUnit).ifPresent(v -> this.bidUnit = v);
+        Optional.ofNullable(auctionDuration).ifPresent(v -> this.auctionDuration = v);
+        Optional.ofNullable(itemCondition).ifPresent(v -> this.itemCondition = v);
     }
 }
