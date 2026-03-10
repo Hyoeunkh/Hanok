@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 type SellerGuideOverlayProps = {
-  className?: string;
   defaultOpen?: boolean;
 };
 
@@ -33,7 +32,7 @@ const guideSteps = [
   },
 ] as const;
 
-export default function SellerGuideOverlay({ className = '', defaultOpen = true }: SellerGuideOverlayProps) {
+export default function SellerGuideOverlay({ defaultOpen = true }: SellerGuideOverlayProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [checkedSteps, setCheckedSteps] = useState<boolean[]>(() => guideSteps.map(() => false));
 
@@ -42,7 +41,7 @@ export default function SellerGuideOverlay({ className = '', defaultOpen = true 
   };
 
   return (
-    <div className={`pointer-events-none absolute left-4 top-[43%] z-20 -translate-y-1/2 ${className}`}>
+    <div className="pointer-events-none absolute left-4 top-[43%] z-20 -translate-y-1/2">
       <div className="pointer-events-auto flex items-center">
         <div className="group relative z-30">
           <div className="pointer-events-none absolute left-1/2 top-0 z-40 -translate-x-1/2 -translate-y-[calc(100%+0.5rem)] whitespace-nowrap rounded-full border border-white/10 bg-[rgba(10,10,16,0.92)] px-3 py-1 text-[11px] font-medium text-[#f3e7ca] opacity-0 shadow-[0_10px_24px_rgba(0,0,0,0.24)] transition duration-200 group-hover:opacity-100">
