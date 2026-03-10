@@ -13,7 +13,7 @@ const guideSteps = [
   },
   {
     title: '전면과 후면 보여주기',
-    description: '전체 상태가 자연스럽게 보이도록 천천히 비춰주세요.',
+    description: '전체 상태가 자연스럽게 보이도록 비춰주세요.',
   },
   {
     title: '360도 회전 시연',
@@ -21,23 +21,21 @@ const guideSteps = [
   },
   {
     title: '작동 상태 보여주기',
-    description: '전원, 버튼, 연결 등 실제 동작 장면을 담아주세요.',
+    description: '전원, 버튼, 연결 등 실제 동작을 담아주세요.',
   },
   {
     title: '비교 물건과 크기 안내',
-    description: '크기를 가늠할 수 있는 물건과 함께 비교해주세요.',
+    description: '크기를 가늠할 수 있는 물건과 비교해주세요.',
   },
   {
     title: '세부 사항 클로즈업',
-    description: '질감, 스크래치, 모서리 상태를 가까이서 보여주세요.',
+    description: '질감, 스크래치, 모서리 상태를 보여주세요.',
   },
 ] as const;
 
 export default function SellerGuideOverlay({ className = '', defaultOpen = true }: SellerGuideOverlayProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [checkedSteps, setCheckedSteps] = useState<boolean[]>(() => guideSteps.map(() => false));
-
-  const completedCount = checkedSteps.filter(Boolean).length;
 
   const toggleStep = (index: number) => {
     setCheckedSteps((current) => current.map((value, currentIndex) => (currentIndex === index ? !value : value)));
@@ -75,25 +73,7 @@ export default function SellerGuideOverlay({ className = '', defaultOpen = true 
           <div className="relative p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[#d7c08f]/30 bg-[#d7c08f]/10 px-2 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#e5d1a5]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#ff7e5f]" />
-                    GUIDE
-                  </span>
-                  <span className="text-[10px] text-white/45">총 6단계</span>
-                </div>
                 <h2 className="mt-2 text-[20px] font-bold tracking-[-0.03em] text-[#f7f0e2]">진행 가이드</h2>
-                <p className="mt-1 text-[11px] leading-4.5 text-white/58">
-                  필요한 항목만 체크해도 됩니다. 진행 중 자유롭게 건너뛸 수 있습니다.
-                </p>
-              </div>
-
-              <div className="rounded-[18px] border border-white/10 bg-white/5 px-2.5 py-2 text-right">
-                <p className="text-[9px] uppercase tracking-[0.22em] text-white/35">Progress</p>
-                <p className="mt-1 text-[18px] font-bold tracking-[-0.04em] text-[#e7d4aa]">
-                  {completedCount}
-                  <span className="ml-1 text-xs text-white/45">/ {guideSteps.length}</span>
-                </p>
               </div>
             </div>
 
@@ -109,7 +89,7 @@ export default function SellerGuideOverlay({ className = '', defaultOpen = true 
                     className={`flex w-full items-start gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
                       isChecked
                         ? 'border-[#d7c08f]/40 bg-[#d7c08f]/10'
-                        : 'border-white/7 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.05]'
+                        : 'border-white/7 bg-white/3 hover:border-white/15 hover:bg-white/5'
                     }`}
                   >
                     <div
@@ -123,7 +103,9 @@ export default function SellerGuideOverlay({ className = '', defaultOpen = true 
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className={`text-[13px] font-semibold leading-5 ${isChecked ? 'text-[#fbf5e7]' : 'text-white/88'}`}>
+                      <p
+                        className={`text-[13px] font-semibold leading-5 ${isChecked ? 'text-[#fbf5e7]' : 'text-white/88'}`}
+                      >
                         {step.title}
                       </p>
                       <p className="mt-1 text-[10px] leading-4.5 text-white/50">{step.description}</p>
