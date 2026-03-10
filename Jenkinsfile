@@ -52,7 +52,9 @@ pipeline {
 
         stage('Docker Build') {
             when {
-                branch 'master'
+                expression {
+                    env.GIT_BRANCH == 'origin/master'
+                }
             }
             steps {
                 dir('be') {
@@ -63,7 +65,9 @@ pipeline {
 
         stage('Deploy') {
             when {
-                branch 'master'
+                expression {
+                    env.GIT_BRANCH == 'origin/master'
+                }
             }
             steps {
                 sh '''
