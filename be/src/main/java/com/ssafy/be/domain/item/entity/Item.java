@@ -30,7 +30,7 @@ public class Item {
 
     private Long startPrice;
 
-    private Integer bidUnit;
+    private Long bidUnit;
 
     private Integer auctionDuration;
 
@@ -38,7 +38,7 @@ public class Item {
     private ItemStatus status;
 
     @Enumerated(EnumType.STRING)
-    private Condition itemCondition;
+    private ItemCondition itemCondition;
 
     private String image1;
 
@@ -62,20 +62,20 @@ public class Item {
 
     @Builder
     private Item(String name,
-                String description,
-                Category category,
-                Long startPrice,
-                Integer bidUnit,
-                Integer auctionDuration,
-                ItemStatus status,
-                Condition condition,
-                String image1,
-                String image2,
-                String image3,
-                String courierName,
-                String trackingNumber,
-                LocalDateTime submittedAt,
-                LocalDateTime createdAt,
+                 String description,
+                 Category category,
+                 Long startPrice,
+                 Long bidUnit,
+                 Integer auctionDuration,
+                 ItemStatus status,
+                 ItemCondition itemCondition,
+                 String image1,
+                 String image2,
+                 String image3,
+                 String courierName,
+                 String trackingNumber,
+                 LocalDateTime submittedAt,
+                 LocalDateTime createdAt,
                  Seller seller) {
         this.name = name;
         this.description = description;
@@ -84,7 +84,7 @@ public class Item {
         this.bidUnit = bidUnit;
         this.auctionDuration = auctionDuration;
         this.status = status;
-        this.itemCondition = condition;
+        this.itemCondition = itemCondition;
         this.image1 = image1;
         this.image2 = image2;
         this.image3 = image3;
@@ -102,8 +102,8 @@ public class Item {
     }
 
     public void update(String name, String description, Category category,
-                       Long startPrice, Integer bidUnit, Integer auctionDuration,
-                       Condition itemCondition) {
+                       Long startPrice, Long bidUnit, Integer auctionDuration,
+                       ItemCondition itemCondition) {
         Optional.ofNullable(name).ifPresent(v -> this.name = v);
         Optional.ofNullable(description).ifPresent(v -> this.description = v);
         Optional.ofNullable(category).ifPresent(v -> this.category = v);
