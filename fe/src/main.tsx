@@ -27,4 +27,3 @@ enableMocking().then(() => {
     </StrictMode>,
   );
 });
-
