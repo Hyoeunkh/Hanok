@@ -8,8 +8,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -22,15 +20,16 @@ public class ChatController {
 
     @MessageMapping("/stream/{streamId}")
     public void handleChatMessage(
-            @AuthenticationPrincipal String userId,
             @DestinationVariable Long streamId,
             @Payload @Valid ChatMessageRequest request,
-            Authentication authentication
-            ) {
-        String nickname = (String) ((UsernamePasswordAuthenticationToken)authentication).getDetails();
-        chatService.handleMessage(Long.parseLong(userId),nickname, request);
+            Principal principal                          // ✅ STOMP Principal
+    ) {
+        UsernamePasswordAuthenticationToken authentication =
+                (UsernamePasswordAuthenticationToken) principal;
 
+        Long userId  = Long.parseLong(principal.getName());
+        String nickname = (String) authentication.getDetails();
+
+        chatService.handleMessage(userId, nickname, request);
     }
-
-    private String extractNickname(Principal principal) { return principal.getName(); }
 }

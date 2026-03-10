@@ -133,7 +133,7 @@ public class UserService {
         }
 
         // 3. 토큰 발급
-        String accessToken = jwtUtil.generateToken(user.getId(), "USER");
+        String accessToken = jwtUtil.generateToken(user.getId(), "USER", user.getNickname());
         String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
         // 4. Refresh Token Redis 저장 (7일)
@@ -186,7 +186,7 @@ public class UserService {
         }
 
         // 3. 새 토큰 발급 (Refresh Token Rotation)
-        String newAccessToken = jwtUtil.generateToken(userId, "USER");
+        String newAccessToken = jwtUtil.generateToken(userId, "USER", claims.get("nickname",String.class));
         String newRefreshToken = jwtUtil.generateRefreshToken(userId);
 
         // 4. Redis 업데이트

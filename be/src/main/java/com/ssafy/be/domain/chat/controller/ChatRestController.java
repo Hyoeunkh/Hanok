@@ -17,10 +17,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatRestController implements ChatApi {
 
-    private ChatService chatService;
+    private final ChatService chatService;
 
     @Override
-    @GetMapping("/streams/{streamId}")
+    @GetMapping("/streams/{streamId}/chat")
     public ResponseEntity<ApiResponse<List<ChatMessagePayload>>> getChatHistory(
             @PathVariable Long streamId
     ) {
