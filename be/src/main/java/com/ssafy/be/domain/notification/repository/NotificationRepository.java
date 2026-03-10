@@ -35,8 +35,9 @@ public class NotificationRepository {
 
         // 2. 유저 Inbox에 최신순으로 추가
         // 초단위변환에서 밀리초로 id만들어 순서 보장 강화
+        // 변환에서 double -> String과 기존 밀리초 -> String 문제가 발생하여 score는 정렬용으로만
         double score = noti.id();
-        redisOperator.addZSet(inboxKey, String.valueOf(score), score);
+        redisOperator.addZSet(inboxKey, String.valueOf(noti.id()), score);
 
         // 3. 안읽은 알람 +1
         redisOperator.incrementValue(unreadKey);
@@ -149,7 +150,7 @@ public class NotificationRepository {
         // String id -> redisID
         List<String> notiKeys = notiIds.stream()
                 .map(id -> NotificationRedisKeys.getNotiKey(Long.parseLong(id)))
-                .toList();
+                .collect(Collectors.toList());
 
         // redisKey -> Hash
         List<Map<Object, Object>> pipeLineResults = redisOperator.getHashEntriesPipelined(notiKeys);
@@ -159,7 +160,7 @@ public class NotificationRepository {
         return pipeLineResults.stream()
                 .filter(hash -> hash != null && !hash.isEmpty())
                 .map(hash -> converter.fromHash(hash, Notification.class))
-                .toList();
+                .collect(Collectors.toList());
     }
 
 }
