@@ -78,4 +78,11 @@ public class Seller {
         this.avgShipDays = avgShipDays;
         this.user = user;
     }
+
+    public void updateProfile(String intro, String instaUrl, String youtubeUrl, String tiktokUrl) {
+        if (intro != null) this.intro = intro;
+        if (instaUrl != null) this.instaUrl = instaUrl;
+        if (youtubeUrl != null) this.youtubeUrl = youtubeUrl;
+        if (tiktokUrl != null) this.tiktokUrl = tiktokUrl;
+    }
 }

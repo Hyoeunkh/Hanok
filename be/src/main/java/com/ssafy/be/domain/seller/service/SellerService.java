@@ -6,6 +6,7 @@ import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.item.entity.ItemStatus;
 import com.ssafy.be.domain.item.repository.ItemRepository;
+import com.ssafy.be.domain.seller.dto.request.SellerProfileUpdateRequest;
 import com.ssafy.be.domain.seller.dto.request.SellerRegisterRequest;
 import com.ssafy.be.domain.seller.dto.response.*;
 import com.ssafy.be.domain.seller.entity.Seller;
@@ -115,5 +116,19 @@ public class SellerService {
                 recentSales,
                 posts
         );
+    }
+
+    @Transactional
+    public void updateProfile(Long sellerId, Long userId, SellerProfileUpdateRequest request) {
+        Seller seller = sellerRepository.findById(sellerId)
+                .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
+
+        // 본인 확인
+        if (!seller.getUser().getId().equals(userId)) {
+            throw new GlobalException(SellerErrorCode.SELLER_FORBIDDEN);
+        }
+
+        seller.updateProfile(request.intro(), request.instaUrl(), request.youtubeUrl(), request.tiktokUrl());
+        seller.getUser().updateProfile(request.nickname(), request.profileImage());
     }
 }
