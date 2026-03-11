@@ -37,6 +37,7 @@ export default function BuyerControlBar({ bidSync }: Props) {
   const balance = wallet?.balance ?? 0;
   const currentBid = bidSync?.item.currentPrice ?? 0;
   const sellerUnit = bidSync?.item.bidUnit ?? 1000;
+  const hasActiveAuction = Boolean(bidSync);
   const isFreeMode = tab === 'custom' && customUnit === 0;
   const quickUnit = tab === 'quick' ? sellerUnit : customUnit;
   const minimumBidAmount = currentBid + quickUnit;
@@ -130,9 +131,11 @@ export default function BuyerControlBar({ bidSync }: Props) {
                     <div className="flex flex-1 flex-col items-center gap-1">
                       <div className="flex items-center gap-2 text-sm font-black">
                         <IoCheckmark size={16} strokeWidth={4} />
-                        {displayedBidAmount.toLocaleString()}원 으로 입찰
+                        {hasActiveAuction ? `${displayedBidAmount.toLocaleString()}원 으로 입찰` : '입찰'}
                       </div>
-                      <span className="text-xs font-bold text-indigo-200">(+{increment.toLocaleString()})</span>
+                      {hasActiveAuction && (
+                        <span className="text-xs font-bold text-indigo-200">(+{increment.toLocaleString()})</span>
+                      )}
                     </div>
                     <span className="rounded bg-[rgba(255,255,255,.15)] px-1.5 py-3 text-[10px] font-bold text-indigo-200">
                       ENTER
@@ -184,7 +187,11 @@ export default function BuyerControlBar({ bidSync }: Props) {
                       />
                     ) : (
                       <div className="min-w-0 flex-1 text-center text-sm font-black tabular-nums text-white">
-                        {displayedBidAmount.toLocaleString()} <span className="text-xs font-normal text-[#a1a1aa]">원</span>
+                        {hasActiveAuction ? (
+                          <>
+                            {displayedBidAmount.toLocaleString()} <span className="text-xs font-normal text-[#a1a1aa]">원</span>
+                          </>
+                        ) : null}
                       </div>
                     )}
                     <button
@@ -204,10 +211,14 @@ export default function BuyerControlBar({ bidSync }: Props) {
                 >
                   <div className="flex flex-1 flex-col items-center gap-0.5">
                     <span className="text-lg font-black">입찰</span>
-                    <span className="text-[10px] font-bold tabular-nums text-blue-200">
-                      {displayedBidAmount.toLocaleString()}원
-                    </span>
-                    <span className="text-[10px] font-bold text-blue-300">+{increment.toLocaleString()}</span>
+                    {hasActiveAuction && (
+                      <>
+                        <span className="text-[10px] font-bold tabular-nums text-blue-200">
+                          {displayedBidAmount.toLocaleString()}원
+                        </span>
+                        <span className="text-[10px] font-bold text-blue-300">+{increment.toLocaleString()}</span>
+                      </>
+                    )}
                   </div>
                   <span className="rounded bg-[rgba(255,255,255,.15)] px-1.5 py-3 text-[10px] font-bold text-blue-200">
                     ENTER
