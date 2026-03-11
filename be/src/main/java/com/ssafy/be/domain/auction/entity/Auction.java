@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
-import static com.ssafy.be.domain.auction.entity.AuctionStatus.LIVE;
+import static com.ssafy.be.domain.auction.entity.AuctionStatus.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -53,11 +53,6 @@ public class Auction {
         this.item = item;
     }
 
-    public void startAuction(String startedAt) {
-        this.auctionStatus = LIVE;
-        this.startedAt = startedAt;
-    }
-
     public boolean isLive() {
         return this.auctionStatus == LIVE;
     }
@@ -69,5 +64,19 @@ public class Auction {
 
     public boolean isBelowStartPrice(Long amount) {
         return this.item.getStartPrice() > amount;
+    }
+
+    public void startAuction(String startedAt) {
+        this.auctionStatus = LIVE;
+        this.startedAt = startedAt;
+    }
+
+    public void sold(Long finalPrice) {
+        this.auctionStatus = SOLD;
+        this.finalPrice = finalPrice;
+    }
+
+    public void unsold() {
+        this.auctionStatus = UNSOLD;
     }
 }

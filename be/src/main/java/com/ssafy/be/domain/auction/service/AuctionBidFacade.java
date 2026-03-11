@@ -41,6 +41,7 @@ public class AuctionBidFacade {
                 }
 
                 retry++;
+
                 Thread.sleep(50); // 약간 대기 후 재시도
 
             } catch (InterruptedException e) {

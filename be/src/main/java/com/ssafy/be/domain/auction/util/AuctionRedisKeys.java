@@ -10,7 +10,8 @@ public final class AuctionRedisKeys {
     private static final String BID = ":bids";
     private static final String LOCK = ":lock";
 
-    private AuctionRedisKeys() {}
+    private AuctionRedisKeys() {
+    }
 
     public static String getTimerKey(Long auctionId) {
         return AUCTION + auctionId + TIMER;
