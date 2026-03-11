@@ -46,6 +46,8 @@ public class Stream {
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
+    private LocalDateTime startedAt;
+
     @Builder
     private Stream(String title, Category category, boolean isLive, String thumbnail,
                    LocalDateTime scheduledAt, StartType startType, String notice,
@@ -72,5 +74,14 @@ public class Stream {
 
     public void updateThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    public void start() {
+        this.isLive = true;
+        this.startedAt = LocalDateTime.now();
+    }
+
+    public void end() {
+        this.isLive = false;
     }
 }

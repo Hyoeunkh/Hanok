@@ -1,11 +1,18 @@
 package com.ssafy.be.domain.stream.service;
 
+import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
 import com.ssafy.be.domain.stream.dto.request.StreamRegisterRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamUpdateRequest;
-import com.ssafy.be.domain.stream.dto.response.StreamRegisterResponse;
+import com.ssafy.be.domain.stream.dto.request.StreamListRequest;
+import com.ssafy.be.domain.stream.dto.response.StreamDetailResponse;
+import com.ssafy.be.domain.stream.dto.response.StreamListItemResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;import com.ssafy.be.domain.stream.dto.response.StreamRegisterResponse;
 import com.ssafy.be.domain.stream.dto.response.StreamTokenResponse;
 import com.ssafy.be.domain.stream.entity.Stream;
 import com.ssafy.be.domain.stream.exception.StreamErrorCode;
@@ -33,6 +40,8 @@ public class StreamService {
     private final SellerRepository sellerRepository;
     private final GcsClient gcsClient;
     private final LiveKitProperties liveKitProperties;
+    private final StreamViewerService streamViewerService;
+
 
     @Transactional
     public StreamRegisterResponse register(Long userId, StreamRegisterRequest request, MultipartFile thumbnail) {
@@ -129,5 +138,53 @@ public class StreamService {
         );
 
         return new StreamTokenResponse(token.toJwt());
+    }
+
+    @Transactional(readOnly = true)
+    public StreamDetailResponse getStream(Long userId, Long streamId) {
+        Seller seller = sellerRepository.findByUserId(userId)
+                .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
+
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        return StreamDetailResponse.from(stream);
+    }
+
+    @Transactional
+    public void startStream(Long userId, Long streamId) {
+        Seller seller = sellerRepository.findByUserId(userId)
+                .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
+
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        stream.start();
+    }
+
+    @Transactional
+    public void endStream(Long userId, Long streamId) {
+        Seller seller = sellerRepository.findByUserId(userId)
+                .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
+
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        stream.end();
+    }
+
+    public Page<StreamListItemResponse> getStreamList(StreamListRequest request) {
+        Category category = request.category();
+        Pageable pageable = PageRequest.of(request.page(), request.size(), Sort.by("createdAt").descending());
+
+        Page<Stream> streams = switch (request.status()) {
+            case LIVE -> streamRepository.findLiveStreams(category, pageable);
+            case SCHEDULED -> streamRepository.findScheduledStreams(category, pageable);
+        };
+
+        return streams.map(stream -> {
+            long viewerCount = streamViewerService.getViewerCount(stream.getId());
+            return StreamListItemResponse.of(stream, viewerCount);
+        });
     }
 }
