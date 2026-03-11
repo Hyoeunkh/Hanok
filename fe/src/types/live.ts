@@ -20,6 +20,16 @@ export type AuctionDuration = 10 | 30 | 60;
 
 export type TimerPhase = 'normal' | 'urgent' | 'ended';
 
+export type StreamTimerPayload = {
+  durationSeconds: number;
+  serverNow: string;
+  serverStartedAt: string;
+};
+
+export type SyncedAuctionTimer = StreamTimerPayload & {
+  receivedAtMs: number;
+};
+
 export type StreamState = 'live' | 'disconnected' | 'ended';
 
 export type ChatMessageType =

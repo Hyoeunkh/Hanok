@@ -1,0 +1,288 @@
+import { ws, type WebSocketData } from 'msw';
+
+import { getStreamSocketConnectUrl } from '@/websocket/socket';
+
+type StompFrame = {
+  command: string;
+  headers: Record<string, string>;
+  body: string;
+};
+
+type MockTimerState = {
+  durationSeconds: number;
+  startedAtMs: number;
+};
+
+const AUCTION_DURATION_SECONDS = 30;
+const SNIPING_THRESHOLD_SECONDS = 5;
+const SNIPING_DURATION_SECONDS = 5;
+const HEARTBEAT_INTERVAL_MS = 5_000;
+const textEncoder = new TextEncoder();
+
+const liveSocket = ws.link(getStreamSocketConnectUrl());
+const clientSubscriptions = new Map<string, Map<string, string>>();
+const heartbeatTimers = new Map<string, number>();
+const streamTimerStates = new Map<string, MockTimerState>();
+
+const createTimestamp = (ms: number) => new Date(ms).toISOString();
+
+const splitFrames = (data: string) =>
+  data
+    .split('\0')
+    .map((frame) => frame.replace(/\r/g, ''))
+    .filter((frame) => frame.trim().length > 0);
+
+const parseFrame = (rawFrame: string): StompFrame | null => {
+  const separatorIndex = rawFrame.indexOf('\n\n');
+  const head = separatorIndex >= 0 ? rawFrame.slice(0, separatorIndex) : rawFrame;
+  const body = separatorIndex >= 0 ? rawFrame.slice(separatorIndex + 2) : '';
+  const lines = head.split('\n').filter(Boolean);
+  const command = lines.shift()?.trim();
+
+  if (!command) {
+    return null;
+  }
+
+  const headers = lines.reduce<Record<string, string>>((acc, line) => {
+    const separator = line.indexOf(':');
+
+    if (separator === -1) {
+      return acc;
+    }
+
+    const key = line.slice(0, separator);
+    const value = line.slice(separator + 1);
+    acc[key] = value;
+    return acc;
+  }, {});
+
+  return {
+    command,
+    headers,
+    body,
+  };
+};
+
+const serializeFrame = ({ command, headers, body }: StompFrame) => {
+  const headerLines = Object.entries(headers).map(([key, value]) => `${key}:${value}`);
+  const frame = [command, ...headerLines, '', body].join('\n');
+  return `${frame}\0`;
+};
+
+const getClientSubscriptions = (clientId: string) => {
+  let subscriptions = clientSubscriptions.get(clientId);
+
+  if (!subscriptions) {
+    subscriptions = new Map<string, string>();
+    clientSubscriptions.set(clientId, subscriptions);
+  }
+
+  return subscriptions;
+};
+
+const sendConnectedFrame = (client: { send: (data: WebSocketData) => void }) => {
+  client.send(
+    serializeFrame({
+      command: 'CONNECTED',
+      headers: {
+        version: '1.2',
+        'heart-beat': `${HEARTBEAT_INTERVAL_MS},${HEARTBEAT_INTERVAL_MS}`,
+      },
+      body: '',
+    }),
+  );
+};
+
+const sendHeartbeat = (client: { send: (data: WebSocketData) => void }) => {
+  client.send('\n');
+};
+
+const startHeartbeat = (client: { id: string; send: (data: WebSocketData) => void }) => {
+  if (heartbeatTimers.has(client.id)) {
+    return;
+  }
+
+  const heartbeatTimerId = globalThis.setInterval(() => {
+    sendHeartbeat(client);
+  }, HEARTBEAT_INTERVAL_MS);
+
+  heartbeatTimers.set(client.id, heartbeatTimerId);
+};
+
+const createMessageFrame = (subscriptionId: string, destination: string, payload: unknown): StompFrame => {
+  const body = JSON.stringify(payload);
+
+  return {
+    command: 'MESSAGE',
+    headers: {
+      subscription: subscriptionId,
+      destination,
+      'message-id': `${destination}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      'content-type': 'application/json',
+      'content-length': String(textEncoder.encode(body).length),
+    },
+    body,
+  };
+};
+
+const broadcastToDestination = (destination: string, payload: unknown) => {
+  liveSocket.clients.forEach((client) => {
+    const subscriptions = clientSubscriptions.get(client.id);
+
+    if (!subscriptions) {
+      return;
+    }
+
+    subscriptions.forEach((subscribedDestination, subscriptionId) => {
+      if (subscribedDestination !== destination) {
+        return;
+      }
+
+      client.send(serializeFrame(createMessageFrame(subscriptionId, destination, payload)));
+    });
+  });
+};
+
+const createTimerPayload = (state: MockTimerState, nowMs: number) => ({
+  durationSeconds: state.durationSeconds,
+  serverNow: createTimestamp(nowMs),
+  serverStartedAt: createTimestamp(state.startedAtMs),
+});
+
+const getStreamIdFromDestination = (destination: string) => destination.split('/').pop() ?? '';
+
+const getRemainingSeconds = (state: MockTimerState, nowMs: number) => {
+  const elapsedSeconds = (nowMs - state.startedAtMs) / 1000;
+  return state.durationSeconds - elapsedSeconds;
+};
+
+const handleAuctionStart = (destination: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const nowMs = Date.now();
+  const state: MockTimerState = {
+    durationSeconds: AUCTION_DURATION_SECONDS,
+    startedAtMs: nowMs,
+  };
+
+  streamTimerStates.set(streamId, state);
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'AUCTION_START',
+    payload: {
+      item: {
+        name: '나이키 에어맥스 95',
+        image: 'https://cdn.example.com/items/shoes.jpg',
+        condition: 'GOOD',
+        bidUnit: 1000,
+        startPrice: 50000,
+      },
+      timer: createTimerPayload(state, nowMs),
+    },
+  });
+};
+
+const handleBidPlace = (destination: string, body: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const payload = JSON.parse(body) as {
+    payload?: {
+      amount?: number;
+    };
+  };
+  const nowMs = Date.now();
+  const currentState = streamTimerStates.get(streamId);
+  let snipingTimer: ReturnType<typeof createTimerPayload> | null = null;
+
+  if (currentState && getRemainingSeconds(currentState, nowMs) <= SNIPING_THRESHOLD_SECONDS) {
+    const nextState: MockTimerState = {
+      durationSeconds: SNIPING_DURATION_SECONDS,
+      startedAtMs: nowMs,
+    };
+
+    streamTimerStates.set(streamId, nextState);
+    snipingTimer = createTimerPayload(nextState, nowMs);
+  }
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'BID_PLACED',
+    payload: {
+      bidInfo: {
+        nickname: '홍길동',
+        amount: payload.payload?.amount ?? 0,
+        placedAt: createTimestamp(nowMs),
+      },
+      snipingTimer,
+    },
+  });
+};
+
+const handleSendFrame = (frame: StompFrame) => {
+  if (frame.headers.destination?.startsWith('/app/streams/')) {
+    const body = JSON.parse(frame.body) as { eventType?: string };
+
+    if (body.eventType === 'AUCTION_START') {
+      handleAuctionStart(frame.headers.destination);
+    }
+
+    if (body.eventType === 'BID_PLACE') {
+      handleBidPlace(frame.headers.destination, frame.body);
+    }
+  }
+};
+
+export const liveSocketHandler = liveSocket.addEventListener('connection', ({ client }) => {
+  getClientSubscriptions(client.id);
+
+  client.addEventListener('message', (event) => {
+    if (typeof event.data !== 'string') {
+      return;
+    }
+
+    splitFrames(event.data).forEach((rawFrame) => {
+      const frame = parseFrame(rawFrame);
+
+      if (!frame) {
+        return;
+      }
+
+      if (frame.command === 'CONNECT' || frame.command === 'STOMP') {
+        sendConnectedFrame(client);
+        startHeartbeat(client);
+        return;
+      }
+
+      if (frame.command === 'SUBSCRIBE') {
+        const subscriptionId = frame.headers.id;
+        const destination = frame.headers.destination;
+
+        if (subscriptionId && destination) {
+          getClientSubscriptions(client.id).set(subscriptionId, destination);
+        }
+        return;
+      }
+
+      if (frame.command === 'UNSUBSCRIBE') {
+        const subscriptionId = frame.headers.id;
+
+        if (subscriptionId) {
+          getClientSubscriptions(client.id).delete(subscriptionId);
+        }
+        return;
+      }
+
+      if (frame.command === 'SEND') {
+        handleSendFrame(frame);
+      }
+    });
+  });
+
+  client.addEventListener('close', () => {
+    const heartbeatTimer = heartbeatTimers.get(client.id);
+
+    if (heartbeatTimer) {
+      globalThis.clearInterval(heartbeatTimer);
+      heartbeatTimers.delete(client.id);
+    }
+
+    clientSubscriptions.delete(client.id);
+  });
+});
