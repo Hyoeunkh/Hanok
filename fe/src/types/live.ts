@@ -1,3 +1,5 @@
+import type { ShippingAddressResponse } from './auction';
+
 export type LiveSeller = {
   sellerId: number;
   nickname: string;
@@ -28,6 +30,14 @@ export type StreamTimerPayload = {
 
 export type SyncedAuctionTimer = StreamTimerPayload & {
   receivedAtMs: number;
+};
+
+export type BidWinnerPayload = {
+  item: {
+    itemName: string;
+    finalPrice: number;
+  };
+  shipping: ShippingAddressResponse;
 };
 
 export type StreamState = 'live' | 'disconnected' | 'ended';

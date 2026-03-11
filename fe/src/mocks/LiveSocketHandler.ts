@@ -11,9 +11,10 @@ type StompFrame = {
 type MockTimerState = {
   durationSeconds: number;
   startedAtMs: number;
+  finalPrice: number;
 };
 
-const AUCTION_DURATION_SECONDS = 30;
+const AUCTION_DURATION_SECONDS = 10;
 const SNIPING_THRESHOLD_SECONDS = 5;
 const SNIPING_DURATION_SECONDS = 5;
 const HEARTBEAT_INTERVAL_MS = 5_000;
@@ -23,6 +24,7 @@ const liveSocket = ws.link(getStreamSocketConnectUrl());
 const clientSubscriptions = new Map<string, Map<string, string>>();
 const heartbeatTimers = new Map<string, number>();
 const streamTimerStates = new Map<string, MockTimerState>();
+const winnerAnnouncementTimers = new Map<string, number>();
 
 const createTimestamp = (ms: number) => new Date(ms).toISOString();
 
@@ -156,15 +158,69 @@ const getRemainingSeconds = (state: MockTimerState, nowMs: number) => {
   return state.durationSeconds - elapsedSeconds;
 };
 
+const clearWinnerAnnouncement = (streamId: string) => {
+  const winnerAnnouncementTimer = winnerAnnouncementTimers.get(streamId);
+
+  if (!winnerAnnouncementTimer) {
+    return;
+  }
+
+  globalThis.clearTimeout(winnerAnnouncementTimer);
+  winnerAnnouncementTimers.delete(streamId);
+};
+
+const scheduleWinnerAnnouncement = (streamId: string) => {
+  clearWinnerAnnouncement(streamId);
+
+  const currentState = streamTimerStates.get(streamId);
+
+  if (!currentState) {
+    return;
+  }
+
+  const remainingMs = Math.max(0, currentState.startedAtMs + currentState.durationSeconds * 1000 - Date.now());
+  const winnerAnnouncementTimer = globalThis.setTimeout(() => {
+    const finalState = streamTimerStates.get(streamId);
+
+    if (!finalState) {
+      return;
+    }
+
+    broadcastToDestination(`/user/private/streams/${streamId}`, {
+      eventType: 'BID_WINNER',
+      payload: {
+        item: {
+          itemName: '조선시대 백자 달항아리',
+          finalPrice: finalState.finalPrice,
+        },
+        shipping: {
+          recipientName: '김싸피',
+          phone: '010-1234-5678',
+          addressName: '집',
+          postalCode: 123412,
+          address: '서울특별시 강남구 테헤란로 212',
+          addressDetail: '멀티캠퍼스 10층',
+        },
+      },
+    });
+
+    winnerAnnouncementTimers.delete(streamId);
+  }, remainingMs);
+
+  winnerAnnouncementTimers.set(streamId, winnerAnnouncementTimer);
+};
+
 const handleAuctionStart = (destination: string) => {
   const streamId = getStreamIdFromDestination(destination);
   const nowMs = Date.now();
   const state: MockTimerState = {
     durationSeconds: AUCTION_DURATION_SECONDS,
     startedAtMs: nowMs,
+    finalPrice: 50000,
   };
 
   streamTimerStates.set(streamId, state);
+  scheduleWinnerAnnouncement(streamId);
 
   broadcastToDestination(`/broadcast/streams/${streamId}`, {
     eventType: 'AUCTION_START',
@@ -189,17 +245,28 @@ const handleBidPlace = (destination: string, body: string) => {
     };
   };
   const nowMs = Date.now();
-  const currentState = streamTimerStates.get(streamId);
+  let currentState = streamTimerStates.get(streamId);
   let snipingTimer: ReturnType<typeof createTimerPayload> | null = null;
+
+  if (currentState) {
+    currentState = {
+      ...currentState,
+      finalPrice: payload.payload?.amount ?? currentState.finalPrice,
+    };
+
+    streamTimerStates.set(streamId, currentState);
+  }
 
   if (currentState && getRemainingSeconds(currentState, nowMs) <= SNIPING_THRESHOLD_SECONDS) {
     const nextState: MockTimerState = {
       durationSeconds: SNIPING_DURATION_SECONDS,
       startedAtMs: nowMs,
+      finalPrice: currentState.finalPrice,
     };
 
     streamTimerStates.set(streamId, nextState);
     snipingTimer = createTimerPayload(nextState, nowMs);
+    scheduleWinnerAnnouncement(streamId);
   }
 
   broadcastToDestination(`/broadcast/streams/${streamId}`, {

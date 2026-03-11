@@ -2,21 +2,26 @@ import { useEffect, useState } from 'react';
 import { GoHomeFill } from 'react-icons/go';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
 import ControlBar from '@/components/Live/Stream/ControlBar';
 import SellerGuideOverlay from '@/components/Live/Stream/SellerGuideOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
-import type { StreamTimerPayload, SyncedAuctionTimer } from '@/types';
+import type { BidWinnerPayload, StreamTimerPayload, SyncedAuctionTimer } from '@/types';
 import { disconnectStompClient, subscribeStream } from '@/websocket/stompClient';
 
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
 
-type StreamEvent =
+type BroadcastStreamEvent =
   | {
       eventType: 'AUCTION_START';
       payload?: {
+        item?: {
+          name?: string;
+          condition?: string;
+        };
         timer?: StreamTimerPayload;
       };
     }
@@ -31,13 +36,27 @@ type StreamEvent =
       payload?: unknown;
     };
 
+type PrivateStreamEvent =
+  | {
+      eventType: 'BID_WINNER';
+      payload?: BidWinnerPayload;
+    }
+  | {
+      eventType: string;
+      payload?: unknown;
+    };
+
 const isAuctionStartEvent = (
-  event: StreamEvent,
-): event is Extract<StreamEvent, { eventType: 'AUCTION_START' }> => event.eventType === 'AUCTION_START';
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'AUCTION_START' }> => event.eventType === 'AUCTION_START';
 
 const isBidPlacedEvent = (
-  event: StreamEvent,
-): event is Extract<StreamEvent, { eventType: 'BID_PLACED' }> => event.eventType === 'BID_PLACED';
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'BID_PLACED' }> => event.eventType === 'BID_PLACED';
+
+const isBidWinnerEvent = (
+  event: PrivateStreamEvent,
+): event is Extract<PrivateStreamEvent, { eventType: 'BID_WINNER' }> => event.eventType === 'BID_WINNER';
 
 const createSyncedTimer = (timer: StreamTimerPayload): SyncedAuctionTimer => ({
   ...timer,
@@ -49,15 +68,19 @@ export default function LivePage() {
   const { id: streamId } = useParams<{ id: string }>();
   const [isSeller, setIsSeller] = useState(true);
   const [timer, setTimer] = useState<SyncedAuctionTimer | null>(null);
+  const [winnerInfo, setWinnerInfo] = useState<BidWinnerPayload | null>(null);
+  const [currentItemCond, setCurrentItemCond] = useState('');
 
   useEffect(() => {
     if (!streamId) {
       return;
     }
 
-    const handleStreamEvent = (event: StreamEvent) => {
+    const handleBroadcastEvent = (event: BroadcastStreamEvent) => {
       if (isAuctionStartEvent(event) && event.payload?.timer) {
         setTimer(createSyncedTimer(event.payload.timer));
+        setCurrentItemCond(event.payload.item?.condition ?? '');
+        setWinnerInfo(null);
         return;
       }
 
@@ -66,11 +89,18 @@ export default function LivePage() {
       }
     };
 
+    const handlePrivateEvent = (event: PrivateStreamEvent) => {
+      if (isBidWinnerEvent(event) && event.payload) {
+        setWinnerInfo(event.payload);
+      }
+    };
+
     let unsubscribeStream: () => void = () => {};
 
-    void subscribeStream<StreamEvent>({
+    void subscribeStream<BroadcastStreamEvent, PrivateStreamEvent>({
       streamId,
-      onBroadcast: handleStreamEvent,
+      onBroadcast: handleBroadcastEvent,
+      onPrivate: handlePrivateEvent,
     })
       .then((cleanup) => {
         unsubscribeStream = cleanup;
@@ -84,6 +114,11 @@ export default function LivePage() {
       void disconnectStompClient();
     };
   }, [streamId]);
+
+  const handleWinConfirm = async () => {
+    await Promise.resolve();
+    setWinnerInfo(null);
+  };
 
   return (
     <div className="flex h-screen w-full flex-col bg-black p-3">
@@ -136,6 +171,18 @@ export default function LivePage() {
 
             {timer && <AuctionTimer key={timer.receivedAtMs} timer={timer} onExpire={() => undefined} />}
           </div>
+
+          {winnerInfo && (
+            <WinModal
+              isOpen
+              itemName={winnerInfo.item.itemName}
+            itemCond={currentItemCond || '경매 종료 상품'}
+              finalPrice={winnerInfo.item.finalPrice}
+              address={winnerInfo.shipping}
+              onConfirm={handleWinConfirm}
+              onClose={() => setWinnerInfo(null)}
+            />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <RightPanel isSeller={isSeller} />
