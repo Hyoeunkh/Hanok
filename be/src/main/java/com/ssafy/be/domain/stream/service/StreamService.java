@@ -33,6 +33,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.ssafy.be.domain.item.exception.ItemErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +73,7 @@ public class StreamService {
                 Item item =
                         itemRepository
                                 .findByIdAndSellerId(itemId, seller.getId())
-                                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+                                .orElseThrow(() -> new GlobalException(ItemErrorCode.ITEM_NOT_FOUND));
                 auctionRepository.save(
                         Auction.builder()
                                 .auctionStatus(AuctionStatus.READY)
