@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { FaBox, FaBroadcastTower, FaTruck } from 'react-icons/fa';
+import { FaBox, FaBroadcastTower, FaTruck, FaPlus } from 'react-icons/fa';
 import type { Live } from '@/types';
 import CategorySelectModal from './components/CategorySelectModal';
 import { getFetchInstance } from '@/api/instance';
@@ -8,9 +8,9 @@ import type { LiveListResponse, SideBarItem } from '@/types';
 import SideBar from '@/components/common/layouts/SideBar';
 
 const sidebarItems: SideBarItem[] = [
-  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} /> },
-  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} /> },
-  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} /> },
+  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} />, path: '/products' },
+  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} />, path: '/live/new' },
+  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} />, path: '/tracking' },
 ];
 
 const formatScheduledAt = (isoString: string | null): string => {
@@ -72,8 +72,9 @@ export default function LiveCreatePage() {
           <button
             type="button"
             onClick={() => setShowModal(true)}
-            className="px-5 py-2 bg-transparent border border-white/60 text-white text-sm rounded-full hover:bg-white/10 transition-colors whitespace-nowrap"
+            className="flex items-center gap-1.5 px-[24px] py-[10px] bg-[#F5F5F7] text-[#1C1C1E] border-none rounded-[24px] text-[14px] font-semibold cursor-pointer whitespace-nowrap hover:opacity-90 transition-opacity"
           >
+            <FaPlus size={12} />
             라이브 방송 등록
           </button>
         </div>

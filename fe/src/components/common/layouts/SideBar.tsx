@@ -1,5 +1,6 @@
 import type { SideBarItem } from '@/types';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type SideBarProps = {
   items: SideBarItem[];
@@ -16,6 +17,7 @@ export default function SideBar({
   onItemClick,
   className = '',
 }: SideBarProps) {
+  const navigate = useNavigate();
   const [internalActiveItemId, setInternalActiveItemId] = useState<string>(defaultActiveItemId ?? items[0]?.id ?? '');
 
   const uncontrolledActiveItemId = items.some((item) => item.id === internalActiveItemId)
@@ -32,6 +34,9 @@ export default function SideBar({
       setInternalActiveItemId(item.id);
     }
     onItemClick?.(item);
+    if (item.path) {
+      navigate(item.path);
+    }
   };
 
   return (

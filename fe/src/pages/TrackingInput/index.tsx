@@ -1,7 +1,15 @@
 import { useState } from 'react';
-import { FaTruck } from 'react-icons/fa';
+import { FaTruck, FaBox, FaBroadcastTower } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
 import { BsBox } from 'react-icons/bs';
+import type { SideBarItem } from '@/types';
+import SideBar from '@/components/common/layouts/SideBar';
+
+const sidebarItems: SideBarItem[] = [
+  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} />, path: '/products' },
+  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} />, path: '/live/new' },
+  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} />, path: '/tracking' },
+];
 
 import { useGetEscrows } from '@/api/hooks/useGetEscrows';
 import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
@@ -119,6 +127,7 @@ function CancelModal({
 }
 
 export default function TrackingInput() {
+  const [activeMenu, setActiveMenu] = useState('delivery');
   const { data: escrowsResponse } = useGetEscrows();
   const items = escrowsResponse?.data || [];
 
@@ -180,7 +189,14 @@ export default function TrackingInput() {
         />
       )}
 
-      <div style={{ display: 'flex', gap: '40px', color: 'white', padding: '40px 20px', backgroundColor: '#0B0C10', minHeight: '100vh', fontFamily: "'MuseumCulturalFoundationClassic', sans-serif", width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', gap: '40px', color: 'white', padding: '40px 16px', backgroundColor: '#0B0C10', minHeight: '100vh', fontFamily: "'MuseumCulturalFoundationClassic', sans-serif", width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+        <SideBar
+          items={sidebarItems}
+          activeItemId={activeMenu}
+          onItemClick={(item) => setActiveMenu(item.id)}
+          className="!w-[200px] shrink-0 !pr-4 !pl-0 !py-0 !max-w-none"
+        />
+
         {/* Left Column: Lists */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '48px' }}>
           

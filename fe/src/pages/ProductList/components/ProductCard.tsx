@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaImage } from 'react-icons/fa';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -15,7 +15,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
     SOLD: { label: '판매완료', color: '#34C759', textColor: 'white' },
   };
 
-  const currentStatus = statusConfig[product.status];
+  const currentStatus = statusConfig[product.status as keyof typeof statusConfig] || { label: '알 수 없음', color: '#555', textColor: 'white' };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -109,11 +109,18 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
             </div>
           </>
         )}
-        <img
-          src={product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[currentImageIndex] : ''}
-          alt={product.title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        {product.imageUrls && product.imageUrls.length > 0 ? (
+          <img
+            src={product.imageUrls[currentImageIndex]}
+            alt={product.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2C2C2E', color: '#8E8E93', fontSize: '13px' }}>
+            <FaImage size={28} style={{ opacity: 0.5, marginBottom: '8px' }} />
+            이미지 없음
+          </div>
+        )}
       </div>
 
       {/* 정보 영역 */}
