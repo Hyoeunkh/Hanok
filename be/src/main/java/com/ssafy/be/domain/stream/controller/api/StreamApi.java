@@ -9,18 +9,20 @@ import com.ssafy.be.domain.stream.dto.response.StreamRegisterResponse;
 import com.ssafy.be.domain.stream.dto.response.StreamTokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.data.domain.Page;
 
 @Tag(name = "Stream", description = "방송 API")
 public interface StreamApi {
 
     @Operation(summary = "방송 등록")
-    ResponseEntity<StreamRegisterResponse> register(Long userId, StreamRegisterRequest request, MultipartFile thumbnail);
+    ResponseEntity<StreamRegisterResponse> register(
+            Long userId, StreamRegisterRequest request, MultipartFile thumbnail);
 
     @Operation(summary = "방송 수정")
-    ResponseEntity<StreamRegisterResponse> update(Long userId, Long streamId, StreamUpdateRequest request, MultipartFile thumbnail);
+    ResponseEntity<StreamRegisterResponse> update(
+            Long userId, Long streamId, StreamUpdateRequest request, MultipartFile thumbnail);
 
     @Operation(summary = "방송 삭제")
     ResponseEntity<Void> delete(Long userId, Long streamId);

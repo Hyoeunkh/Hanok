@@ -4,7 +4,6 @@ import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.stream.entity.StartType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 
 public record StreamRegisterRequest(
@@ -12,5 +11,4 @@ public record StreamRegisterRequest(
         @NotNull Category category,
         @NotNull StartType startType,
         LocalDateTime scheduledAt,
-        String notice
-) {}
+        String notice) {}

@@ -18,13 +18,11 @@ public class StreamWebhookController {
 
     @PostMapping("/webhook")
     public ResponseEntity<Void> webhook(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody String body) throws Exception {
+            @RequestHeader("Authorization") String authHeader, @RequestBody String body)
+            throws Exception {
 
-        WebhookReceiver receiver = new WebhookReceiver(
-                liveKitProperties.apiKey(),
-                liveKitProperties.apiSecret()
-        );
+        WebhookReceiver receiver =
+                new WebhookReceiver(liveKitProperties.apiKey(), liveKitProperties.apiSecret());
 
         WebhookEvent event = receiver.receive(body, authHeader);
         Long streamId = Long.parseLong(event.getRoom().getName());

@@ -2,7 +2,6 @@ package com.ssafy.be.domain.stream.dto.response;
 
 import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.stream.entity.Stream;
-
 import java.time.LocalDateTime;
 
 public record StreamListItemResponse(
@@ -14,8 +13,7 @@ public record StreamListItemResponse(
         long viewerCount,
         LocalDateTime scheduledAt,
         LocalDateTime startedAt,
-        StreamSellerResponse seller
-) {
+        StreamSellerResponse seller) {
     public static StreamListItemResponse of(Stream stream, long viewerCount) {
         return new StreamListItemResponse(
                 stream.getId(),
@@ -26,7 +24,6 @@ public record StreamListItemResponse(
                 viewerCount,
                 stream.getScheduledAt(),
                 stream.getStartedAt(),
-                StreamSellerResponse.from(stream.getSeller())
-        );
+                StreamSellerResponse.from(stream.getSeller()));
     }
 }
