@@ -81,7 +81,6 @@ export default function LiveRegisterPage() {
         scheduledAt: startType === 'scheduled' ? (scheduledAtValue ?? scheduledAt) : undefined,
       };
 
-      // Step 1: 방송 등록
       const res = await getFetchInstance().post<{ streamId: number; title: string; status: string }>(
         '/api/v1/streams',
         payload,
@@ -89,7 +88,6 @@ export default function LiveRegisterPage() {
       const newStreamId = res.data.streamId;
 
       if (startType === 'immediate') {
-        // Step 2: 즉시 시작 – OpenVidu 세션 생성
         const startRes = await getFetchInstance().post(
           `/api/v1/streams/${newStreamId}/start`,
           payload,
@@ -101,7 +99,6 @@ export default function LiveRegisterPage() {
         alert(`방송이 예약되었습니다! (ID: ${newStreamId})`);
       }
 
-      // Step 3: 작성된 매크로를 새 방송 ID에 저장
       const macros = defaultMacros.map((m) => ({
         questionType: m.questionType,
         answer: macroAnswers[m.questionType] ?? '',

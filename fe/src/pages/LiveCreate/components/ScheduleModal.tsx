@@ -7,15 +7,12 @@ type Props = {
   onClose: () => void;
 };
 
-// 날짜를 "YYYY-MM-DD" 형식으로
 const toDateString = (d: Date) => d.toISOString().split('T')[0];
 
-// 오늘 날짜 / 30일 후 날짜
 const today = new Date();
 const maxDate = new Date(today);
 maxDate.setDate(maxDate.getDate() + 30);
 
-// 시간 포맷: "오전/오후 H시 M분"
 const formatTime = (time: string): string => {
   if (!time) return '';
   const [hStr, mStr] = time.split(':');

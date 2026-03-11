@@ -26,7 +26,6 @@ export default function LiveCreatePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  // 실제 등록된 방송 목록 가져오기
   useEffect(() => {
     const fetchLives = async () => {
       try {
