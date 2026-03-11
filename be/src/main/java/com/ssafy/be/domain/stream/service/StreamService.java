@@ -267,6 +267,7 @@ public class StreamService {
                     switch (request.status()) {
                         case LIVE -> streamRepository.findAllLiveStreams(category);
                         case SCHEDULED -> streamRepository.findAllScheduledStreams(category);
+                        case ENDED -> List.of();
                     };
 
             List<StreamListItemResponse> sorted =
@@ -308,6 +309,7 @@ public class StreamService {
                 switch (request.status()) {
                     case LIVE -> streamRepository.findLiveStreams(category, pageable);
                     case SCHEDULED -> streamRepository.findScheduledStreams(category, pageable);
+                    case ENDED -> Page.empty(pageable);
                 };
 
         return streams.map(stream -> {
