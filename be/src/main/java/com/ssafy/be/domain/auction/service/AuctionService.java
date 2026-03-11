@@ -2,16 +2,21 @@ package com.ssafy.be.domain.auction.service;
 
 import com.ssafy.be.domain.auction.dto.request.AuctionStartRequest;
 import com.ssafy.be.domain.auction.dto.request.BidPlaceRequest;
+import com.ssafy.be.domain.auction.dto.response.AuctionEndResponse;
 import com.ssafy.be.domain.auction.dto.response.AuctionStartResponse;
 import com.ssafy.be.domain.auction.dto.response.BidPlaceResponse;
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.exception.AuctionErrorCode;
+import com.ssafy.be.domain.auction.model.Bid;
+import com.ssafy.be.domain.auction.repository.AuctionBidRepository;
 import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.auction.repository.AuctionTimerRepository;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
+import com.ssafy.be.domain.shippingaddress.entity.ShippingAddress;
+import com.ssafy.be.domain.shippingaddress.repository.ShippingAddressRepository;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.exception.UserErrorCode;
@@ -27,12 +32,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuctionService {
     private static final long SNIPING_THRESHOLD_SECONDS = 5L;
-    private final AuctionRepository auctionRepository;
     private final AuctionBidFacade auctionBidFacade;
+    private final AuctionRepository auctionRepository;
+    private final AuctionBidRepository auctionBidRepository;
     private final AuctionTimerRepository auctionTimerRepository;
     private final StreamRepository streamRepository;
     private final SellerRepository sellerRepository;
     private final UserRepository userRepository;
+    private final ShippingAddressRepository shippingAddressRepository;
 
     @Transactional
     public AuctionStartResponse startAuction(AuctionStartRequest request, Long streamId, Long userId) {
@@ -58,27 +65,6 @@ public class AuctionService {
         // 5. 응답
         return buildAuctionStartResponse(buildItemDto(auctionItem), buildTimerDto(auctionItem, serverNow));
     }
-
-//    public void endAuction(Long auction) {
-//        // a. 유찰인 경우
-//
-//        // a-1. 경매 상태 유찰로 변경
-//
-//        // a-2. redis 관련 값 삭제
-//
-//        // a-3. 유찰이라고 broadcast
-//
-//
-//        // b. 낙찰인 경우
-//
-//        // b-1. 경매 상태 낙찰로 변경, finalPrice 기록
-//
-//        // b-2. 낙찰자에게 private 메시지 전송 (낙찰 거래 확인 api)
-//
-//        // b-3. 낙찰 정보 전체 broadcast
-//
-//        // b-4. redis 관련 값 삭제
-//    }
 
     @Transactional // TODO: 트랜잭션 범위 줄이기
     public BidPlaceResponse placeBid(BidPlaceRequest request, Long streamId, Long userId) {
@@ -108,6 +94,37 @@ public class AuctionService {
                 bidInfoDto,
                 isSniping ? buildSnipingTimerDto(TimeUtils.nowAsString()) : null
         );
+    }
+
+    @Transactional
+    public AuctionEndResponse endAuction(Long auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new StompException(AuctionErrorCode.AUCTION_NOT_FOUND));
+
+        Bid topBid = auctionBidRepository.findTopBid(auctionId).orElse(null);
+
+        // 유찰
+        if (topBid == null) {
+            auction.unsold();
+            return null;
+        }
+
+        // 낙찰
+        auction.sold(topBid.amount());
+
+        ShippingAddress shippingAddress = shippingAddressRepository.findByUserIdAndIsDefaultTrue(topBid.userId())
+                .orElse(null);
+
+        return buildAuctionEndResponse(
+                topBid.userId(),
+                auction.getStream().getId(),
+                buildWinnerDto(
+                        buildItemDto(auction.getItem().getName(), topBid.amount()),
+                        buildShippingDto(shippingAddress)
+                )
+        );
+
+        // TODO: 중계 메시지 브로드캐스트 추가 예정
     }
 
     private void validateStreamHost(Long streamId, Long sellerId) {
@@ -184,6 +201,41 @@ public class AuctionService {
                 .durationSeconds((int) SNIPING_THRESHOLD_SECONDS)
                 .serverNow(serverNow)
                 .serverStartedAt(serverNow)
+                .build();
+    }
+
+    private static AuctionEndResponse buildAuctionEndResponse(Long winnerId, Long streamId, AuctionEndResponse.WinnerDto winnerDto) {
+        return AuctionEndResponse.builder()
+                .winnerId(winnerId)
+                .streamId(streamId)
+                .winnerDto(winnerDto)
+                .build();
+    }
+
+    private static AuctionEndResponse.WinnerDto buildWinnerDto(AuctionEndResponse.WinnerDto.ItemDto itemDto, AuctionEndResponse.WinnerDto.ShippingDto shippingDto) {
+        return AuctionEndResponse.WinnerDto.builder()
+                .item(itemDto)
+                .shipping(shippingDto)
+                .build();
+    }
+
+    private static AuctionEndResponse.WinnerDto.ItemDto buildItemDto(String itemName, Long finalPrice) {
+        return AuctionEndResponse.WinnerDto.ItemDto.builder()
+                .itemName(itemName)
+                .finalPrice(finalPrice)
+                .build();
+    }
+
+    private static AuctionEndResponse.WinnerDto.ShippingDto buildShippingDto(ShippingAddress shippingAddress) {
+        if (shippingAddress == null) {
+            return null;
+        }
+
+        return AuctionEndResponse.WinnerDto.ShippingDto.builder()
+                .recipientName(shippingAddress.getRecipientName())
+                .phone(shippingAddress.getPhone())
+                .address(shippingAddress.getAddress())
+                .addressDetail(shippingAddress.getAddressDetail())
                 .build();
     }
 }

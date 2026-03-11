@@ -2,6 +2,7 @@ package com.ssafy.be.domain.auction.controller;
 
 import com.ssafy.be.domain.auction.dto.request.BidPlaceRequest;
 import com.ssafy.be.domain.auction.dto.response.BidPlaceResponse;
+import com.ssafy.be.domain.auction.publisher.AuctionPublisher;
 import com.ssafy.be.domain.auction.service.AuctionService;
 import com.ssafy.be.domain.auction.dto.request.AuctionStartRequest;
 import com.ssafy.be.domain.auction.dto.response.AuctionStartResponse;
@@ -26,10 +27,10 @@ import static com.ssafy.be.global.websocket.enums.StompType.BID_PLACED;
 public class AuctionController {
     private final AuctionService auctionService;
     private final JsonConverter jsonConverter;
-    private final SimpMessageSendingOperations messageTemplate;
+    private final AuctionPublisher auctionPublisher;
 
     @MessageMapping("/streams/{streamId}")
-    public void startAuction(
+    public void handleEvent(
             @DestinationVariable Long streamId,
             @Payload StompRequest request,
             Principal principal
@@ -42,9 +43,7 @@ public class AuctionController {
                         Long.parseLong(principal.getName())
                 );
 
-                StompResponse<Object> response = buildStompResponse(AUCTION_START, payload);
-
-                messageTemplate.convertAndSend("/broadcast/streams/" + streamId, response);
+                auctionPublisher.broadcastToStream(streamId,AUCTION_START, payload);
             }
 
             case BID_PLACED -> {
@@ -54,19 +53,9 @@ public class AuctionController {
                         Long.parseLong(principal.getName())
                 );
 
-                StompResponse<Object> response = buildStompResponse(BID_PLACED, payload);
-
-                messageTemplate.convertAndSend("/broadcast/streams/" + streamId, response);
+                auctionPublisher.broadcastToStream(streamId,BID_PLACED, payload);
             }
 
         }
     }
-
-    private static StompResponse<Object> buildStompResponse(StompType stompType, Object payload) {
-        return StompResponse.builder()
-                .eventType(stompType)
-                .payload(payload)
-                .build();
-    }
-
 }
