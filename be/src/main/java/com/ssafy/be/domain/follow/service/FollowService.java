@@ -1,19 +1,17 @@
 package com.ssafy.be.domain.follow.service;
 
-
 import com.ssafy.be.domain.follow.dto.response.FollowResponse;
 import com.ssafy.be.domain.follow.entity.Follow;
+import com.ssafy.be.domain.follow.exception.FollowErrorCode;
 import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
+import com.ssafy.be.global.exception.GlobalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
-
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +24,17 @@ public class FollowService {
 
     @Transactional
     public FollowResponse toggleFollow(Long loginUserId, Long targetUserId) {
+        // 1. 사용자 조회 예외 처리 변경
         User me = userRepository.findById(loginUserId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new GlobalException(FollowErrorCode.USER_NOT_FOUND));
 
+        // 2. 판매자 조회 예외 처리 변경
         Seller targetSeller = sellerRepository.findByUserId(targetUserId)
-                .orElseThrow(() -> new IllegalArgumentException("팔로우 대상이 판매자가 아닙니다."));
+                .orElseThrow(() -> new GlobalException(FollowErrorCode.SELLER_NOT_FOUND));
 
+        // 3. 자기 자신 팔로우 예외 처리 변경
         if (me.getId().equals(targetUserId)) {
-            throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
+            throw new GlobalException(FollowErrorCode.SELF_FOLLOW_NOT_ALLOWED);
         }
 
         boolean isFollowing = handleToggle(me, targetSeller);
