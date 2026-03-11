@@ -18,6 +18,7 @@ public enum StreamEventType {
     // 입찰
     BID_PLACED,             // 입찰 발생
     BID_WINNER,             // 낙찰 확정
+    BID_SYNC,               // 경매 입찰 정보 동기화
 
     // 매크로
     MACRO_TEMPLATE,

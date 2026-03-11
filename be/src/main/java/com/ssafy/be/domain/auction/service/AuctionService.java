@@ -5,7 +5,9 @@ import com.ssafy.be.domain.auction.dto.request.BidPlaceRequest;
 import com.ssafy.be.domain.auction.dto.response.AuctionEndResponse;
 import com.ssafy.be.domain.auction.dto.response.AuctionStartResponse;
 import com.ssafy.be.domain.auction.dto.response.BidPlaceResponse;
+import com.ssafy.be.domain.auction.dto.response.BidSyncResponse;
 import com.ssafy.be.domain.auction.entity.Auction;
+import com.ssafy.be.domain.auction.entity.AuctionStatus;
 import com.ssafy.be.domain.auction.exception.AuctionErrorCode;
 import com.ssafy.be.domain.auction.model.Bid;
 import com.ssafy.be.domain.auction.repository.AuctionBidRepository;
@@ -18,6 +20,8 @@ import com.ssafy.be.domain.seller.repository.SellerRepository;
 import com.ssafy.be.domain.shippingaddress.entity.ShippingAddress;
 import com.ssafy.be.domain.shippingaddress.exception.ShippingAddressErrorCode;
 import com.ssafy.be.domain.shippingaddress.repository.ShippingAddressRepository;
+import com.ssafy.be.domain.stream.entity.Stream;
+import com.ssafy.be.domain.stream.exception.StreamErrorCode;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.exception.UserErrorCode;
@@ -27,6 +31,8 @@ import com.ssafy.be.global.websocket.exception.StompException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.ssafy.be.domain.auction.entity.AuctionStatus.*;
 
 
 @RequiredArgsConstructor
@@ -64,7 +70,10 @@ public class AuctionService {
         auctionTimerRepository.save(auction.getId(), auctionItem.getAuctionDuration());
 
         // 5. 응답
-        return buildAuctionStartResponse(buildItemDto(auctionItem), buildTimerDto(auctionItem, serverNow));
+        return buildAuctionStartResponse(
+                buildItemDto(auctionItem),
+                buildTimerDto(auctionItem, serverNow)
+        );
     }
 
     @Transactional // TODO: 트랜잭션 범위 줄이기
@@ -126,6 +135,28 @@ public class AuctionService {
         );
 
         // TODO: 중계 메시지 브로드캐스트 추가 예정
+    }
+
+    @Transactional(readOnly = true)
+    public BidSyncResponse syncBid(Long streamId) {
+        // 1. 현재 진행 중인 경매 조회
+        Auction auction = auctionRepository.findByStreamIdAndAuctionStatus(streamId, LIVE)
+                .orElseThrow(() -> new StompException(AuctionErrorCode.LIVE_AUCTION_NOT_FOUND));
+
+        // 2. 현재 최고가 조회 (없으면 시작가 사용)
+        Long currentPrice = auctionBidRepository.findTopBid(auction.getId())
+                .map(Bid::amount)
+                .orElse(auction.getItem().getStartPrice());
+
+        // 3. 타이머 정보 조회
+        String serverNow = TimeUtils.nowAsString();
+        long remainingSeconds = auctionTimerRepository.findRemainingSecondsByAuctionId(auction.getId());
+        
+        // 4. 응답 생성
+        return buildBidSyncResponse(
+                buildBidSyncItemInfo(auction.getItem().getBidUnit(), currentPrice),
+                buildBidSyncTimerInfo((int) remainingSeconds, serverNow, auction.getStartedAt())
+        );
     }
 
     private void validateStreamHost(Long streamId, Long sellerId) {
@@ -235,6 +266,28 @@ public class AuctionService {
                 .address(shippingAddress.getAddress())
                 .addressDetail(shippingAddress.getAddressDetail())
                 .phone(shippingAddress.getPhone())
+                .build();
+    }
+
+    private static BidSyncResponse buildBidSyncResponse(BidSyncResponse.ItemInfo itemInfo, BidSyncResponse.TimerInfo timerInfo) {
+        return BidSyncResponse.builder()
+                .item(itemInfo)
+                .timer(timerInfo)
+                .build();
+    }
+
+    private static BidSyncResponse.ItemInfo buildBidSyncItemInfo(Long bidUnit, Long currentPrice) {
+        return BidSyncResponse.ItemInfo.builder()
+                .bidUnit(bidUnit)
+                .currentPrice(currentPrice)
+                .build();
+    }
+
+    private static BidSyncResponse.TimerInfo buildBidSyncTimerInfo(Integer durationSeconds, String serverNow, String serverStartedAt) {
+        return BidSyncResponse.TimerInfo.builder()
+                .durationSeconds(durationSeconds)
+                .serverNow(serverNow)
+                .serverStartedAt(serverStartedAt)
                 .build();
     }
 }
