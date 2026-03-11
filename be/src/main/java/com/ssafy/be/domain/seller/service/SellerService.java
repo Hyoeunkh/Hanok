@@ -1,10 +1,7 @@
 package com.ssafy.be.domain.seller.service;
 
-import com.ssafy.be.domain.auction.entity.Auction;
-import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.item.entity.Item;
-import com.ssafy.be.domain.item.entity.ItemStatus;
 import com.ssafy.be.domain.item.repository.ItemRepository;
 import com.ssafy.be.domain.seller.dto.request.SellerProfileUpdateRequest;
 import com.ssafy.be.domain.seller.dto.request.SellerRegisterRequest;
@@ -12,6 +9,8 @@ import com.ssafy.be.domain.seller.dto.response.*;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
+import com.ssafy.be.domain.stream.dto.response.ScheduledStreamResponse;
+import com.ssafy.be.domain.stream.entity.StreamStatus;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.exception.UserErrorCode;
@@ -88,15 +87,16 @@ public class SellerService {
 
         // 예약된 방송 목록 (최근 10개)
         List<ScheduledStreamResponse> posts = streamRepository
-                .findTop10BySellerIdAndIsLiveFalseAndScheduledAtAfterOrderByScheduledAtAsc(
-                        sellerId, LocalDateTime.now())
+                .findTop10BySellerIdAndStatusAndScheduledAtAfterOrderByScheduledAtAsc(
+                        sellerId, StreamStatus.SCHEDULED, LocalDateTime.now())
                 .stream()
                 .map(stream -> new ScheduledStreamResponse(
                         stream.getId(),
                         stream.getTitle(),
-                        stream.getNotice(),
+                        stream.getCategory().name(),
                         stream.getThumbnail(),
-                        stream.getScheduledAt()
+                        stream.getScheduledAt(),
+                        stream.getStatus()
                 ))
                 .toList();
 

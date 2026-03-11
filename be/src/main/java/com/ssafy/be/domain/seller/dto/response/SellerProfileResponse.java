@@ -1,5 +1,6 @@
 package com.ssafy.be.domain.seller.dto.response;
 
+import com.ssafy.be.domain.stream.dto.response.ScheduledStreamResponse;
 import java.util.List;
 
 public record SellerProfileResponse(
