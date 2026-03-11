@@ -9,4 +9,5 @@ public record StreamRegisterResponse(
         Long streamId,
         String title,
         StartType status,
+        String thumbnail,
         List<ItemSummaryResponse> items) {}

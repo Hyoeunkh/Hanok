@@ -94,7 +94,7 @@ public class StreamService {
                     .toList();
         }
 
-        return new StreamRegisterResponse(saved.getId(), saved.getTitle(), saved.getStartType(), items);
+        return new StreamRegisterResponse(saved.getId(), saved.getTitle(), saved.getStartType(), saved.getThumbnail(), items);
     }
 
     private Stream buildStream(StreamRegisterRequest request, Seller seller) {
@@ -156,7 +156,7 @@ public class StreamService {
                 })
                 .toList();
 
-        return new StreamRegisterResponse(stream.getId(), stream.getTitle(), stream.getStartType(), items);
+        return new StreamRegisterResponse(stream.getId(), stream.getTitle(), stream.getStartType(), stream.getThumbnail(), items);
     }
 
     @Transactional
