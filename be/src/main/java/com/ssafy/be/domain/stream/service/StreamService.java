@@ -1,16 +1,18 @@
 package com.ssafy.be.domain.stream.service;
 
+import com.ssafy.be.domain.auction.entity.Auction;
+import com.ssafy.be.domain.auction.entity.AuctionStatus;
+import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.item.entity.Category;
+import com.ssafy.be.domain.item.entity.Item;
+import com.ssafy.be.domain.item.repository.ItemRepository;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
 import com.ssafy.be.domain.stream.dto.request.StreamListRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamRegisterRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamUpdateRequest;
-import com.ssafy.be.domain.stream.dto.response.StreamDetailResponse;
-import com.ssafy.be.domain.stream.dto.response.StreamListItemResponse;
-import com.ssafy.be.domain.stream.dto.response.StreamRegisterResponse;
-import com.ssafy.be.domain.stream.dto.response.StreamTokenResponse;
+import com.ssafy.be.domain.stream.dto.response.*;
 import com.ssafy.be.domain.stream.entity.Stream;
 import com.ssafy.be.domain.stream.entity.StreamSortType;
 import com.ssafy.be.domain.stream.exception.StreamErrorCode;
@@ -41,6 +43,8 @@ public class StreamService {
     private final GcsClient gcsClient;
     private final LiveKitProperties liveKitProperties;
     private final StreamViewerService streamViewerService;
+    private final AuctionRepository auctionRepository;
+    private final ItemRepository itemRepository;
 
     @Transactional
     public StreamRegisterResponse register(
@@ -59,6 +63,22 @@ public class StreamService {
                 saved.updateThumbnail(url);
             } catch (IOException e) {
                 throw new GlobalException(StreamErrorCode.THUMBNAIL_UPLOAD_FAILED);
+            }
+        }
+
+        // 경매 등록
+        if (request.itemIds() != null && !request.itemIds().isEmpty()) {
+            for (Long itemId : request.itemIds()) {
+                Item item =
+                        itemRepository
+                                .findByIdAndSellerId(itemId, seller.getId())
+                                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+                auctionRepository.save(
+                        Auction.builder()
+                                .auctionStatus(AuctionStatus.READY)
+                                .stream(saved)
+                                .item(item)
+                                .build());
             }
         }
 
@@ -167,7 +187,16 @@ public class StreamService {
                         .findByIdAndSellerId(streamId, seller.getId())
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
-        return StreamDetailResponse.from(stream);
+        return new StreamDetailResponse(
+                stream.getId(),
+                stream.getTitle(),
+                stream.getCategory(),
+                stream.getThumbnail(),
+                stream.getScheduledAt(),
+                stream.getStartType(),
+                stream.getNotice(),
+                stream.isLive(),
+                stream.getCreatedAt());
     }
 
     @Transactional
@@ -214,12 +243,23 @@ public class StreamService {
 
             List<StreamListItemResponse> sorted =
                     streams.stream()
-                            .map(
-                                    stream ->
-                                            StreamListItemResponse.of(
-                                                    stream,
-                                                    streamViewerService.getViewerCount(
-                                                            stream.getId())))
+                            // 228번째 줄 - VIEWER_COUNT 정렬 map 부분
+                            .map(stream -> {
+                                Seller sel = stream.getSeller();
+                                return new StreamListItemResponse(
+                                        stream.getId(),
+                                        stream.getTitle(),
+                                        stream.getCategory(),
+                                        stream.getThumbnail(),
+                                        stream.isLive(),
+                                        streamViewerService.getViewerCount(stream.getId()),
+                                        stream.getScheduledAt(),
+                                        stream.getStartedAt(),
+                                        new StreamSellerResponse(
+                                                sel.getId(),
+                                                sel.getUser().getNickname(),
+                                                sel.getUser().getProfileImage()));
+                            })
                             .sorted(
                                     Comparator.comparingLong(StreamListItemResponse::viewerCount)
                                             .reversed())
@@ -242,9 +282,22 @@ public class StreamService {
                     case SCHEDULED -> streamRepository.findScheduledStreams(category, pageable);
                 };
 
-        return streams.map(
-                stream ->
-                        StreamListItemResponse.of(
-                                stream, streamViewerService.getViewerCount(stream.getId())));
+        // 256번째 줄 - LATEST 정렬 map 부분
+        return streams.map(stream -> {
+            Seller sel = stream.getSeller();
+            return new StreamListItemResponse(
+                    stream.getId(),
+                    stream.getTitle(),
+                    stream.getCategory(),
+                    stream.getThumbnail(),
+                    stream.isLive(),
+                    streamViewerService.getViewerCount(stream.getId()),
+                    stream.getScheduledAt(),
+                    stream.getStartedAt(),
+                    new StreamSellerResponse(
+                            sel.getId(),
+                            sel.getUser().getNickname(),
+                            sel.getUser().getProfileImage()));
+        });
     }
 }

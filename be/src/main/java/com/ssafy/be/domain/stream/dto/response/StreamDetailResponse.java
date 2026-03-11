@@ -2,7 +2,6 @@ package com.ssafy.be.domain.stream.dto.response;
 
 import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.stream.entity.StartType;
-import com.ssafy.be.domain.stream.entity.Stream;
 import java.time.LocalDateTime;
 
 public record StreamDetailResponse(
@@ -15,16 +14,4 @@ public record StreamDetailResponse(
         String notice,
         boolean isLive,
         LocalDateTime createdAt) {
-    public static StreamDetailResponse from(Stream stream) {
-        return new StreamDetailResponse(
-                stream.getId(),
-                stream.getTitle(),
-                stream.getCategory(),
-                stream.getThumbnail(),
-                stream.getScheduledAt(),
-                stream.getStartType(),
-                stream.getNotice(),
-                stream.isLive(),
-                stream.getCreatedAt());
-    }
 }

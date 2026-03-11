@@ -14,16 +14,4 @@ public record StreamListItemResponse(
         LocalDateTime scheduledAt,
         LocalDateTime startedAt,
         StreamSellerResponse seller) {
-    public static StreamListItemResponse of(Stream stream, long viewerCount) {
-        return new StreamListItemResponse(
-                stream.getId(),
-                stream.getTitle(),
-                stream.getCategory(),
-                stream.getThumbnail(),
-                stream.isLive(),
-                viewerCount,
-                stream.getScheduledAt(),
-                stream.getStartedAt(),
-                StreamSellerResponse.from(stream.getSeller()));
-    }
 }
