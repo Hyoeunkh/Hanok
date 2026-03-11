@@ -18,7 +18,7 @@ export function useStompChat() {
   useEffect(() => {
     if (connectionState !== 'connected' || !client) return;
 
-    const destination = `${DESTINATION_PREFIX.BROADCAST}/stream/${streamId}/chat`;
+    const destination = `${DESTINATION_PREFIX.BROADCAST}/streams/${streamId}`;
 
     subRef.current = client.subscribe(destination, (frame) => {
       const res: StompResponse<unknown> = JSON.parse(frame.body);
@@ -99,7 +99,7 @@ export function useStompChat() {
       if (!client || connectionState !== 'connected') return;
       const body: ChatSendPayload = { message };
       client.publish({
-        destination: `${DESTINATION_PREFIX.APP}/stream/${streamId}/chat`,
+        destination: `${DESTINATION_PREFIX.APP}/streams/${streamId}`,
         body: JSON.stringify({ eventType: 'CHAT_MESSAGE', payload: body }),
       });
     },
@@ -111,7 +111,7 @@ export function useStompChat() {
       if (!client || connectionState !== 'connected') return;
       const body: MacroPayload = { command };
       client.publish({
-        destination: `${DESTINATION_PREFIX.APP}/stream/${streamId}/chat`,
+        destination: `${DESTINATION_PREFIX.APP}/streams/${streamId}`,
         body: JSON.stringify({ eventType: 'MACRO_TEMPLATE', payload: body }),
       });
     },

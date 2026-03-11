@@ -11,7 +11,7 @@ export function useStompViewerCount() {
   useEffect(() => {
     if (connectionState !== 'connected' || !client) return;
 
-    const destination = `${DESTINATION_PREFIX.BROADCAST}/stream/${streamId}/viewers`;
+    const destination = `${DESTINATION_PREFIX.BROADCAST}/streams/${streamId}`;
 
     subRef.current = client.subscribe(destination, (frame) => {
       const res: StompResponse<number> = JSON.parse(frame.body);
