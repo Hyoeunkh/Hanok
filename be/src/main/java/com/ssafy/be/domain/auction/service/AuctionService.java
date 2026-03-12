@@ -6,7 +6,6 @@ import com.ssafy.be.domain.auction.dto.request.ItemIntroduceRequest;
 import com.ssafy.be.domain.auction.dto.response.*;
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
-import com.ssafy.be.domain.auction.enums.Comment;
 import com.ssafy.be.domain.auction.exception.AuctionErrorCode;
 import com.ssafy.be.domain.auction.model.Bid;
 import com.ssafy.be.domain.auction.repository.AuctionBidRepository;
@@ -262,7 +261,7 @@ public class AuctionService {
                 buildAuctionCommentResponse(message)
         );
 
-        return List.of(endPublishTask, winnerPublishTask);
+        return List.of(endPublishTask, winnerPublishTask, auctionCommentPublishTask);
     }
 
     @Transactional(readOnly = true)
