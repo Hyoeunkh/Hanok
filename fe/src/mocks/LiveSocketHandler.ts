@@ -3,6 +3,8 @@ import { ws, type WebSocketData } from 'msw';
 import type { AuctionStatisticsPayload, BidSyncPayload, ItemSyncPayload } from '@/types';
 import { getStreamSocketConnectUrl } from '@/websocket/socket';
 
+import { getCurrentMockUser } from './mockState';
+
 type StompFrame = {
   command: string;
   headers: Record<string, string>;
@@ -26,6 +28,18 @@ const SNIPING_DURATION_SECONDS = 5;
 const HEARTBEAT_INTERVAL_MS = 5_000;
 const RECENT_BIDS_LIMIT = 15;
 const textEncoder = new TextEncoder();
+const CHAT_MACRO_RESPONSES: Record<string, string> = {
+  '@사이즈': '사이즈는 실측 기준으로 안내드리며, 상세 수치는 상품 설명에서 다시 안내드리겠습니다.',
+  '@360도': '잠시 후 제품을 360도로 돌려서 상태를 다시 보여드리겠습니다.',
+  '@소재': '주요 소재와 디테일은 잠시 후 클로즈업으로 다시 보여드리겠습니다.',
+  '@배송': '낙찰 후 영업일 기준 2~5일 이내 순차 발송됩니다.',
+  '@진품인증': '인증 정보와 검수 기준은 라이브 중에 다시 설명드리겠습니다.',
+  '@상태': '현재 보이는 컨디션 외에 특이사항이 있으면 바로 말씀드리겠습니다.',
+  '@무게': '무게는 측정 후 채팅으로 다시 안내드리겠습니다.',
+  '@보증서': '보증서 및 구성품 포함 여부를 바로 확인해드리겠습니다.',
+  '@출처': '확보 경로와 스토리는 설명 타임에 함께 안내드리겠습니다.',
+  '@작가소개': '작가와 브랜드 배경은 설명 구간에서 정리해서 말씀드리겠습니다.',
+};
 
 const liveSocket = ws.link(getStreamSocketConnectUrl());
 const clientSubscriptions = new Map<string, Map<string, string>>();
@@ -371,6 +385,12 @@ const broadcastAuctionComment = (streamId: string, message: string) => {
   });
 };
 
+const getChatNickname = () => getCurrentMockUser()?.nickname ?? '테스트유저';
+
+const broadcastChatEvent = (streamId: string, payload: unknown) => {
+  broadcastToDestination(`/broadcast/streams/${streamId}`, payload);
+};
+
 const sendItemSyncToClient = (
   client: { send: (data: WebSocketData) => void },
   subscriptionId: string,
@@ -593,6 +613,62 @@ const handleAuctionItemIntroduce = (destination: string, body: string) => {
   });
 };
 
+const handleChatMessage = (destination: string, body: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const payload = JSON.parse(body) as {
+    payload?: {
+      message?: string;
+    };
+  };
+  const message = payload.payload?.message?.trim();
+
+  if (!message) {
+    return;
+  }
+
+  broadcastChatEvent(streamId, {
+    eventType: 'CHAT_MESSAGE',
+    payload: {
+      nickname: getChatNickname(),
+      message,
+    },
+  });
+};
+
+const handleMacroTemplate = (destination: string, body: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const payload = JSON.parse(body) as {
+    payload?: {
+      command?: string;
+    };
+  };
+  const command = payload.payload?.command?.trim();
+
+  if (!command) {
+    return;
+  }
+
+  broadcastChatEvent(streamId, {
+    eventType: 'MACRO_TEMPLATE',
+    payload: {
+      nickname: getChatNickname(),
+      command,
+    },
+  });
+
+  const responseMessage = CHAT_MACRO_RESPONSES[command] ?? '해당 질문은 잠시 후 라이브에서 안내드리겠습니다.';
+
+  globalThis.setTimeout(() => {
+    broadcastChatEvent(streamId, {
+      eventType: 'MACRO_TEMPLATE',
+      payload: {
+        label: 'Seller',
+        message: responseMessage,
+      },
+    });
+  }, 250);
+};
+
 const handleSendFrame = (frame: StompFrame) => {
   if (frame.headers.destination?.startsWith('/app/streams/')) {
     const body = JSON.parse(frame.body) as { eventType?: string };
@@ -615,6 +691,14 @@ const handleSendFrame = (frame: StompFrame) => {
 
     if (body.eventType === 'ITEM_INTRODUCE') {
       handleAuctionItemIntroduce(frame.headers.destination, frame.body);
+    }
+
+    if (body.eventType === 'CHAT_MESSAGE') {
+      handleChatMessage(frame.headers.destination, frame.body);
+    }
+
+    if (body.eventType === 'MACRO_TEMPLATE') {
+      handleMacroTemplate(frame.headers.destination, frame.body);
     }
   }
 };
