@@ -35,18 +35,24 @@ export type SignUpPayload = {
   nickname: string;
   password: string;
   phone: string;
-  smsToken: string;
+  identityVerificationId: string;
 };
 
 export type CheckEmailResponse = {
   isDuplicated: boolean;
 };
 
-export type SmsCodeResponse = {
-  expireAt: string;
+export type IdentityVerificationRequest = {
+  identityVerificationId: string;
 };
 
-export type VerifySmsResponse = {
-  verified: boolean;
-  sessionToken: string;
+export type IdentityVerificationData = {
+  name: string;
+  phoneNumber: string;
+  birthDate: string;
+};
+
+export type IdentityVerificationResponse = {
+  status: 'SUCCESS' | 'FAIL';
+  data: IdentityVerificationData;
 };
