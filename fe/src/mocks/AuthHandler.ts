@@ -53,14 +53,14 @@ export const authHandlers = [
 
     setCurrentMockUser({ ...matchedUser });
 
-    return HttpResponse.json(
-      { status: 'SUCCESS', message: '로그인 성공', data: {} },
-      {
-        headers: {
-          Authorization: `Bearer ${matchedUser.accessToken}`,
-        },
+    return HttpResponse.json({
+      status: 'SUCCESS',
+      message: '로그인 성공',
+      data: {
+        accessToken: matchedUser.accessToken,
+        refreshToken: matchedUser.refreshToken,
       },
-    );
+    });
   }),
 
   http.post(`${BASE_URL}/v1/auth/signup`, async ({ request }) => {
