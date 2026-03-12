@@ -6,6 +6,7 @@ import com.ssafy.be.domain.auction.dto.request.ItemIntroduceRequest;
 import com.ssafy.be.domain.auction.dto.response.*;
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
+import com.ssafy.be.domain.auction.enums.Comment;
 import com.ssafy.be.domain.auction.exception.AuctionErrorCode;
 import com.ssafy.be.domain.auction.model.Bid;
 import com.ssafy.be.domain.auction.repository.AuctionBidRepository;
@@ -57,7 +58,7 @@ public class AuctionService {
     private final ShippingAddressRepository shippingAddressRepository;
 
     @Transactional
-    public AuctionStartResponse startAuction(AuctionStartRequest request, Long streamId, Long userId) {
+    public List<StreamPublishTask> startAuction(AuctionStartRequest request, Long streamId, Long userId) {
         // 1. 호스트인지 확인
         Seller seller = sellerRepository.findByUserId(userId)
                 .orElseThrow(() -> new StompException(SellerErrorCode.SELLER_NOT_FOUND));
@@ -78,10 +79,30 @@ public class AuctionService {
         auctionTimerRepository.save(auction.getId(), auctionItem.getAuctionDuration());
 
         // 5. 응답
-        return buildAuctionStartResponse(
+        // 5-1. AUCTION_START로 입찰 시작 브로드캐스트
+        AuctionStartResponse auctionStartResponse = buildAuctionStartResponse(
                 buildItemDto(auctionItem),
                 buildTimerDto(auctionItem, serverNow)
         );
+
+        StreamPublishTask auctionStartPublishTask = buildStreamPublishTask(
+                BROADCAST,
+                streamId,
+                null,
+                AUCTION_START,
+                auctionStartResponse
+        );
+
+        // 5-2. AUCTION_COMMENT로 경매 중계 메시지 브로드캐스트
+        StreamPublishTask auctionCommentPublishTask = buildStreamPublishTask(
+                BROADCAST,
+                streamId,
+                null,
+                AUCTION_COMMENT,
+                buildAuctionCommentResponse(Comment.AUCTION_START.getValue())
+        );
+
+        return List.of(auctionStartPublishTask, auctionCommentPublishTask);
     }
 
     @Transactional
@@ -124,15 +145,16 @@ public class AuctionService {
 
         // 6. 응답
         // 6-1. BID_PLACE로 입찰 정보 브로드캐스트
+        BidPlaceResponse bidPlaceResponse = buildBidPlaceResponse(
+                bidInfoDto,
+                isSniping ? buildSnipingTimerDto(TimeUtils.nowAsString()) : null
+        );
         StreamPublishTask bidPlacePublishTask = buildStreamPublishTask(
                 BROADCAST,
                 streamId,
                 null,
                 BID_PLACED,
-                buildBidPlaceResponse(
-                        bidInfoDto,
-                        isSniping ? buildSnipingTimerDto(TimeUtils.nowAsString()) : null
-                )
+                bidPlaceResponse
         );
 
         // 6-2. AUCTION_STATISTICS로 실시간 통계 정보 브로드캐스트
@@ -140,22 +162,25 @@ public class AuctionService {
 
         List<AuctionStatisticsResponse.RecentBidDto> recentBids = bids.stream()
                 .limit(15)
-                .map(AuctionService::buildRecentBidDto)
+                .map(this::buildRecentBidDto)
                 .toList();
+
+        AuctionStatisticsResponse auctionStatisticsResponse = buildAuctionStatisticsResponse(
+                auction.getItem().getName(),
+                bids.stream().mapToLong(Bid::amount).sum(),
+                bids.size(),
+                auction.getItem().getStartPrice(),
+                bids.isEmpty() ? auction.getItem().getStartPrice() : bids.getFirst().amount(),
+                recentBids
+        );
 
         StreamPublishTask statisticsPublishTask = buildStreamPublishTask(
                 BROADCAST,
                 streamId,
                 null,
                 AUCTION_STATISTICS,
-                buildAuctionStatisticsResponse(
-                        auction.getItem().getName(),
-                        bids.stream().mapToLong(Bid::amount).sum(),
-                        bids.size(),
-                        auction.getItem().getStartPrice(),
-                        bids.isEmpty() ? auction.getItem().getStartPrice() : bids.getFirst().amount(),
-                        recentBids
-                ));
+                auctionStatisticsResponse
+        );
 
         return List.of(bidPlacePublishTask, statisticsPublishTask);
     }
@@ -189,7 +214,7 @@ public class AuctionService {
                 .orElseThrow(() -> new StompException(ShippingAddressErrorCode.DEFAULT_SHIPPING_ADDRESS_NOT_FOUND));
 
         // BID_WINNER로 낙찰 정보 private
-        BidWinnerResponse payload = buildBidWinnerResponse(
+        BidWinnerResponse bidWinnerResponse = buildBidWinnerResponse(
                 buildItemDto(auction.getItem().getName(), topBid.amount()),
                 buildShippingDto(shippingAddress)
         );
@@ -199,7 +224,7 @@ public class AuctionService {
                 auction.getStream().getId(),
                 topBid.userId(),
                 BID_WINNER,
-                payload
+                bidWinnerResponse
         );
 
         return List.of(endPublishTask, winnerPublishTask);
@@ -236,7 +261,7 @@ public class AuctionService {
 
         // 2. 응답 생성
         List<ItemSyncResponse.ItemInfo> items = auctions.stream()
-                .map(AuctionService::buildItemSyncInfo)
+                .map(this::buildItemSyncInfo)
                 .toList();
 
         return ItemSyncResponse.builder()
@@ -281,14 +306,30 @@ public class AuctionService {
         return false;
     }
 
-    private static AuctionStartResponse buildAuctionStartResponse(AuctionStartResponse.AuctionStartItemDto itemDto, AuctionStartResponse.AuctionStartTimerDto timerDto) {
+    public <T> StreamPublishTask buildStreamPublishTask(DestType destType, Long streamId, Long userId,StreamEventType eventType, T payload) {
+        return StreamPublishTask.builder()
+                .destType(destType)
+                .streamId(streamId)
+                .userId(userId)
+                .eventType(eventType)
+                .payload(payload)
+                .build();
+    }
+
+    private AuctionStartResponse buildAuctionStartResponse(AuctionStartResponse.AuctionStartItemDto itemDto, AuctionStartResponse.AuctionStartTimerDto timerDto) {
         return AuctionStartResponse.builder()
                 .item(itemDto)
                 .timer(timerDto)
                 .build();
     }
 
-    private static AuctionStartResponse.AuctionStartTimerDto buildTimerDto(Item auctionItem, String serverNow) {
+    private static AuctionCommentResponse buildAuctionCommentResponse(String message) {
+        return AuctionCommentResponse.builder()
+                .message(message)
+                .build();
+    }
+
+    private AuctionStartResponse.AuctionStartTimerDto buildTimerDto(Item auctionItem, String serverNow) {
         return AuctionStartResponse.AuctionStartTimerDto.builder()
                 .durationSeconds(auctionItem.getAuctionDuration())
                 .serverNow(serverNow)
@@ -296,7 +337,7 @@ public class AuctionService {
                 .build();
     }
 
-    private static AuctionStartResponse.AuctionStartItemDto buildItemDto(Item auctionItem) {
+    private AuctionStartResponse.AuctionStartItemDto buildItemDto(Item auctionItem) {
         return AuctionStartResponse.AuctionStartItemDto.builder()
                 .name(auctionItem.getName())
                 .image(auctionItem.getImage1())
@@ -306,14 +347,14 @@ public class AuctionService {
                 .build();
     }
 
-    private static BidPlaceResponse buildBidPlaceResponse(BidPlaceResponse.BidInfoDto bidInfoDto, BidPlaceResponse.SnipingTimerDto snipingTimerDto) {
+    private BidPlaceResponse buildBidPlaceResponse(BidPlaceResponse.BidInfoDto bidInfoDto, BidPlaceResponse.SnipingTimerDto snipingTimerDto) {
         return BidPlaceResponse.builder()
                 .bidInfo(bidInfoDto)
                 .snipingTimer(snipingTimerDto)
                 .build();
     }
 
-    private static BidPlaceResponse.SnipingTimerDto buildSnipingTimerDto(String serverNow) {
+    private BidPlaceResponse.SnipingTimerDto buildSnipingTimerDto(String serverNow) {
         return BidPlaceResponse.SnipingTimerDto.builder()
                 .durationSeconds((int) SNIPING_THRESHOLD_SECONDS)
                 .serverNow(serverNow)
@@ -321,21 +362,21 @@ public class AuctionService {
                 .build();
     }
 
-    private static BidWinnerResponse buildBidWinnerResponse(BidWinnerResponse.ItemDto itemDto, BidWinnerResponse.ShippingDto shippingDto) {
+    private BidWinnerResponse buildBidWinnerResponse(BidWinnerResponse.ItemDto itemDto, BidWinnerResponse.ShippingDto shippingDto) {
         return BidWinnerResponse.builder()
                 .item(itemDto)
                 .shipping(shippingDto)
                 .build();
     }
 
-    private static BidWinnerResponse.ItemDto buildItemDto(String itemName, Long finalPrice) {
+    private BidWinnerResponse.ItemDto buildItemDto(String itemName, Long finalPrice) {
         return BidWinnerResponse.ItemDto.builder()
                 .itemName(itemName)
                 .finalPrice(finalPrice)
                 .build();
     }
 
-    private static BidWinnerResponse.ShippingDto buildShippingDto(ShippingAddress shippingAddress) {
+    private BidWinnerResponse.ShippingDto buildShippingDto(ShippingAddress shippingAddress) {
         return BidWinnerResponse.ShippingDto.builder()
                 .recipientName(shippingAddress.getRecipientName())
                 .addressName(shippingAddress.getAddressName())
@@ -346,21 +387,21 @@ public class AuctionService {
                 .build();
     }
 
-    private static BidSyncResponse buildBidSyncResponse(BidSyncResponse.ItemInfo itemInfo, BidSyncResponse.TimerInfo timerInfo) {
+    private BidSyncResponse buildBidSyncResponse(BidSyncResponse.ItemInfo itemInfo, BidSyncResponse.TimerInfo timerInfo) {
         return BidSyncResponse.builder()
                 .item(itemInfo)
                 .timer(timerInfo)
                 .build();
     }
 
-    private static BidSyncResponse.ItemInfo buildBidSyncItemInfo(Long bidUnit, Long currentPrice) {
+    private BidSyncResponse.ItemInfo buildBidSyncItemInfo(Long bidUnit, Long currentPrice) {
         return BidSyncResponse.ItemInfo.builder()
                 .bidUnit(bidUnit)
                 .currentPrice(currentPrice)
                 .build();
     }
 
-    private static BidSyncResponse.TimerInfo buildBidSyncTimerInfo(Integer durationSeconds, String serverNow, String serverStartedAt) {
+    private BidSyncResponse.TimerInfo buildBidSyncTimerInfo(Integer durationSeconds, String serverNow, String serverStartedAt) {
         return BidSyncResponse.TimerInfo.builder()
                 .durationSeconds(durationSeconds)
                 .serverNow(serverNow)
@@ -368,7 +409,7 @@ public class AuctionService {
                 .build();
     }
 
-    private static ItemSyncResponse.ItemInfo buildItemSyncInfo(Auction auction) {
+    private ItemSyncResponse.ItemInfo buildItemSyncInfo(Auction auction) {
         return ItemSyncResponse.ItemInfo.builder()
                 .auctionId(auction.getId())
                 .itemName(auction.getItem().getName())
@@ -380,18 +421,7 @@ public class AuctionService {
                 .build();
     }
 
-
-    public <T> StreamPublishTask buildStreamPublishTask(DestType destType, Long streamId, Long userId,StreamEventType eventType, T payload) {
-        return StreamPublishTask.builder()
-                .destType(destType)
-                .streamId(streamId)
-                .userId(userId)
-                .eventType(eventType)
-                .payload(payload)
-                .build();
-    }
-
-    private static AuctionStatisticsResponse buildAuctionStatisticsResponse(
+    private AuctionStatisticsResponse buildAuctionStatisticsResponse(
             String itemName, Long totalPrice, int bidCount, Long startPrice, Long currentPrice,
             List<AuctionStatisticsResponse.RecentBidDto> recentBidDtos) {
         return AuctionStatisticsResponse.builder()
@@ -404,7 +434,7 @@ public class AuctionService {
                 .build();
     }
 
-    private static AuctionStatisticsResponse.RecentBidDto buildRecentBidDto(Bid bid) {
+    private AuctionStatisticsResponse.RecentBidDto buildRecentBidDto(Bid bid) {
         return new AuctionStatisticsResponse.RecentBidDto(
                 bid.nickname(),
                 bid.amount(),
