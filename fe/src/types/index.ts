@@ -5,6 +5,8 @@ export * from './escrow';
 export * from './follow';
 export * from './item';
 export * from './live';
+export * from './macro';
 export * from './seller';
 export * from './wallet';
 export * from './settings';
+export * from './stomp';

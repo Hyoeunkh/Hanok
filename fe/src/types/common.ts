@@ -18,4 +18,5 @@ export type SideBarItem = {
   id: string;
   label: string;
   icon?: ReactNode;
+  path?: string;
 };
