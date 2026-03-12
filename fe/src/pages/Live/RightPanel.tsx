@@ -15,7 +15,6 @@ const getSellerInitial = (nickname?: string) => nickname?.trim().charAt(0).toUpp
 export default function RightPanel({ isSeller, auctionStatistics, streamEnter }: Props) {
   const [activeTab, setActiveTab] = useState<'chat' | 'auction'>('chat');
   const sellerNickname = streamEnter?.seller.nickname ?? '판매자명';
-  const sellerGrade = streamEnter?.seller.grade ?? 'GENERAL';
   const sellerProfileImage = streamEnter?.seller.profileImage ?? null;
 
   return (
@@ -31,7 +30,6 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
           )}
           <div className="min-w-0">
             <div className="truncate text-xs font-bold text-white">{sellerNickname}</div>
-            <div className="text-[8px] font-bold tracking-wider text-[#C5A059]">{sellerGrade}</div>
           </div>
         </div>
       </div>
