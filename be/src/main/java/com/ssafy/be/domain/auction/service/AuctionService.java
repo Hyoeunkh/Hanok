@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static com.ssafy.be.domain.auction.enums.Comment.*;
+import static com.ssafy.be.domain.auction.enums.Comment.AUCTION_START;
 import static com.ssafy.be.domain.auction.enums.Comment.SOLD;
 import static com.ssafy.be.domain.auction.enums.Comment.UNSOLD;
 import static com.ssafy.be.global.websocket.enums.DestType.BROADCAST;
@@ -117,7 +118,7 @@ public class AuctionService {
                 streamId,
                 null,
                 AUCTION_COMMENT,
-                buildAuctionCommentResponse(SOLD.getValue())
+                buildAuctionCommentResponse(AUCTION_START.getValue())
         );
 
         return List.of(auctionStartPublishTask, auctionCommentPublishTask, auctionCommentPublishTask);
@@ -250,13 +251,15 @@ public class AuctionService {
                 bidWinnerResponse
         );
 
+        String message = String.format(SOLD.getValue(), topBid.nickname(), topBid.amount());
+
         //  AUCTION_COMMENT로 경매 중계 메시지 브로드캐스트
         auctionCommentPublishTask = buildStreamPublishTask(
                 BROADCAST,
                 auction.getStream().getId(),
                 null,
                 AUCTION_COMMENT,
-                buildAuctionCommentResponse(UNSOLD.getValue())
+                buildAuctionCommentResponse(message)
         );
 
         return List.of(endPublishTask, winnerPublishTask);
