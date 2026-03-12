@@ -121,6 +121,7 @@ export type Live = {
   streamId: number;
   title: string;
   category: string;
+  itemIds: number[];
   thumbnail: string | null;
   scheduledAt: string | null;
   startType: 'SCHEDULED' | 'IMMEDIATE';
