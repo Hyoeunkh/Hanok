@@ -167,7 +167,8 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '청자 투각 칠보문 향로',
       image: 'https://picsum.photos/400/300?random=1',
       startPrice: 130000,
-      auctionStatus: 'LIVE',
+      auctionId: 1,
+      auctionStatus: 'READY',
       finalPrice: null,
       itemCondition: 'BRAND_NEW',
     },
@@ -175,6 +176,7 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '청자 투각 칠보문 향로',
       image: 'https://picsum.photos/400/300?random=2',
       startPrice: 130000,
+      auctionId: 2,
       auctionStatus: 'READY',
       finalPrice: null,
       itemCondition: 'OPEN_BOX',
@@ -183,6 +185,7 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '청자 투각 칠보문 향로',
       image: 'https://picsum.photos/400/300?random=3',
       startPrice: 130000,
+      auctionId: 3,
       auctionStatus: 'READY',
       finalPrice: null,
       itemCondition: 'USED',
@@ -191,6 +194,7 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '청자 투각 칠보문 향로',
       image: 'https://picsum.photos/400/300?random=3',
       startPrice: 130000,
+      auctionId: 4,
       auctionStatus: 'SOLD',
       finalPrice: 200000,
       itemCondition: 'USED',
@@ -199,6 +203,7 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '청자 투각 칠보문 향로',
       image: 'https://picsum.photos/400/300?random=3',
       startPrice: 130000,
+      auctionId: 5,
       auctionStatus: 'UNSOLD',
       finalPrice: null,
       itemCondition: 'USED',
@@ -235,7 +240,7 @@ const activateNextReadyItem = (streamId: string) => {
   let activated = false;
   const nextPayload: ItemSyncPayload = {
     items: itemSyncPayload.items.map((item) => {
-      if (!activated && item.auctionStatus === 'READY') {
+      if (!activated && (item.auctionStatus === 'INTRODUCING' || item.auctionStatus === 'READY')) {
         activated = true;
         return {
           ...item,
@@ -244,6 +249,30 @@ const activateNextReadyItem = (streamId: string) => {
       }
 
       return item;
+    }),
+  };
+
+  streamItemSyncStates.set(streamId, nextPayload);
+  return nextPayload;
+};
+
+const introduceAuctionItem = (streamId: string, auctionId: number) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? createDefaultItemSyncPayload();
+
+  const nextPayload: ItemSyncPayload = {
+    items: itemSyncPayload.items.map((item) => {
+      if (item.auctionId !== auctionId) {
+        return item;
+      }
+
+      if (item.auctionStatus !== 'READY') {
+        return item;
+      }
+
+      return {
+        ...item,
+        auctionStatus: 'INTRODUCING',
+      };
     }),
   };
 
@@ -388,7 +417,7 @@ const scheduleWinnerAnnouncement = (streamId: string) => {
     streamTimerStates.delete(streamId);
 
     broadcastToDestination(`/broadcast/streams/${streamId}`, {
-      eventType: 'BID_END',
+      eventType: 'AUCTION_END',
       payload: null,
     });
 
@@ -527,6 +556,25 @@ const handleItemSync = (destination: string) => {
   broadcastItemSync(streamId);
 };
 
+const handleAuctionItemIntroduce = (destination: string, body: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const payload = JSON.parse(body) as {
+    payload?: {
+      auctionId?: number;
+    };
+  };
+  const auctionId = payload.payload?.auctionId;
+
+  if (typeof auctionId === 'number') {
+    introduceAuctionItem(streamId, auctionId);
+  }
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'ITEM_INTRODUCE',
+    payload: null,
+  });
+};
+
 const handleSendFrame = (frame: StompFrame) => {
   if (frame.headers.destination?.startsWith('/app/streams/')) {
     const body = JSON.parse(frame.body) as { eventType?: string };
@@ -545,6 +593,10 @@ const handleSendFrame = (frame: StompFrame) => {
 
     if (body.eventType === 'ITEM_SYNC') {
       handleItemSync(frame.headers.destination);
+    }
+
+    if (body.eventType === 'ITEM_INTRODUCE') {
+      handleAuctionItemIntroduce(frame.headers.destination, frame.body);
     }
   }
 };

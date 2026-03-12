@@ -1,12 +1,18 @@
-import SellerControlBar from "./SellerControlBar";
-import BuyerControlBar from "./BuyerControlBar";
-import type { BidSyncPayload } from "@/types";
+import SellerControlBar from './SellerControlBar';
+import BuyerControlBar from './BuyerControlBar';
+import type { BidSyncPayload, ItemSyncAuctionStatus } from '@/types';
 
 interface Props {
-    isSeller: boolean;
-    bidSync: BidSyncPayload | null;
+  isSeller: boolean;
+  bidSync: BidSyncPayload | null;
+  currentAuctionId: number | null;
+  currentAuctionStatus: ItemSyncAuctionStatus | null;
 }
 
-export default function ControlBar({ isSeller, bidSync }: Props) {
-    return isSeller ? <SellerControlBar /> : <BuyerControlBar bidSync={bidSync} />;
+export default function ControlBar({ isSeller, bidSync, currentAuctionId, currentAuctionStatus }: Props) {
+  return isSeller ? (
+    <SellerControlBar currentAuctionId={currentAuctionId} currentAuctionStatus={currentAuctionStatus} />
+  ) : (
+    <BuyerControlBar bidSync={bidSync} />
+  );
 }

@@ -72,6 +72,7 @@ export type ItemSyncAuctionStatus = 'READY' | 'INTRODUCING' | 'LIVE' | 'SOLD' | 
 export type ItemSyncItemCondition = 'BRAND_NEW' | 'OPEN_BOX' | 'REFURBISHED' | 'USED';
 
 export type ItemSyncItem = {
+  auctionId: number;
   itemName: string;
   image: string;
   startPrice: number;

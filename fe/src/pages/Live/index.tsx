@@ -14,6 +14,7 @@ import type {
   AuctionCommentPayload,
   BidWinnerPayload,
   ItemSyncPayload,
+  ItemSyncItem,
   StreamTimerPayload,
   SyncedAuctionTimer,
 } from '@/types';
@@ -59,11 +60,15 @@ type BroadcastStreamEvent =
       payload?: ItemSyncPayload | null;
     }
   | {
+      eventType: 'ITEM_INTRODUCE';
+      payload: null;
+    }
+  | {
       eventType: 'AUCTION_COMMENT';
       payload?: AuctionCommentPayload | null;
     }
   | {
-      eventType: 'BID_END';
+      eventType: 'AUCTION_END';
       payload: null;
     }
   | {
@@ -106,9 +111,13 @@ const isAuctionCommentEvent = (
   event: BroadcastStreamEvent,
 ): event is Extract<BroadcastStreamEvent, { eventType: 'AUCTION_COMMENT' }> => event.eventType === 'AUCTION_COMMENT';
 
+const isAuctionItemIntroduceEvent = (
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'ITEM_INTRODUCE' }> => event.eventType === 'ITEM_INTRODUCE';
+
 const isBidEndEvent = (
   event: BroadcastStreamEvent,
-): event is Extract<BroadcastStreamEvent, { eventType: 'BID_END' }> => event.eventType === 'BID_END';
+): event is Extract<BroadcastStreamEvent, { eventType: 'AUCTION_END' }> => event.eventType === 'AUCTION_END';
 
 const isBidWinnerEvent = (
   event: PrivateStreamEvent,
@@ -118,6 +127,8 @@ const createSyncedTimer = (timer: StreamTimerPayload): SyncedAuctionTimer => ({
   ...timer,
   receivedAtMs: Date.now(),
 });
+
+const isCurrentAuctionItem = (item: ItemSyncItem) => item.auctionStatus !== 'SOLD' && item.auctionStatus !== 'UNSOLD';
 
 export default function LivePage() {
   const queryClient = useQueryClient();
@@ -131,6 +142,7 @@ export default function LivePage() {
   const [bidSync, setBidSync] = useState<BidSyncPayload | null>(null);
   const [itemSync, setItemSync] = useState<ItemSyncPayload | null>(null);
   const [auctionComment, setAuctionComment] = useState<{ id: number; message: string } | null>(null);
+  const currentAuctionItem = itemSync?.items.find(isCurrentAuctionItem) ?? null;
 
   useEffect(() => {
     if (!auctionComment) {
@@ -214,6 +226,11 @@ export default function LivePage() {
         return;
       }
 
+      if (isAuctionItemIntroduceEvent(event)) {
+        void requestItemSync();
+        return;
+      }
+
       if (isBidEndEvent(event)) {
         void requestItemSync();
         return;
@@ -288,7 +305,12 @@ export default function LivePage() {
           <StreamOverlay />
           <SellerGuideOverlay />
           <StreamPlaceholder />
-          <ControlBar isSeller={isSeller} bidSync={bidSync} />
+          <ControlBar
+            isSeller={isSeller}
+            bidSync={bidSync}
+            currentAuctionId={currentAuctionItem?.auctionId ?? null}
+            currentAuctionStatus={currentAuctionItem?.auctionStatus ?? null}
+          />
 
           {auctionComment && <AuctionCommentToast key={auctionComment.id} message={auctionComment.message} />}
 

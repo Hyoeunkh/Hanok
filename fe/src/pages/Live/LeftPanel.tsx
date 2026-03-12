@@ -58,8 +58,8 @@ function formatPrice(n: number) {
 }
 
 function toAuctionItems(items: ItemSyncItem[]): AuctionItem[] {
-  return items.map((item, index) => ({
-    id: index + 1,
+  return items.map((item) => ({
+    id: item.auctionId,
     name: item.itemName,
     startPrice: item.startPrice,
     finalPrice: item.finalPrice ?? undefined,
