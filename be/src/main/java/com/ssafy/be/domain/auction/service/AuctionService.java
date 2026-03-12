@@ -34,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.ssafy.be.domain.auction.enums.Comment.AUCTION_START;
+import static com.ssafy.be.domain.auction.enums.Comment.BID_PLACE;
 import static com.ssafy.be.global.websocket.enums.DestType.BROADCAST;
 import static com.ssafy.be.global.websocket.enums.DestType.PRIVATE;
 import static com.ssafy.be.global.websocket.enums.StreamEventType.*;
@@ -89,7 +91,7 @@ public class AuctionService {
                 BROADCAST,
                 streamId,
                 null,
-                AUCTION_START,
+                StreamEventType.AUCTION_START,
                 auctionStartResponse
         );
 
@@ -99,7 +101,7 @@ public class AuctionService {
                 streamId,
                 null,
                 AUCTION_COMMENT,
-                buildAuctionCommentResponse(Comment.AUCTION_START.getValue())
+                buildAuctionCommentResponse(AUCTION_START.getValue())
         );
 
         return List.of(auctionStartPublishTask, auctionCommentPublishTask);
@@ -182,7 +184,18 @@ public class AuctionService {
                 auctionStatisticsResponse
         );
 
-        return List.of(bidPlacePublishTask, statisticsPublishTask);
+        // 6-3. AUCTION_COMMENT로 경매 중계 메시지 브로드캐스트
+        String formattedMessage = String.format(BID_PLACE.getValue(), user.getNickname(), request.amount());
+
+        StreamPublishTask auctionCommentPublishTask = buildStreamPublishTask(
+                BROADCAST,
+                streamId,
+                null,
+                AUCTION_COMMENT,
+                buildAuctionCommentResponse(formattedMessage)
+        );
+
+        return List.of(bidPlacePublishTask, statisticsPublishTask, auctionCommentPublishTask);
     }
 
     @Transactional
