@@ -5,8 +5,8 @@ import com.ssafy.be.domain.chat.dto.payload.ChatMessagePayload;
 import com.ssafy.be.domain.chat.dto.request.ChatMessageRequest;
 import com.ssafy.be.domain.chat.service.ChatService;
 import com.ssafy.be.global.infra.portone.PortoneClient;
-import com.ssafy.be.global.websocket.dto.response.StompResponse;
 import com.ssafy.be.global.websocket.enums.StreamEventType;
+import com.ssafy.be.global.websocket.publisher.StreamPublisher;
 import com.ssafy.be.support.annotation.IntegrationTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -23,6 +23,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,8 +43,10 @@ class ChatIntegrationTest {
     @Autowired private StringRedisTemplate redisTemplate;
     @Autowired private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private PortoneClient portoneClient;
+    @MockitoBean private PortoneClient portoneClient;
+
+    // 웹소켓으로 메시지가 잘 발행되는지 검증하기 위한 Mocking
+    @MockitoBean private StreamPublisher streamPublisher;
 
     private static final Long   STREAM_ID  = 1L;
     private static final Long   USER_ID    = 100L;
@@ -62,23 +68,29 @@ class ChatIntegrationTest {
 
     @Test
     @Order(1)
-    @DisplayName("1. 정상 메시지 전송 - Redis 저장 확인")
-    void testHandleMessage_savedToRedis() {
-        log.info("▶️ [실행] 정상 메시지 전송 및 Redis 저장 테스트");
+    @DisplayName("1. 정상 메시지 전송 - Redis 저장 및 웹소켓 발행 확인")
+    void testHandleMessage_savedToRedisAndBroadcasted() {
+        log.info("▶️ [실행] 정상 메시지 전송, Redis 저장 및 웹소켓 발행 테스트");
 
-        // Service가 StompResponse를 반환하므로 타입을 맞춰서 받음
-        StompResponse<ChatMessagePayload> response =
+        // Service 반환 타입에 맞게 ChatMessagePayload로 받음
+        ChatMessagePayload response =
                 chatService.handleMessage(USER_ID, NICKNAME, new ChatMessageRequest(STREAM_ID, "안녕하세요!"));
 
-        // 봉투(Envelope) 타입과 내부 페이로드 검증
-        assertThat(response.getEventType()).isEqualTo(StreamEventType.CHAT_MESSAGE);
-        assertThat(response.getPayload().content()).isEqualTo("안녕하세요!");
+        // 1-1. 반환값 검증 (내부 페이로드 검증)
+        assertThat(response.content()).isEqualTo("안녕하세요!");
 
+        // 1-2. Redis 저장 검증
         List<ChatMessagePayload> messages = chatService.getRecentMessage(STREAM_ID);
         log.info("🔍 [결과 분석] Redis에 저장된 메시지 개수: {}", messages.size());
-
         assertThat(messages).hasSize(1);
         assertThat(messages.get(0).content()).isEqualTo("안녕하세요!");
+
+        // 1-3. StreamPublisher를 통해 웹소켓 브로드캐스트가 호출되었는지 검증
+        verify(streamPublisher, atLeastOnce()).broadcastToStream(
+                eq(STREAM_ID),
+                eq(StreamEventType.CHAT_MESSAGE),
+                any(ChatMessagePayload.class)
+        );
     }
 
     @Test
@@ -93,7 +105,7 @@ class ChatIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.length()").value(2));
+                .andExpect(jsonPath("$.data.length()").value(2)); // 1번 테스트에서 넣은 것 포함 2개
     }
 
     @Test
@@ -103,15 +115,13 @@ class ChatIntegrationTest {
         int beforeSize = chatService.getRecentMessage(STREAM_ID).size();
         log.info("▶️ [실행] 금칙어 필터링 테스트 (전송 전 메시지 개수: {})", beforeSize);
 
-        // 악의적인 띄어쓰기 및 특수문자 삽입 우회 시도
         String dirtyWord = "아니 진짜 개  새@끼 들이네";
 
-        StompResponse<ChatMessagePayload> response =
+        ChatMessagePayload response =
                 chatService.handleMessage(USER_ID, NICKNAME, new ChatMessageRequest(STREAM_ID, dirtyWord));
 
-        // 검증 1: 정상적인 CHAT_MESSAGE 타입으로 반환되며, 내용은 "금칙어"로 덮어씌워짐
-        assertThat(response.getEventType()).isEqualTo(StreamEventType.CHAT_MESSAGE);
-        assertThat(response.getPayload().content()).isEqualTo("금칙어");
+        // 검증 1: 반환값이 "금칙어"로 덮어씌워짐
+        assertThat(response.content()).isEqualTo("금칙어");
 
         List<ChatMessagePayload> messages = chatService.getRecentMessage(STREAM_ID);
         int afterSize = messages.size();
@@ -130,10 +140,9 @@ class ChatIntegrationTest {
     void testAllowedMessage_savedWithoutMasking() {
         log.info("▶️ [실행] 화이트리스트(예외 허용어) 과탐지 방지 테스트");
 
-        // '시발'이라는 금칙어가 포함되어 있지만, '시발점'은 허용어 사전(allowedTrie)에 있음
         String trickyWord = "이번 프로젝트의 시발점은 바로 이것입니다.";
 
-        StompResponse<ChatMessagePayload> response =
+        ChatMessagePayload response =
                 chatService.handleMessage(USER_ID, NICKNAME, new ChatMessageRequest(STREAM_ID, trickyWord));
 
         List<ChatMessagePayload> messages = chatService.getRecentMessage(STREAM_ID);
@@ -142,7 +151,7 @@ class ChatIntegrationTest {
         log.info("🔍 [결과 분석] 허용어 처리된 내용: {}", lastMessage);
 
         // 검증: "금칙어"로 필터링되지 않고 원본 그대로 통과해야 함
-        assertThat(response.getPayload().content()).isEqualTo(trickyWord);
+        assertThat(response.content()).isEqualTo(trickyWord);
         assertThat(lastMessage).isEqualTo(trickyWord);
     }
 
@@ -151,6 +160,7 @@ class ChatIntegrationTest {
     @DisplayName("5. Redis LTRIM - 100개 초과 시 자동 제거")
     void testChatCacheMaxLimit() {
         log.info("▶️ [실행] Redis LTRIM 100개 한도 초과 테스트");
+
         for (int i = 1; i <= 100; i++) {
             chatService.handleMessage(USER_ID, NICKNAME, new ChatMessageRequest(STREAM_ID, "메시지 " + i));
         }
@@ -235,6 +245,6 @@ class ChatIntegrationTest {
         log.info("🔍 [결과 분석] 정상적으로 '금칙어'로 치환된 메시지 개수: {}", bannedCount);
 
         // 절반(50개)은 반드시 "금칙어"로 치환되어야 함
-        assertThat(bannedCount).isEqualTo(50);
+        assertThat(bannedCount).isEqualTo(messageCount / 2);
     }
 }
