@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { GoHomeFill } from 'react-icons/go';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { useGetStreamEnter } from '@/api/hooks/useGetStreamEnter';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
 import AuctionCommentToast from '@/components/Live/Stream/AuctionCommentToast';
@@ -131,6 +132,8 @@ export default function LivePage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { id: streamId } = useParams<{ id: string }>();
+  const numericStreamId = Number(streamId);
+  const { data: streamEnter } = useGetStreamEnter(numericStreamId);
   const [isSeller, setIsSeller] = useState(true);
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
   const [timer, setTimer] = useState<SyncedAuctionTimer | null>(null);
@@ -319,7 +322,7 @@ export default function LivePage() {
           />
         </div>
         <div className="relative min-w-0 flex-2 overflow-hidden rounded-2xl bg-background">
-          <StreamOverlay />
+          <StreamOverlay viewerCount={streamEnter?.viewerCount ?? 0} />
           <SellerGuideOverlay />
           <StreamPlaceholder />
           <ControlBar
@@ -365,7 +368,7 @@ export default function LivePage() {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <RightPanel isSeller={isSeller} auctionStatistics={auctionStatistics} />
+          <RightPanel isSeller={isSeller} auctionStatistics={auctionStatistics} streamEnter={streamEnter ?? null} />
         </div>
       </div>
     </div>

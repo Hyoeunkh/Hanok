@@ -6,6 +6,30 @@ export type LiveSeller = {
   profileImageUri: string | null;
 };
 
+export type StreamEnterSeller = {
+  sellerId: number;
+  nickname: string;
+  profileImage: string | null;
+  grade: string;
+};
+
+export type StreamEnterTopBidder = {
+  rank: number;
+  nickname: string;
+  amount: number;
+};
+
+export type StreamEnterResponse = {
+  streamId: number;
+  title: string;
+  category: string;
+  status: string;
+  notice: string;
+  seller: StreamEnterSeller;
+  viewerCount: number;
+  topBidders: StreamEnterTopBidder[];
+};
+
 export type LiveCardData = {
   streamId: number;
   title: string;
