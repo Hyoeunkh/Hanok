@@ -86,7 +86,7 @@ public class UserService {
                 .profileImage("https://storage.googleapis.com/hanok-storage/profiles/default/default-profile.png")
                 .isActive(true)
                 .balance(0L)
-                .depositedAuctionBalance(0L)
+                .depositedEscrowBalance(0L)
                 .depositedWithdrawBalance(0L)
                 .notificationSetting(true)
                 .build();
