@@ -17,6 +17,7 @@ import com.ssafy.be.domain.stream.entity.Stream;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
+import com.ssafy.be.global.websocket.dto.StreamPublishTask; // 추가된 패키지 경로
 import com.ssafy.be.support.annotation.IntegrationTest;
 import com.ssafy.be.support.util.TestFixture;
 import org.junit.jupiter.api.AfterEach;
@@ -26,46 +27,28 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.util.List;
+
 import static com.ssafy.be.domain.auction.entity.AuctionStatus.LIVE;
 import static com.ssafy.be.domain.auction.entity.AuctionStatus.READY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 class AuctionServiceTest {
-    @Autowired
-    private AuctionService auctionService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private SellerRepository sellerRepository;
-
-    @Autowired
-    private StreamRepository streamRepository;
-
-    @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private AuctionRepository auctionRepository;
-
-    @Autowired
-    private AuctionTimerRepository auctionTimerRepository;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @Autowired private AuctionService auctionService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private SellerRepository sellerRepository;
+    @Autowired private StreamRepository streamRepository;
+    @Autowired private ItemRepository itemRepository;
+    @Autowired private AuctionRepository auctionRepository;
+    @Autowired private AuctionTimerRepository auctionTimerRepository;
+    @Autowired private StringRedisTemplate redisTemplate;
 
     private User sellerUser;
-
     private Seller seller;
-
     private Stream stream;
-
     private Item item;
-
     private Auction readyAuction;
-
     private Auction liveAuction;
 
     @BeforeEach
@@ -117,16 +100,10 @@ class AuctionServiceTest {
         // then
         Auction savedAuction = auctionRepository.findById(readyAuction.getId()).orElseThrow();
 
-        // 경매 시작중인지 확인
         assertThat(savedAuction.getAuctionStatus()).isEqualTo(LIVE);
-
-        // 타이머 설정됐는지 확인
         assertThat(savedAuction.getStartedAt()).isNotNull();
-
-        // 레디스에 타이머 정보 저장됐는지 확인
         assertThat(auctionTimerRepository.existsByAuctionId(readyAuction.getId())).isTrue();
 
-        // response 확인
         AuctionStartResponse.AuctionStartItemDto itemDto = response.item();
         assertThat(itemDto.name()).isEqualTo("테스트 상품");
         assertThat(itemDto.startPrice()).isEqualTo(10000L);
@@ -149,7 +126,7 @@ class AuctionServiceTest {
                 .phone("010-9999-8888")
                 .profileImage("https://storage.googleapis.com/hanok-storage/profiles/default/default-profile.png")
                 .isActive(true)
-                .balance(50000L) // 충분한 잔액
+                .balance(50000L)
                 .depositedAuctionBalance(0L)
                 .depositedWithdrawBalance(0L)
                 .notificationSetting(true)
@@ -161,17 +138,25 @@ class AuctionServiceTest {
         long bidAmount = 15000L;
         BidPlaceRequest request = new BidPlaceRequest(liveAuction.getId(), bidAmount);
 
-        // when
-        BidPlaceResponse response = auctionService.placeBid(request, stream.getId(), bidder.getId());
+        // when: 반환 타입 List<StreamPublishTask>로 받기
+        List<StreamPublishTask> tasks = auctionService.placeBid(request, stream.getId(), bidder.getId());
 
-        // then
+        // then: Task 리스트가 비어있지 않은지 확인
+        assertThat(tasks).isNotEmpty();
+
+        // stream 필터를 사용해 안전하게 BidPlaceResponse 페이로드만 추출
+        BidPlaceResponse response = (BidPlaceResponse) tasks.stream()
+                .filter(task -> task.getPayload() instanceof BidPlaceResponse)
+                .map(StreamPublishTask::getPayload)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("BidPlaceResponse payload not found in tasks"));
+
         BidPlaceResponse.BidInfoDto bidInfo = response.bidInfo();
         assertThat(bidInfo).isNotNull();
         assertThat(bidInfo.nickname()).isEqualTo(bidder.getNickname());
         assertThat(bidInfo.amount()).isEqualTo(bidAmount);
         assertThat(bidInfo.placedAt()).isNotNull();
 
-        // 스나이핑 방지 타이머는 잔여 시간이 충분하므로 null이어야 함
         assertThat(response.snipingTimer()).isNull();
     }
 }
