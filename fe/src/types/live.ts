@@ -63,6 +63,22 @@ export type BidSyncPayload = {
   timer: StreamTimerPayload;
 };
 
+export type ItemSyncAuctionStatus = 'READY' | 'INTRODUCING' | 'LIVE' | 'SOLD' | 'UNSOLD';
+
+export type ItemSyncItemCondition = 'BRAND_NEW' | 'OPEN_BOX' | 'REFURBISHED' | 'USED';
+
+export type ItemSyncItem = {
+  itemName: string;
+  image: string;
+  startPrice: number;
+  auctionStatus: ItemSyncAuctionStatus;
+  itemCondition: ItemSyncItemCondition;
+};
+
+export type ItemSyncPayload = {
+  items: ItemSyncItem[];
+};
+
 export type StreamState = 'live' | 'disconnected' | 'ended';
 
 export type ChatMessageType =

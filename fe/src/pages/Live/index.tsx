@@ -9,10 +9,10 @@ import ControlBar from '@/components/Live/Stream/ControlBar';
 import SellerGuideOverlay from '@/components/Live/Stream/SellerGuideOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
-import type { BidWinnerPayload, StreamTimerPayload, SyncedAuctionTimer } from '@/types';
+import type { BidWinnerPayload, ItemSyncPayload, StreamTimerPayload, SyncedAuctionTimer } from '@/types';
 import type { AuctionStatisticsPayload } from '@/types';
 import type { BidSyncPayload } from '@/types';
-import { disconnectStompClient, subscribeStream } from '@/websocket/stompClient';
+import { disconnectStompClient, sendStreamMessage, subscribeStream } from '@/websocket/stompClient';
 
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
@@ -48,6 +48,10 @@ type BroadcastStreamEvent =
       payload?: AuctionStatisticsPayload;
     }
   | {
+      eventType: 'ITEM_SYNC';
+      payload?: ItemSyncPayload | null;
+    }
+  | {
       eventType: string;
       payload?: unknown;
     };
@@ -79,6 +83,10 @@ const isBidSyncEvent = (
   event: BroadcastStreamEvent,
 ): event is Extract<BroadcastStreamEvent, { eventType: 'BID_SYNC' }> => event.eventType === 'BID_SYNC';
 
+const isItemSyncEvent = (
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'ITEM_SYNC' }> => event.eventType === 'ITEM_SYNC';
+
 const isBidWinnerEvent = (
   event: PrivateStreamEvent,
 ): event is Extract<PrivateStreamEvent, { eventType: 'BID_WINNER' }> => event.eventType === 'BID_WINNER';
@@ -98,6 +106,7 @@ export default function LivePage() {
   const [currentItemCond, setCurrentItemCond] = useState('');
   const [auctionStatistics, setAuctionStatistics] = useState<AuctionStatisticsPayload | null>(null);
   const [bidSync, setBidSync] = useState<BidSyncPayload | null>(null);
+  const [itemSync, setItemSync] = useState<ItemSyncPayload | null>(null);
 
   useEffect(() => {
     if (!streamId) {
@@ -147,6 +156,11 @@ export default function LivePage() {
         return;
       }
 
+      if (isItemSyncEvent(event)) {
+        setItemSync(event.payload ?? null);
+        return;
+      }
+
       if (isAuctionStatisticsEvent(event) && event.payload) {
         setAuctionStatistics(event.payload);
       }
@@ -165,8 +179,12 @@ export default function LivePage() {
       onBroadcast: handleBroadcastEvent,
       onPrivate: handlePrivateEvent,
     })
-      .then((cleanup) => {
+      .then(async (cleanup) => {
         unsubscribeStream = cleanup;
+        await sendStreamMessage(streamId, {
+          eventType: 'ITEM_SYNC',
+          payload: null,
+        });
       })
       .catch((error) => {
         console.error('[stream] failed to subscribe', error);
@@ -209,7 +227,7 @@ export default function LivePage() {
 
       <div className="flex min-h-0 flex-1 gap-3">
         <div className="min-w-0 flex-1">
-          <LeftPanel isSeller={isSeller} />
+          <LeftPanel isSeller={isSeller} syncedItems={itemSync?.items ?? null} />
         </div>
         <div className="relative min-w-0 flex-2 overflow-hidden rounded-2xl bg-background">
           <StreamOverlay />

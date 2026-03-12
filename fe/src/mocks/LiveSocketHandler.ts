@@ -1,6 +1,6 @@
 import { ws, type WebSocketData } from 'msw';
 
-import type { AuctionStatisticsPayload, BidSyncPayload } from '@/types';
+import type { AuctionStatisticsPayload, BidSyncPayload, ItemSyncPayload } from '@/types';
 import { getStreamSocketConnectUrl } from '@/websocket/socket';
 
 type StompFrame = {
@@ -33,6 +33,7 @@ const heartbeatTimers = new Map<string, number>();
 const streamTimerStates = new Map<string, MockTimerState>();
 const streamAuctionStatisticsStates = new Map<string, MockAuctionStatisticsState>();
 const streamBidSyncStates = new Map<string, MockBidSyncState>();
+const streamItemSyncStates = new Map<string, ItemSyncPayload>();
 const winnerAnnouncementTimers = new Map<string, number>();
 
 const createTimestamp = (ms: number) => new Date(ms).toISOString();
@@ -160,6 +161,32 @@ const createTimerPayload = (state: MockTimerState, nowMs: number) => ({
   serverStartedAt: createTimestamp(state.startedAtMs),
 });
 
+const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
+  items: [
+    {
+      itemName: '청자 투각 칠보문 향로',
+      image: 'https://picsum.photos/400/300?random=1',
+      startPrice: 130000,
+      auctionStatus: 'LIVE',
+      itemCondition: 'BRAND_NEW',
+    },
+    {
+      itemName: '청자 투각 칠보문 향로',
+      image: 'https://picsum.photos/400/300?random=2',
+      startPrice: 130000,
+      auctionStatus: 'READY',
+      itemCondition: 'OPEN_BOX',
+    },
+    {
+      itemName: '청자 투각 칠보문 향로',
+      image: 'https://picsum.photos/400/300?random=3',
+      startPrice: 130000,
+      auctionStatus: 'READY',
+      itemCondition: 'USED',
+    },
+  ],
+});
+
 const getStreamIdFromDestination = (destination: string) => destination.split('/').pop() ?? '';
 
 const getRemainingSeconds = (state: MockTimerState, nowMs: number) => {
@@ -176,6 +203,55 @@ const clearWinnerAnnouncement = (streamId: string) => {
 
   globalThis.clearTimeout(winnerAnnouncementTimer);
   winnerAnnouncementTimers.delete(streamId);
+};
+
+const activateNextReadyItem = (streamId: string) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? createDefaultItemSyncPayload();
+
+  if (itemSyncPayload.items.some((item) => item.auctionStatus === 'LIVE')) {
+    streamItemSyncStates.set(streamId, itemSyncPayload);
+    return itemSyncPayload;
+  }
+
+  let activated = false;
+  const nextPayload: ItemSyncPayload = {
+    items: itemSyncPayload.items.map((item) => {
+      if (!activated && item.auctionStatus === 'READY') {
+        activated = true;
+        return {
+          ...item,
+          auctionStatus: 'LIVE',
+        };
+      }
+
+      return item;
+    }),
+  };
+
+  streamItemSyncStates.set(streamId, nextPayload);
+  return nextPayload;
+};
+
+const completeLiveItem = (streamId: string) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? createDefaultItemSyncPayload();
+  let completed = false;
+
+  const nextPayload: ItemSyncPayload = {
+    items: itemSyncPayload.items.map((item) => {
+      if (!completed && item.auctionStatus === 'LIVE') {
+        completed = true;
+        return {
+          ...item,
+          auctionStatus: 'SOLD',
+        };
+      }
+
+      return item;
+    }),
+  };
+
+  streamItemSyncStates.set(streamId, nextPayload);
+  return nextPayload;
 };
 
 const broadcastAuctionStatistics = (streamId: string) => {
@@ -215,6 +291,35 @@ const broadcastBidSync = (streamId: string) => {
   });
 };
 
+const broadcastItemSync = (streamId: string) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? createDefaultItemSyncPayload();
+
+  streamItemSyncStates.set(streamId, itemSyncPayload);
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'ITEM_SYNC',
+    payload: itemSyncPayload,
+  });
+};
+
+const sendItemSyncToClient = (
+  client: { send: (data: WebSocketData) => void },
+  subscriptionId: string,
+  destination: string,
+) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? createDefaultItemSyncPayload();
+
+  streamItemSyncStates.set(streamId, itemSyncPayload);
+  client.send(
+    serializeFrame(
+      createMessageFrame(subscriptionId, destination, {
+        eventType: 'ITEM_SYNC',
+        payload: itemSyncPayload,
+      }),
+    ),
+  );
+};
+
 const scheduleWinnerAnnouncement = (streamId: string) => {
   clearWinnerAnnouncement(streamId);
 
@@ -250,6 +355,14 @@ const scheduleWinnerAnnouncement = (streamId: string) => {
       },
     });
 
+    completeLiveItem(streamId);
+    streamTimerStates.delete(streamId);
+
+    broadcastToDestination(`/broadcast/streams/${streamId}`, {
+      eventType: 'BID_END',
+      payload: null,
+    });
+
     winnerAnnouncementTimers.delete(streamId);
   }, remainingMs);
 
@@ -279,6 +392,7 @@ const handleAuctionStart = (destination: string) => {
   streamTimerStates.set(streamId, state);
   streamAuctionStatisticsStates.set(streamId, auctionStatisticsState);
   streamBidSyncStates.set(streamId, { bidUnit });
+  activateNextReadyItem(streamId);
   scheduleWinnerAnnouncement(streamId);
 
   broadcastToDestination(`/broadcast/streams/${streamId}`, {
@@ -370,6 +484,11 @@ const handleBidSync = (destination: string) => {
   broadcastBidSync(streamId);
 };
 
+const handleItemSync = (destination: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  broadcastItemSync(streamId);
+};
+
 const handleSendFrame = (frame: StompFrame) => {
   if (frame.headers.destination?.startsWith('/app/streams/')) {
     const body = JSON.parse(frame.body) as { eventType?: string };
@@ -384,6 +503,10 @@ const handleSendFrame = (frame: StompFrame) => {
 
     if (body.eventType === 'BID_SYNC') {
       handleBidSync(frame.headers.destination);
+    }
+
+    if (body.eventType === 'ITEM_SYNC') {
+      handleItemSync(frame.headers.destination);
     }
   }
 };
@@ -415,6 +538,10 @@ export const liveSocketHandler = liveSocket.addEventListener('connection', ({ cl
 
         if (subscriptionId && destination) {
           getClientSubscriptions(client.id).set(subscriptionId, destination);
+
+          if (destination.startsWith('/broadcast/streams/')) {
+            sendItemSyncToClient(client, subscriptionId, destination);
+          }
         }
         return;
       }
