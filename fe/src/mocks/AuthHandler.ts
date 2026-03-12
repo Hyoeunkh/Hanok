@@ -64,7 +64,13 @@ export const authHandlers = [
     registeredEmails.push(body.email);
 
     return HttpResponse.json({
+      status: 'SUCCESS',
       message: '회원가입이 완료되었습니다.',
+      data: {
+        userId: Date.now(),
+        email: body.email,
+        nickname: body.nickname,
+      },
     }, { status: 201 });
   }),
 

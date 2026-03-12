@@ -22,7 +22,6 @@ export default function SignUpPage() {
   const [phone, setPhone] = useState('');
   const [isIdentityVerified, setIsIdentityVerified] = useState(false);
   const [verifiedName, setVerifiedName] = useState('');
-  const [identityVerificationId, setIdentityVerificationId] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
   const [termsAgreed, setTermsAgreed] = useState(false);
@@ -69,7 +68,6 @@ export default function SignUpPage() {
         setIsIdentityVerified(true);
         setVerifiedName(res.data.name);
         setPhone(res.data.phoneNumber);
-        setIdentityVerificationId(verificationId);
         alert(`본인인증이 완료되었습니다. (${res.data.name})`);
       } else {
         setPhoneError('본인인증에 실패했습니다.');
@@ -85,11 +83,11 @@ export default function SignUpPage() {
     if (!isEmailVerified) return alert('이메일 중복 확인을 해주세요.');
     if (!nickname) return alert('닉네임을 입력해주세요.');
     if (password.length < 8 || password !== passwordConfirm) return alert('비밀번호를 바르게 입력 및 확인해주세요.');
-    if (!isIdentityVerified || !identityVerificationId) return alert('휴대폰 본인 인증을 완료해주세요.');
+    if (!isIdentityVerified || !phone) return alert('휴대폰 본인 인증을 완료해주세요.');
     if (!termsAgreed || !privacyAgreed) return alert('필수 약관에 모두 동의해주세요.');
 
     try {
-      await signUp({ email, nickname, password, phone, identityVerificationId });
+      await signUp({ email, nickname, password, phone });
       alert('회원가입이 완료되었습니다!');
       navigate('/login');
     } catch (error) {

@@ -35,7 +35,16 @@ export type SignUpPayload = {
   nickname: string;
   password: string;
   phone: string;
-  identityVerificationId: string;
+};
+
+export type SignUpResponse = {
+  status: string;
+  message: string;
+  data: {
+    userId: number;
+    email: string;
+    nickname: string;
+  };
 };
 
 export type CheckEmailResponse = {
