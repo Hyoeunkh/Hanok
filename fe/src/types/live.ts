@@ -117,17 +117,30 @@ export type ChatMessageType =
   | { id: number; type: 'macro_response'; label: string; message: string }
   | { id: number; type: 'system'; message: string };
 
+export type LiveStreamItemStatus = 'READY' | 'INTRODUCING' | 'LIVE' | 'SOLD' | 'UNSOLD';
+
+export type LiveStreamItem = {
+  itemId: number;
+  name: string;
+  category: string;
+  startPrice: number;
+  status: LiveStreamItemStatus;
+  itemCondition: ItemSyncItemCondition;
+  image1: string | null;
+  createdAt: string;
+};
+
 export type Live = {
   streamId: number;
   title: string;
   category: string;
-  itemIds: number[];
   thumbnail: string | null;
   scheduledAt: string | null;
   startType: 'SCHEDULED' | 'IMMEDIATE';
   notice?: string;
   isLive: boolean;
   createdAt: string;
+  items: LiveStreamItem[];
 };
 
 export type StartStreamRequest = {

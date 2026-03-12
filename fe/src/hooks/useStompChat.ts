@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { MAX_CHAT_HISTORY } from '@/constants/stompChat';
@@ -34,9 +34,9 @@ const appendMessage = (messages: ChatMessageType[], message: ChatMessageType) =>
 export function useStompChat() {
   const { id: streamIdParam } = useParams<{ id: string }>();
   const streamId = streamIdParam ?? '';
-  const [messages, setMessages] = useState<ChatMessageType[]>([]);
+  const [messagesByStream, setMessagesByStream] = useState<Record<string, ChatMessageType[]>>({});
   const [connectionState, setConnectionState] = useState<StompConnectionState>(getStompConnectionState());
-  const resetKeyRef = useRef<string>('');
+  const messages = messagesByStream[streamId] ?? [];
 
   useEffect(() => {
     return subscribeToStompConnectionState(setConnectionState);
@@ -45,11 +45,6 @@ export function useStompChat() {
   useEffect(() => {
     if (!streamId) {
       return;
-    }
-
-    if (resetKeyRef.current !== streamId) {
-      resetKeyRef.current = streamId;
-      setMessages([]);
     }
 
     let unsubscribe: (() => void) | null = null;
@@ -116,7 +111,10 @@ export function useStompChat() {
           return;
         }
 
-        setMessages((prev) => appendMessage(prev, nextMessage));
+        setMessagesByStream((prev) => ({
+          ...prev,
+          [streamId]: appendMessage(prev[streamId] ?? [], nextMessage),
+        }));
       },
     })
       .then((cleanup) => {
