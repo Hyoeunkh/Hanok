@@ -91,4 +91,10 @@ public class StreamController implements StreamApi {
             @PathVariable Long streamId) {
         return ResponseEntity.ok(streamService.enterStream(userId, streamId));
     }
+
+    @GetMapping("/{streamId}/items")
+    public ResponseEntity<StreamItemsResponse> getStreamItems(
+            @PathVariable Long streamId) {
+        return ResponseEntity.ok(streamService.getStreamItems(streamId));
+    }
 }

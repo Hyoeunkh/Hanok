@@ -426,4 +426,18 @@ public class StreamService {
                 identity
         );
     }
+
+    @Transactional(readOnly = true)
+    public StreamItemsResponse getStreamItems(Long streamId) {
+        streamRepository.findById(streamId)
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        List<StreamItemsResponse.StreamItemResponse> items = auctionRepository
+                .findByStreamId(streamId)
+                .stream()
+                .map(StreamItemsResponse.StreamItemResponse::from)
+                .toList();
+
+        return new StreamItemsResponse(items);
+    }
 }
