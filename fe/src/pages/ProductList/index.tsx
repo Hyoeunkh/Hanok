@@ -1,12 +1,21 @@
 import { useState } from 'react';
-import type { Product } from '@/types';
+import { FaBox, FaBroadcastTower, FaTruck, FaPlus } from 'react-icons/fa';
+import type { Product, SideBarItem } from '@/types';
 import ProductCard from './components/ProductCard';
 import ProductRegistrationModal from './components/ProductRegistrationModal';
 import { useDeleteItem } from '@/api/hooks/useDeleteItem';
 import { useGetItems } from '@/api/hooks/useGetItems';
+import SideBar from '@/components/common/layouts/SideBar';
+
+const sidebarItems: SideBarItem[] = [
+  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} />, path: '/products' },
+  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} />, path: '/live/new' },
+  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} />, path: '/tracking' },
+];
 
 
 export default function ProductListPage() {
+  const [activeMenu, setActiveMenu] = useState('inventory');
   const [activeTab, setActiveTab] = useState<'ALL' | 'WAITING' | 'AUCTION' | 'SOLD'>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProductInitData, setEditProductInitData] = useState<Product | null>(null);
@@ -50,15 +59,23 @@ export default function ProductListPage() {
   return (
     <div style={{
       display: 'flex',
-      width: '70%', // 이거로 사이즈 수정함
+      width: '100%',
+      maxWidth: '1200px',
+      margin: '0 auto',
+      gap: '0px',
+      padding: '40px 16px',
       minHeight: '100vh',
       backgroundColor: '#0B0C10',
       color: 'white',
-      fontFamily: "'MuseumCulturalFoundationClassic', sans-serif",
     }}>
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: '40px' }}>
-        {/* Header */}
+      <SideBar
+        items={sidebarItems}
+        activeItemId={activeMenu}
+        onItemClick={(item) => setActiveMenu(item.id)}
+        className="!w-[200px] shrink-0 !pr-4 !pl-0 !py-0 !max-w-none"
+      />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0' }}>내 인벤토리</h1>
@@ -70,6 +87,9 @@ export default function ProductListPage() {
               setIsModalOpen(true);
             }}
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
               backgroundColor: '#F5F5F7',
               color: '#1C1C1E',
               border: 'none',
@@ -80,11 +100,11 @@ export default function ProductListPage() {
               cursor: 'pointer',
             }}
           >
+            <FaPlus size={12} />
             새 물품 등록
           </button>
         </div>
 
-        {/* Inventory Box */}
         <div style={{
           backgroundColor: '#151517',
           borderRadius: '16px',
@@ -94,7 +114,6 @@ export default function ProductListPage() {
           display: 'flex',
           flexDirection: 'column',
         }}>
-          {/* Tabs */}
           <div style={{
             display: 'flex',
             borderBottom: '1px solid #2C2C2E',
@@ -134,7 +153,6 @@ export default function ProductListPage() {
             })}
           </div>
 
-          {/* Product List or Empty State */}
           {filteredProducts.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {filteredProducts.map(product => (
