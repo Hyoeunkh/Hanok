@@ -5,7 +5,6 @@ import com.ssafy.be.domain.chat.dto.payload.ChatMessagePayload;
 import com.ssafy.be.domain.chat.dto.request.ChatMessageRequest;
 import com.ssafy.be.domain.chat.service.ChatService;
 import com.ssafy.be.global.infra.portone.PortoneClient;
-import com.ssafy.be.global.websocket.enums.StreamEventType;
 import com.ssafy.be.global.websocket.publisher.StreamPublisher;
 import com.ssafy.be.support.annotation.IntegrationTest;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -45,7 +40,7 @@ class ChatIntegrationTest {
 
     @MockitoBean private PortoneClient portoneClient;
 
-    // 웹소켓으로 메시지가 잘 발행되는지 검증하기 위한 Mocking
+    // 통합 테스트 환경 로드를 위해 Mocking 유지 (Controller 등에서 의존할 수 있음)
     @MockitoBean private StreamPublisher streamPublisher;
 
     private static final Long   STREAM_ID  = 1L;
@@ -68,11 +63,10 @@ class ChatIntegrationTest {
 
     @Test
     @Order(1)
-    @DisplayName("1. 정상 메시지 전송 - Redis 저장 및 웹소켓 발행 확인")
-    void testHandleMessage_savedToRedisAndBroadcasted() {
-        log.info("▶️ [실행] 정상 메시지 전송, Redis 저장 및 웹소켓 발행 테스트");
+    @DisplayName("1. 정상 메시지 전송 - 필터링 통과 및 Redis 저장 확인")
+    void testHandleMessage_savedToRedis() {
+        log.info("▶️ [실행] 정상 메시지 전송 및 Redis 저장 테스트");
 
-        // Service 반환 타입에 맞게 ChatMessagePayload로 받음
         ChatMessagePayload response =
                 chatService.handleMessage(USER_ID, NICKNAME, new ChatMessageRequest(STREAM_ID, "안녕하세요!"));
 
@@ -85,12 +79,7 @@ class ChatIntegrationTest {
         assertThat(messages).hasSize(1);
         assertThat(messages.get(0).content()).isEqualTo("안녕하세요!");
 
-        // 1-3. StreamPublisher를 통해 웹소켓 브로드캐스트가 호출되었는지 검증
-        verify(streamPublisher, atLeastOnce()).broadcastToStream(
-                eq(STREAM_ID),
-                eq(StreamEventType.CHAT_MESSAGE),
-                any(ChatMessagePayload.class)
-        );
+        // 참고: ChatService가 더 이상 StreamPublisher를 호출하지 않으므로 verify 로직은 제거됨
     }
 
     @Test
@@ -105,7 +94,7 @@ class ChatIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.length()").value(2)); // 1번 테스트에서 넣은 것 포함 2개
+                .andExpect(jsonPath("$.data.length()").value(2));
     }
 
     @Test
@@ -120,7 +109,6 @@ class ChatIntegrationTest {
         ChatMessagePayload response =
                 chatService.handleMessage(USER_ID, NICKNAME, new ChatMessageRequest(STREAM_ID, dirtyWord));
 
-        // 검증 1: 반환값이 "금칙어"로 덮어씌워짐
         assertThat(response.content()).isEqualTo("금칙어");
 
         List<ChatMessagePayload> messages = chatService.getRecentMessage(STREAM_ID);
@@ -129,7 +117,6 @@ class ChatIntegrationTest {
         log.info("🔍 [결과 분석] 금칙어 전송 후 메시지 개수: {}", afterSize);
         log.info("🔍 [결과 분석] 필터링된 내용: {}", messages.get(afterSize - 1).content());
 
-        // 검증 2: 메시지는 버려지지 않고 정상적으로 1개 늘어나야 함
         assertThat(afterSize).isEqualTo(beforeSize + 1);
         assertThat(messages.get(afterSize - 1).content()).isEqualTo("금칙어");
     }
@@ -150,7 +137,6 @@ class ChatIntegrationTest {
 
         log.info("🔍 [결과 분석] 허용어 처리된 내용: {}", lastMessage);
 
-        // 검증: "금칙어"로 필터링되지 않고 원본 그대로 통과해야 함
         assertThat(response.content()).isEqualTo(trickyWord);
         assertThat(lastMessage).isEqualTo(trickyWord);
     }
@@ -169,7 +155,6 @@ class ChatIntegrationTest {
         log.info("🔍 [결과 분석] 100개 추가 후 총 메시지 개수: {}", messages.size());
 
         assertThat(messages).hasSize(100);
-        // 1번 테스트에서 넣었던 "안녕하세요!"는 밀려나서 없어야 함
         assertThat(messages.get(0).content()).isNotEqualTo("안녕하세요!");
     }
 
@@ -244,7 +229,6 @@ class ChatIntegrationTest {
 
         log.info("🔍 [결과 분석] 정상적으로 '금칙어'로 치환된 메시지 개수: {}", bannedCount);
 
-        // 절반(50개)은 반드시 "금칙어"로 치환되어야 함
         assertThat(bannedCount).isEqualTo(messageCount / 2);
     }
 }
