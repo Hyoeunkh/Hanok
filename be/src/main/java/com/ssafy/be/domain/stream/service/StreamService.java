@@ -13,6 +13,7 @@ import com.ssafy.be.domain.item.repository.ItemRepository;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
+import com.ssafy.be.domain.stream.dto.request.MacroSaveRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamListRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamRegisterRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamUpdateRequest;
@@ -21,6 +22,7 @@ import com.ssafy.be.domain.stream.entity.Stream;
 import com.ssafy.be.domain.stream.entity.StreamSortType;
 import com.ssafy.be.domain.stream.entity.StreamStatus;
 import com.ssafy.be.domain.stream.exception.StreamErrorCode;
+import com.ssafy.be.domain.stream.repository.MacroRedisRepository;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.global.exception.GlobalException;
 import com.ssafy.be.global.infra.gcs.GcsClient;
@@ -33,6 +35,8 @@ import io.livekit.server.RoomName;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -52,6 +56,7 @@ public class StreamService {
     private final AuctionBidRepository auctionBidRepository;
     private final AuctionRepository auctionRepository;
     private final ItemRepository itemRepository;
+    private final MacroRedisRepository macroRedisRepository;
 
     @Transactional
     public StreamRegisterResponse register(
@@ -136,7 +141,7 @@ public class StreamService {
 
         if (thumbnail != null && !thumbnail.isEmpty()) {
             if (stream.getThumbnail() != null) {
-                gcsClient.deleteStreamThumbnail(stream.getThumbnail());
+                gcsClient.deleteImage(stream.getThumbnail());
             }
             try {
                 String url = gcsClient.uploadStreamThumbnail(thumbnail, seller.getId(), streamId);
@@ -177,7 +182,7 @@ public class StreamService {
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         if (stream.getThumbnail() != null) {
-            gcsClient.deleteStreamThumbnail(stream.getThumbnail());
+            gcsClient.deleteImage(stream.getThumbnail());
         }
 
         streamRepository.delete(stream);
@@ -219,6 +224,21 @@ public class StreamService {
                         .findByIdAndSellerId(streamId, seller.getId())
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
+        List<ItemSummaryResponse> items = auctionRepository.findByStreamId(streamId).stream()
+                .map(auction -> {
+                    Item item = auction.getItem();
+                    return new ItemSummaryResponse(
+                            item.getId(),
+                            item.getName(),
+                            item.getCategory(),
+                            item.getStartPrice(),
+                            item.getStatus(),
+                            item.getItemCondition(),
+                            item.getImage1(),
+                            item.getCreatedAt());
+                })
+                .toList();
+
         return new StreamDetailResponse(
                 stream.getId(),
                 stream.getTitle(),
@@ -228,7 +248,8 @@ public class StreamService {
                 stream.getStartType(),
                 stream.getNotice(),
                 stream.getStatus() == StreamStatus.LIVE,
-                stream.getCreatedAt());
+                stream.getCreatedAt(),
+                items);
     }
 
     @Transactional
@@ -259,6 +280,7 @@ public class StreamService {
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         stream.end();
+        macroRedisRepository.deleteAll(streamId);
     }
 
     @Transactional(readOnly = true)
@@ -355,7 +377,7 @@ public class StreamService {
                 .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         // 시청자 수 증가 (비회원이면 userId null)
-        streamViewerService.increment(streamId);  // addViewer → increment
+        String identity = streamViewerService.enter(streamId, userId);  // addViewer → increment
 
         long viewerCount = streamViewerService.getViewerCount(streamId);
 
@@ -379,6 +401,20 @@ public class StreamService {
                 })
                 .orElse(List.of());
 
+        // 토큰 발급
+        boolean isHost = stream.getSeller().getUser().getId().equals(userId);
+        String participantIdentity = userId != null ? String.valueOf(userId) : "guest-" + streamId;
+        String roomName = String.valueOf(streamId);
+
+        AccessToken accessToken = new AccessToken(liveKitProperties.apiKey(), liveKitProperties.apiSecret());
+        accessToken.setName(participantIdentity);
+        accessToken.setIdentity(participantIdentity);
+        accessToken.addGrants(
+                new RoomJoin(true),
+                new RoomName(roomName),
+                new CanPublish(isHost),
+                new CanSubscribe(true));
+
         return new StreamEnterResponse(
                 stream.getId(),
                 stream.getTitle(),
@@ -391,7 +427,57 @@ public class StreamService {
                         seller.getUser().getProfileImage()
                 ),
                 viewerCount,
-                topBidders
+                topBidders,
+                accessToken.toJwt(),
+                identity
         );
+    }
+
+    @Transactional(readOnly = true)
+    public StreamItemsResponse getStreamItems(Long streamId) {
+        streamRepository.findById(streamId)
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        List<StreamItemsResponse.StreamItemResponse> items = auctionRepository
+                .findByStreamId(streamId)
+                .stream()
+                .map(StreamItemsResponse.StreamItemResponse::from)
+                .toList();
+
+        return new StreamItemsResponse(items);
+    }
+
+    @Transactional
+    public void saveMacros(Long userId, Long streamId, MacroSaveRequest request) {
+        Seller seller = sellerRepository.findByUserId(userId)
+                .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
+
+        streamRepository.findByIdAndSellerId(streamId, seller.getId())
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        Map<String, String> macros = request.macros().stream()
+                .collect(Collectors.toMap(
+                        MacroSaveRequest.MacroItem::questionType,
+                        MacroSaveRequest.MacroItem::answer
+                ));
+
+        macroRedisRepository.saveAll(streamId, macros);
+    }
+
+    @Transactional(readOnly = true)
+    public MacroResponse getMacros(Long streamId, Category category) {
+        streamRepository.findById(streamId)
+                .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
+
+        Map<Object, Object> entries = macroRedisRepository.findAll(streamId);
+
+        List<MacroResponse.MacroItem> macros = entries.entrySet().stream()
+                .map(e -> new MacroResponse.MacroItem(
+                        e.getKey().toString(),
+                        e.getValue().toString()
+                ))
+                .toList();
+
+        return new MacroResponse(streamId, category, macros);
     }
 }

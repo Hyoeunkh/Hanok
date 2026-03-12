@@ -1,10 +1,8 @@
 package com.ssafy.be.domain.auction.handler;
 
-import com.ssafy.be.domain.auction.dto.request.AuctionStartRequest;
-import com.ssafy.be.domain.auction.dto.response.AuctionStartResponse;
+import com.ssafy.be.domain.auction.dto.request.ItemIntroduceRequest;
 import com.ssafy.be.domain.auction.service.AuctionService;
 import com.ssafy.be.global.common.response.JsonConverter;
-import com.ssafy.be.global.websocket.dto.StreamPublishTask;
 import com.ssafy.be.global.websocket.dto.request.StompRequest;
 import com.ssafy.be.global.websocket.enums.StreamEventType;
 import com.ssafy.be.global.websocket.handler.StreamEventHandler;
@@ -13,29 +11,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
-import java.util.List;
 
-import static com.ssafy.be.global.websocket.enums.StreamEventType.AUCTION_START;
+import static com.ssafy.be.global.websocket.enums.StreamEventType.ITEM_INTRODUCE;
 
 @RequiredArgsConstructor
 @Component
-public class AuctionStartHandler implements StreamEventHandler {
+public class ItemIntroduceHandler implements StreamEventHandler {
     private final AuctionService auctionService;
     private final JsonConverter jsonConverter;
     private final StreamPublisher streamPublisher;
 
     @Override
     public StreamEventType getEventType() {
-        return StreamEventType.AUCTION_START;
+        return ITEM_INTRODUCE;
     }
 
     @Override
     public void handle(StompRequest<?> request, Long streamId, Principal principal) {
-        AuctionStartRequest requestPayload = jsonConverter.convert(request.getPayload(), AuctionStartRequest.class);
+        ItemIntroduceRequest requestPayload = jsonConverter.convert(request.getPayload(), ItemIntroduceRequest.class);
 
-        List<StreamPublishTask> streamPublishTasks = auctionService.startAuction(requestPayload, streamId, Long.parseLong(principal.getName()));
+        auctionService.introduceItem(requestPayload, streamId, Long.parseLong(principal.getName()));
 
-        streamPublishTasks.forEach(streamPublisher::publish);
+        streamPublisher.broadcast(streamId, ITEM_INTRODUCE, null);
     }
 }
-

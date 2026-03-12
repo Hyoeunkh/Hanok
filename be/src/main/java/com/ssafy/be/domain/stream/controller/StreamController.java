@@ -1,6 +1,8 @@
 package com.ssafy.be.domain.stream.controller;
 
+import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.stream.controller.api.StreamApi;
+import com.ssafy.be.domain.stream.dto.request.MacroSaveRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamListRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamRegisterRequest;
 import com.ssafy.be.domain.stream.dto.request.StreamUpdateRequest;
@@ -81,7 +83,7 @@ public class StreamController implements StreamApi {
     @GetMapping("/scheduled")
     public ResponseEntity<ScheduledStreamListResponse> getScheduledStreamList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(streamService.getScheduledStreamList(page, size));
     }
 
@@ -90,5 +92,27 @@ public class StreamController implements StreamApi {
             @AuthenticationPrincipal Long userId,
             @PathVariable Long streamId) {
         return ResponseEntity.ok(streamService.enterStream(userId, streamId));
+    }
+
+    @GetMapping("/{streamId}/items")
+    public ResponseEntity<StreamItemsResponse> getStreamItems(
+            @PathVariable Long streamId) {
+        return ResponseEntity.ok(streamService.getStreamItems(streamId));
+    }
+
+    @PostMapping("/{streamId}/macros")
+    public ResponseEntity<Void> saveMacros(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long streamId,
+            @RequestBody MacroSaveRequest request) {
+        streamService.saveMacros(userId, streamId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{streamId}/macros")
+    public ResponseEntity<MacroResponse> getMacros(
+            @PathVariable Long streamId,
+            @RequestParam Category category) {
+        return ResponseEntity.ok(streamService.getMacros(streamId, category));
     }
 }
