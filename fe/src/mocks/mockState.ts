@@ -23,7 +23,7 @@ export const mockLoginUsers: MockLoginUser[] = [
     balance: 10000,
     depositedBalance: 5000,
     isSeller: false,
-    accessToken: 'mock-access-token-buyer',
+    accessToken: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIxIiwiZW1haWwiOiJidXllckBleGFtcGxlLmNvbSJ9.',
     refreshToken: 'mock-refresh-token-buyer',
   },
   {
@@ -36,7 +36,7 @@ export const mockLoginUsers: MockLoginUser[] = [
     balance: 30000,
     depositedBalance: 12000,
     isSeller: true,
-    accessToken: 'mock-access-token-seller',
+    accessToken: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIyIiwiZW1haWwiOiJzZWxsZXJAZXhhbXBsZS5jb20ifQ.',
     refreshToken: 'mock-refresh-token-seller',
   },
   {
@@ -49,7 +49,7 @@ export const mockLoginUsers: MockLoginUser[] = [
     balance: 50000,
     depositedBalance: 15000,
     isSeller: false,
-    accessToken: 'mock-access-token-test-user',
+    accessToken: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIzIiwiZW1haWwiOiJ0ZXN0dXNlckBleGFtcGxlLmNvbSJ9.',
     refreshToken: 'mock-refresh-token-test-user',
   },
 ];

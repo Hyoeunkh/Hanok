@@ -12,7 +12,7 @@ import type {
   UpdateStreamResponse,
 } from '@/types';
 
-import { getCurrentMockUser } from './mockState';
+import { getCurrentMockUser, mockLoginUsers } from './mockState';
 
 type RegisteredLive = Live & {
   sellerId: number;
@@ -31,6 +31,16 @@ const createStreamItems = (itemIds: number[], category: string, thumbnail: strin
     image1: thumbnail,
     createdAt: new Date(Date.now() - index * 60000).toISOString(),
   }));
+
+const defaultSeedSeller = mockLoginUsers.find((user) => user.userId === 2);
+
+const defaultSeedSellerSnapshot = {
+  sellerId: defaultSeedSeller?.userId ?? 2,
+  sellerNickname: defaultSeedSeller?.nickname ?? 'seller',
+  sellerProfileImage: defaultSeedSeller?.profileImage ?? null,
+};
+
+const getCurrentSellerId = () => getCurrentMockUser()?.userId ?? defaultSeedSellerSnapshot.sellerId;
 
 const getCurrentSellerSnapshot = () => {
   const currentUser = getCurrentMockUser();
@@ -93,9 +103,7 @@ const registeredLives: RegisteredLive[] = [
     isLive: false,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
     items: createStreamItems([101, 102, 103], 'BAGS_FASHION_ACCESSORIES', Logo),
-    sellerId: 10,
-    sellerNickname: 'vintage_hub',
-    sellerProfileImage: 'https://picsum.photos/seed/seller-10/120/120',
+    ...defaultSeedSellerSnapshot,
   },
   {
     streamId: 2,
@@ -123,9 +131,7 @@ const registeredLives: RegisteredLive[] = [
     isLive: false,
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     items: createStreamItems([301], 'WATCHES', Logo),
-    sellerId: 11,
-    sellerNickname: 'watch_studio',
-    sellerProfileImage: 'https://picsum.photos/seed/seller-11/120/120',
+    ...defaultSeedSellerSnapshot,
   },
 ];
 
@@ -166,15 +172,18 @@ export const LiveCreateHandlers = [
     const url = new URL(request.url);
     const page = Math.max(0, Number(url.searchParams.get('page') ?? '0'));
     const size = Math.max(1, Number(url.searchParams.get('size') ?? '8'));
+    const currentSellerId = getCurrentSellerId();
 
-    const streams = registeredLives.map((live) => ({
-      streamId: live.streamId,
-      title: live.title,
-      category: live.category,
-      thumbnail: live.thumbnail,
-      scheduledAt: live.scheduledAt,
-      state: live.isLive ? ('LIVE' as const) : ('SCHEDULED' as const),
-    }));
+    const streams = registeredLives
+      .filter((live) => live.sellerId === currentSellerId)
+      .map((live) => ({
+        streamId: live.streamId,
+        title: live.title,
+        category: live.category,
+        thumbnail: live.thumbnail,
+        scheduledAt: live.scheduledAt,
+        state: live.isLive ? ('LIVE' as const) : ('SCHEDULED' as const),
+      }));
 
     const start = page * size;
     const end = start + size;
@@ -187,6 +196,10 @@ export const LiveCreateHandlers = [
 
     if (!live) {
       return HttpResponse.json({ message: 'Stream not found' }, { status: 404 });
+    }
+
+    if (live.sellerId !== getCurrentSellerId()) {
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     return HttpResponse.json(live, { status: 200 });
@@ -226,6 +239,11 @@ export const LiveCreateHandlers = [
     const streamId = Number(params.streamId);
     const { body, thumbnailUrl } = await parseStreamRequest(request);
     const existingLive = getRegisteredLiveById(streamId);
+
+    if (existingLive && existingLive.sellerId !== getCurrentSellerId()) {
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
     const sellerSnapshot = existingLive
       ? {
           sellerId: existingLive.sellerId,
@@ -289,6 +307,10 @@ export const LiveCreateHandlers = [
     const { body, thumbnailUrl } = await parseStreamRequest(request);
     const liveIndex = registeredLives.findIndex((item) => item.streamId === streamId);
 
+    if (liveIndex !== -1 && registeredLives[liveIndex].sellerId !== getCurrentSellerId()) {
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
     if (liveIndex !== -1) {
       const resolvedThumbnail = thumbnailUrl ?? registeredLives[liveIndex].thumbnail;
       registeredLives[liveIndex] = {
@@ -315,6 +337,10 @@ export const LiveCreateHandlers = [
   http.delete(`${BASE_URL}/v1/streams/:streamId`, ({ params }) => {
     const streamId = Number(params.streamId);
     const liveIndex = registeredLives.findIndex((item) => item.streamId === streamId);
+
+    if (liveIndex !== -1 && registeredLives[liveIndex].sellerId !== getCurrentSellerId()) {
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
 
     if (liveIndex !== -1) {
       registeredLives.splice(liveIndex, 1);
