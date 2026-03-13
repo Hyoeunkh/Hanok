@@ -138,7 +138,6 @@ export default function LivePage() {
   const location = useLocation();
   const { id: streamId } = useParams<{ id: string }>();
   const numericStreamId = Number(streamId);
-  const [isSeller, setIsSeller] = useState(true);
   const shouldAutoOpenStartModal =
     (location.state as { autoOpenStartModal?: boolean } | null)?.autoOpenStartModal === true;
   const { data: streamEnter } = useGetStreamEnter(numericStreamId);
@@ -170,6 +169,10 @@ export default function LivePage() {
   const startAuctionId = introducingAuctionItem?.auctionId ?? null;
   const activeBidAuctionId = liveAuctionItem?.auctionId ?? introducingAuctionItem?.auctionId ?? null;
   const activeStreamEnter: StreamEnterResponse | null = streamEnter ?? null;
+  const storedUserId =
+    typeof window === 'undefined' ? 0 : Number.parseInt(window.localStorage.getItem('userId') ?? '0', 10);
+  const currentUserId = Number.isFinite(storedUserId) ? storedUserId : 0;
+  const isSeller = activeStreamEnter?.seller.sellerId === currentUserId;
   const isStreamLive = liveStateOverride ?? Boolean(activeStreamEnter?.isLive);
   const canIntroduce = liveAuctionItem === null && introducingAuctionItem === null && introduceAuctionId !== null;
   const canStart = liveAuctionItem === null && startAuctionId !== null;
@@ -410,7 +413,7 @@ export default function LivePage() {
         </div>
         <div className="relative min-w-0 flex-2 overflow-hidden rounded-2xl bg-background">
           <StreamOverlay viewerCount={activeStreamEnter?.viewerCount ?? 0} />
-          <SellerGuideOverlay />
+          {isSeller && <SellerGuideOverlay />}
           <StreamPlaceholder />
           <ControlBar
             isSeller={isSeller}
@@ -431,20 +434,6 @@ export default function LivePage() {
           )}
 
           <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-            <div className="flex gap-1 rounded-lg bg-[rgba(0,0,0,.6)] p-1">
-              <button
-                className={`rounded-md px-3 py-1 text-xs font-bold transition ${isSeller ? 'bg-white text-black' : 'text-[#71717a]'}`}
-                onClick={() => setIsSeller(true)}
-              >
-                판매자
-              </button>
-              <button
-                className={`rounded-md px-3 py-1 text-xs font-bold transition ${!isSeller ? 'bg-white text-black' : 'text-[#71717a]'}`}
-                onClick={() => setIsSeller(false)}
-              >
-                구매자
-              </button>
-            </div>
             {timer && <AuctionTimer key={timer.receivedAtMs} timer={timer} onExpire={() => undefined} />}
           </div>
 
