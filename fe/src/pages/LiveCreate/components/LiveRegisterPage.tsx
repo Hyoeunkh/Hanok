@@ -212,6 +212,20 @@ export default function LiveRegisterPage() {
       answer: macroAnswers[macro.questionType] ?? '',
     }));
 
+  const validateStreamForm = () => {
+    if (!title.trim()) {
+      alert('방송 제목을 입력해주세요.');
+      return false;
+    }
+
+    if (selectedItems.length === 0) {
+      alert('방송에 등록할 물품을 선택해주세요.');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSaveMacros = () => {
     if (!isEditMode) {
       alert('매크로는 방송 예약 또는 시작 시 함께 저장됩니다.');
@@ -241,7 +255,7 @@ export default function LiveRegisterPage() {
   };
 
   const submitReadyEntry = async () => {
-    if (!categoryId) {
+    if (!categoryId || !validateStreamForm()) {
       return;
     }
 
@@ -280,7 +294,7 @@ export default function LiveRegisterPage() {
   };
 
   const submitStream = async (startType: 'SCHEDULED' | 'IMMEDIATE', scheduledAtValue?: string) => {
-    if (!categoryId) {
+    if (!categoryId || !validateStreamForm()) {
       return;
     }
 
@@ -378,14 +392,10 @@ export default function LiveRegisterPage() {
           >
             <FaArrowLeft size={16} />
           </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <FaCircle className="text-[#e74c3c] text-sm" />
-              <h1 className="text-xl font-bold text-white">{pageTitle}</h1>
-            </div>
-            <p className="text-[#888] text-sm mt-0.5">
-              방송 정보를 설정하세요. · 카테고리: <span className="text-[#d9b36d] font-semibold">{categoryLabel}</span>
-            </p>
+          <div className="flex items-center gap-2">
+            <FaCircle className="text-[#e74c3c] text-sm" />
+            <h1 className="text-xl font-bold text-white">{pageTitle}</h1>{' '}
+            <span className="text-[#d9b36d] font-semibold">[{categoryLabel}]</span>
           </div>
         </div>
 
@@ -428,7 +438,7 @@ export default function LiveRegisterPage() {
               <FaList className="text-[#e74c3c] text-sm" />
               <h2 className="text-white font-bold text-base">경매 물품 리스트</h2>
             </div>
-            <p className="text-[#888] text-xs leading-relaxed">방송 중 아래 순서대로 화면에 표시됩니다.</p>
+            <p className="text-[#888] text-xs leading-relaxed">방송 중 순서대로 표시됩니다.</p>
           </div>
 
           <div className="flex flex-col gap-2 flex-1">
