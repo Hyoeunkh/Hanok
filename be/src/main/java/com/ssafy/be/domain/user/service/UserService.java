@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.ssafy.be.domain.user.dto.request.AccountRegisterRequest;
 import com.ssafy.be.domain.user.dto.request.IdentityVerificationRequestDto;
 import com.ssafy.be.domain.user.dto.request.SignupRequestDto;
-import com.ssafy.be.domain.user.dto.response.AccountRegisterResponse;
-import com.ssafy.be.domain.user.dto.response.IdentityVerificationResponseDto;
-import com.ssafy.be.domain.user.dto.response.LoginResponseDto;
-import com.ssafy.be.domain.user.dto.response.SignupResponseDto;
+import com.ssafy.be.domain.user.dto.response.*;
 import com.ssafy.be.domain.user.entity.BankCode;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.exception.UserErrorCode;
@@ -256,5 +253,29 @@ public class UserService {
         user.updateAccount(bankCode, request.accountName(), request.accountNum());
 
         return new AccountRegisterResponse(bankCode.getName(), request.accountName(), request.accountNum());
+    }
+
+    // -----------------------------------------------
+    // 내 계정 정보 조회
+    // GET /api/v1/users/me
+    // -----------------------------------------------
+    @Transactional(readOnly = true)
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
+        return toUserProfileResponse(user);
+    }
+
+    private UserProfileResponse toUserProfileResponse(User user) {
+        return UserProfileResponse.builder()
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .phone(user.getPhone())
+                .balance(user.getBalance())
+                .depositedBalance(user.getDepositedBidBalance()
+                        + user.getDepositedEscrowBalance()
+                        + user.getDepositedWithdrawBalance())
+                .build();
     }
 }
