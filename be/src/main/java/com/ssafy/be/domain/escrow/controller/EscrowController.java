@@ -1,6 +1,7 @@
 package com.ssafy.be.domain.escrow.controller;
 
 import com.ssafy.be.domain.escrow.api.EscrowApi;
+import com.ssafy.be.domain.escrow.dto.EscrowCancelRequest;
 import com.ssafy.be.domain.escrow.dto.TrackingNumberRegisterRequest;
 import com.ssafy.be.domain.escrow.service.EscrowService;
 import com.ssafy.be.global.common.response.ApiResponse;
@@ -23,6 +24,15 @@ public class EscrowController implements EscrowApi {
             @AuthenticationPrincipal String principal
     ) {
         escrowService.registerTrackingNumber(request, escrowId, getUserId(principal));
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @PostMapping("/{escrowId}/cancel")
+    public ResponseEntity<?> cancelEscrow(
+            @RequestBody @Valid EscrowCancelRequest request,
+            @PathVariable Long escrowId,
+            @AuthenticationPrincipal String principal) {
+        escrowService.cancelEscrow(request, escrowId, getUserId(principal));
         return ResponseEntity.ok(ApiResponse.success());
     }
 
