@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { FaTruck, FaBox, FaBroadcastTower } from 'react-icons/fa';
+import { FaTruck } from 'react-icons/fa';
 import { FiX } from 'react-icons/fi';
 import { BsBox } from 'react-icons/bs';
-import type { SideBarItem } from '@/types';
 import SideBar from '@/components/common/layouts/SideBar';
-
-const sidebarItems: SideBarItem[] = [
-  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} />, path: '/products' },
-  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} />, path: '/lives' },
-  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} />, path: '/tracking' },
-];
+import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 
 import { useGetEscrows } from '@/api/hooks/useGetEscrows';
 import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
@@ -242,7 +236,7 @@ export default function TrackingInput() {
         }}
       >
         <SideBar
-          items={sidebarItems}
+          items={sellerSidebarItems}
           activeItemId={activeMenu}
           onItemClick={(item) => setActiveMenu(item.id)}
           className="!w-[200px] shrink-0 !pr-4 !pl-0 !py-0 !max-w-none"

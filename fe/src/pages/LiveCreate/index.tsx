@@ -1,18 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { FaBox, FaBroadcastTower, FaTruck, FaPlus } from 'react-icons/fa';
+import { FaBroadcastTower, FaPlus } from 'react-icons/fa';
 import CategorySelectModal from './components/CategorySelectModal';
 import { useDeleteStream } from '@/api/hooks/useDeleteStream';
 import { useGetScheduledStreams } from '@/api/hooks/useGetScheduledStreams';
-import type { SideBarItem } from '@/types';
 import SideBar from '@/components/common/layouts/SideBar';
+import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
-
-const sidebarItems: SideBarItem[] = [
-  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} />, path: '/products' },
-  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} />, path: '/lives' },
-  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} />, path: '/tracking' },
-];
 
 const getCategoryLabel = (categoryId: string): string =>
   MAIN_CATEGORY_ITEMS.find((c) => c.id === categoryId)?.label ?? categoryId;
@@ -110,7 +104,7 @@ export default function LiveCreatePage() {
   return (
     <div className="w-full max-w-[1200px] mx-auto flex gap-0 py-10 px-4">
       <SideBar
-        items={sidebarItems}
+        items={sellerSidebarItems}
         activeItemId={activeMenu}
         onItemClick={(item) => setActiveMenu(item.id)}
         className="!w-[200px] shrink-0 !pr-4 !pl-0 !py-0 !max-w-none"

@@ -1,17 +1,12 @@
 import { useState } from 'react';
-import { FaBox, FaBroadcastTower, FaTruck, FaPlus } from 'react-icons/fa';
-import type { Product, SideBarItem } from '@/types';
+import { FaPlus } from 'react-icons/fa';
+import type { Product } from '@/types';
 import ProductCard from './components/ProductCard';
 import ProductRegistrationModal from './components/ProductRegistrationModal';
 import { useDeleteItem } from '@/api/hooks/useDeleteItem';
 import { useGetItems } from '@/api/hooks/useGetItems';
 import SideBar from '@/components/common/layouts/SideBar';
-
-const sidebarItems: SideBarItem[] = [
-  { id: 'inventory', label: '내 인벤토리', icon: <FaBox size={18} />, path: '/products' },
-  { id: 'live', label: '라이브 방송 관리', icon: <FaBroadcastTower size={18} />, path: '/lives' },
-  { id: 'delivery', label: '배송 관리', icon: <FaTruck size={18} />, path: '/tracking' },
-];
+import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 
 export default function ProductListPage() {
   const [activeMenu, setActiveMenu] = useState('inventory');
@@ -70,7 +65,7 @@ export default function ProductListPage() {
       }}
     >
       <SideBar
-        items={sidebarItems}
+        items={sellerSidebarItems}
         activeItemId={activeMenu}
         onItemClick={(item) => setActiveMenu(item.id)}
         className="!w-[200px] shrink-0 !pr-4 !pl-0 !py-0 !max-w-none"
