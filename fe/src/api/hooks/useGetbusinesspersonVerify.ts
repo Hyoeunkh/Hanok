@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { getFetchInstance } from '../instance';
 import type { BiznoVerifyResponse, BusinessType } from '@/types';
 
-export const getCheckBusinessPath = () => `/api/v1/sellers/verify-bizno`;
+export const getCheckBusinessPath = () => `/v1/sellers/verify-bizno`;
 
 /**
  * @param businessNumber
