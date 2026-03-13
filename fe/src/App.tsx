@@ -7,7 +7,6 @@ import LivePage from './pages/Live';
 import LiveTestPage from './pages/LiveTest';
 import LiveCreatePage from './pages/LiveCreate';
 import LiveRegisterPage from './pages/LiveCreate/components/LiveRegisterPage';
-import LiveEditPage from './pages/LiveCreate/components/LiveEditPage';
 import ProductListPage from './pages/ProductList';
 import SignUpPage from './pages/SignUp';
 import LoginPage from './pages/Login';
@@ -29,7 +28,6 @@ function App() {
         <Route path="seller/register" element={<SellerOnboardingPage />} />
         <Route path="lives" element={<LiveCreatePage />} />
         <Route path="live/register" element={<LiveRegisterPage />} />
-        <Route path="live/edit/:id" element={<LiveEditPage />} />
         <Route path="products" element={<ProductListPage />} />
         <Route path="signup" element={<SignUpPage />} />
         <Route path="login" element={<LoginPage />} />

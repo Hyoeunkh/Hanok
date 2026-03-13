@@ -10,6 +10,9 @@ interface Props {
   startAuctionId: number | null;
   canIntroduce: boolean;
   canStart: boolean;
+  isStreamLive: boolean;
+  isStartingStream: boolean;
+  onStartStream: () => void;
 }
 
 export default function ControlBar({
@@ -20,6 +23,9 @@ export default function ControlBar({
   startAuctionId,
   canIntroduce,
   canStart,
+  isStreamLive,
+  isStartingStream,
+  onStartStream,
 }: Props) {
   return isSeller ? (
     <SellerControlBar
@@ -27,6 +33,9 @@ export default function ControlBar({
       startAuctionId={startAuctionId}
       canIntroduce={canIntroduce}
       canStart={canStart}
+      isStreamLive={isStreamLive}
+      isStartingStream={isStartingStream}
+      onStartStream={onStartStream}
     />
   ) : (
     <BuyerControlBar bidSync={bidSync} activeAuctionId={activeBidAuctionId} />

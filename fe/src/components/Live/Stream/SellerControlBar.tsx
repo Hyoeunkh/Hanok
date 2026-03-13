@@ -11,9 +11,20 @@ interface Props {
   startAuctionId: number | null;
   canIntroduce: boolean;
   canStart: boolean;
+  isStreamLive: boolean;
+  isStartingStream: boolean;
+  onStartStream: () => void;
 }
 
-export default function SellerControlBar({ introduceAuctionId, startAuctionId, canIntroduce, canStart }: Props) {
+export default function SellerControlBar({
+  introduceAuctionId,
+  startAuctionId,
+  canIntroduce,
+  canStart,
+  isStreamLive,
+  isStartingStream,
+  onStartStream,
+}: Props) {
   const [guideOpen, setGuideOpen] = useState(false);
   const { id: streamId } = useParams<{ id: string }>();
 
@@ -67,6 +78,17 @@ export default function SellerControlBar({ introduceAuctionId, startAuctionId, c
 
       {/* 하단 중앙: 액션 버튼 */}
       <div className="flex flex-1 items-center flex-col gap-2 px-4">
+        {!isStreamLive && (
+          <button
+            type="button"
+            onClick={onStartStream}
+            disabled={isStartingStream}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#e74c3c] px-4 py-3 text-sm font-black text-white transition hover:bg-[#c0392b] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#e74c3c]"
+          >
+            <LuRadio size={16} />
+            {isStartingStream ? '방송 시작 중...' : '방송 시작'}
+          </button>
+        )}
         <button
           type="button"
           onClick={handleAuctionItemIntroduce}

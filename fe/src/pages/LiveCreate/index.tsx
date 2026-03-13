@@ -90,7 +90,7 @@ export default function LiveCreatePage() {
         <div className="flex items-center gap-4 shrink-0 pr-2">
           <button
             type="button"
-            onClick={() => navigate(`/live/edit/${stream.streamId}`)}
+            onClick={() => navigate(`/live/register?streamId=${stream.streamId}`)}
             className="text-sm transition-colors text-white/70 hover:text-white"
           >
             수정

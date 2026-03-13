@@ -111,27 +111,57 @@ export const settingsHandlers = [
     const content = [
       {
         followId: 1,
-        seller: { sellerId: 1, nickname: '신재혁상점', profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store1', rating: 4.8, isLive: true },
+        seller: {
+          sellerId: 1,
+          nickname: '신재혁상점',
+          profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store1',
+          rating: 4.8,
+          isLive: true,
+        },
         followedAt: '2024-01-01T10:00:00Z',
       },
       {
         followId: 2,
-        seller: { sellerId: 2, nickname: '빈티지마켓', profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store2', rating: 4.5, isLive: false },
+        seller: {
+          sellerId: 2,
+          nickname: '빈티지마켓',
+          profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store2',
+          rating: 4.5,
+          isLive: false,
+        },
         followedAt: '2024-01-05T09:00:00Z',
       },
       {
         followId: 3,
-        seller: { sellerId: 3, nickname: '패션왕', profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store3', rating: 4.2, isLive: false },
+        seller: {
+          sellerId: 3,
+          nickname: '패션왕',
+          profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store3',
+          rating: 4.2,
+          isLive: false,
+        },
         followedAt: '2024-01-10T14:00:00Z',
       },
       {
         followId: 4,
-        seller: { sellerId: 4, nickname: '전자기기마트', profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store4', rating: 4.6, isLive: true },
+        seller: {
+          sellerId: 4,
+          nickname: '전자기기마트',
+          profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store4',
+          rating: 4.6,
+          isLive: true,
+        },
         followedAt: '2024-01-12T08:30:00Z',
       },
       {
         followId: 5,
-        seller: { sellerId: 5, nickname: '수집품갤러리', profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store5', rating: 4.9, isLive: false },
+        seller: {
+          sellerId: 5,
+          nickname: '수집품갤러리',
+          profileImageUri: 'https://api.dicebear.com/7.x/adventurer/svg?seed=store5',
+          rating: 4.9,
+          isLive: false,
+        },
         followedAt: '2024-01-15T11:00:00Z',
       },
     ];
@@ -145,16 +175,21 @@ export const settingsHandlers = [
   http.get(`${BASE_URL}/v1/users/me/account`, () => {
     return HttpResponse.json(
       {
-        bankName: '국민',
-        accountNumber: '921381203',
+        bankName: null,
+        accountNumber: null,
       },
-      { status: 200 }
+      { status: 200 },
     );
   }),
 
   // POST /v1/users/me/accounts
   http.post(`${BASE_URL}/v1/users/me/accounts`, async ({ request }) => {
-    const body = await request.json() as { bankCode: string; bankName: string; accountNum: string; accountName: string };
+    const body = (await request.json()) as {
+      bankCode: string;
+      bankName: string;
+      accountNum: string;
+      accountName: string;
+    };
     console.log('Mock: Account registered', body);
     return HttpResponse.json({ success: true }, { status: 200 });
   }),
@@ -164,8 +199,24 @@ export const settingsHandlers = [
     return HttpResponse.json(
       {
         addresses: [
-          { id: 1, label: '집', isDefault: true, name: '이효은', zipCode: '43123', address: '경상북도 구미시 산동읍 첨단산업1로 17', phone: '010-****-5678' },
-          { id: 2, label: '회사', isDefault: false, name: '이효은', zipCode: '12312', address: '서울특별시 강남구 테헤란로 123 3층', phone: '010-****-5678' },
+          {
+            id: 1,
+            label: '집',
+            isDefault: true,
+            name: '이효은',
+            zipCode: '43123',
+            address: '경상북도 구미시 산동읍 첨단산업1로 17',
+            phone: '010-****-5678',
+          },
+          {
+            id: 2,
+            label: '회사',
+            isDefault: false,
+            name: '이효은',
+            zipCode: '12312',
+            address: '서울특별시 강남구 테헤란로 123 3층',
+            phone: '010-****-5678',
+          },
         ],
       },
       { status: 200 },

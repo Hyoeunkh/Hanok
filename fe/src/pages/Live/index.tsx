@@ -3,6 +3,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { GoHomeFill } from 'react-icons/go';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { useGetMe } from '@/api/hooks/useGetMe';
+import { usePostStartStream } from '@/api/hooks/usePostStartStream';
+import { useGetStream } from '@/api/hooks/useGetStream';
 import { useGetStreamEnter } from '@/api/hooks/useGetStreamEnter';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
@@ -15,6 +18,8 @@ import type {
   AuctionCommentPayload,
   BidWinnerPayload,
   ItemSyncPayload,
+  StreamRequest,
+  StreamEnterResponse,
   StreamTimerPayload,
   SyncedAuctionTimer,
 } from '@/types';
@@ -133,8 +138,10 @@ export default function LivePage() {
   const navigate = useNavigate();
   const { id: streamId } = useParams<{ id: string }>();
   const numericStreamId = Number(streamId);
-  const { data: streamEnter } = useGetStreamEnter(numericStreamId);
   const [isSeller, setIsSeller] = useState(true);
+  const { data: streamData } = useGetStream(numericStreamId);
+  const { data: meData } = useGetMe();
+  const { data: streamEnter } = useGetStreamEnter(numericStreamId, !isSeller);
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
   const [timer, setTimer] = useState<SyncedAuctionTimer | null>(null);
   const [winnerInfo, setWinnerInfo] = useState<BidWinnerPayload | null>(null);
@@ -143,6 +150,7 @@ export default function LivePage() {
   const [bidSync, setBidSync] = useState<BidSyncPayload | null>(null);
   const [itemSync, setItemSync] = useState<ItemSyncPayload | null>(null);
   const [auctionComment, setAuctionComment] = useState<{ id: number; message: string } | null>(null);
+  const postStartStream = usePostStartStream();
   const readyItems = itemSync?.items.filter((item) => item.auctionStatus === 'READY') ?? [];
   const introducingAuctionItem = itemSync?.items.find((item) => item.auctionStatus === 'INTRODUCING') ?? null;
   const liveAuctionItem = itemSync?.items.find((item) => item.auctionStatus === 'LIVE') ?? null;
@@ -156,8 +164,55 @@ export default function LivePage() {
   const introduceAuctionId = selectedReadyAuctionItem?.auctionId ?? fallbackReadyAuctionItem?.auctionId ?? null;
   const startAuctionId = introducingAuctionItem?.auctionId ?? null;
   const activeBidAuctionId = liveAuctionItem?.auctionId ?? introducingAuctionItem?.auctionId ?? null;
+  const isStreamLive = Boolean(streamData?.isLive);
   const canIntroduce = liveAuctionItem === null && introducingAuctionItem === null && introduceAuctionId !== null;
   const canStart = liveAuctionItem === null && startAuctionId !== null;
+  const canIntroduceAuction = isStreamLive && canIntroduce;
+  const canStartAuction = isStreamLive && canStart;
+  const activeStreamEnter: StreamEnterResponse | null = isSeller
+    ? {
+        streamId: numericStreamId,
+        title: streamData?.title ?? '방송 제목',
+        category: streamData?.category ?? '',
+        status: streamData?.isLive ? 'LIVE' : 'SCHEDULED',
+        notice: streamData?.notice ?? null,
+        seller: {
+          sellerId: 0,
+          nickname: meData?.nickname ?? '판매자명',
+          profileImage: meData?.profileImage ?? null,
+          grade: 'GENERAL',
+        },
+        viewerCount: 0,
+        topBidders: [],
+      }
+    : (streamEnter ?? null);
+  const startRequest: StreamRequest | null = streamData
+    ? {
+        title: streamData.title,
+        category: streamData.category,
+        startType: streamData.startType,
+        scheduledAt: streamData.scheduledAt ?? undefined,
+        notice: streamData.notice ?? undefined,
+        itemIds: streamData.items.map((item) => item.itemId),
+      }
+    : null;
+
+  const handleStreamStart = () => {
+    if (isStreamLive || postStartStream.isPending || !startRequest || !Number.isFinite(numericStreamId) || numericStreamId <= 0) {
+      return;
+    }
+
+    void postStartStream
+      .mutateAsync({
+        streamId: numericStreamId,
+        request: startRequest,
+      })
+      .catch((error) => {
+        console.error('[stream] failed to start stream', error);
+        alert('방송 시작에 실패했습니다.');
+      });
+  };
+  const streamTitle = streamData?.title ?? activeStreamEnter?.title ?? '방송 제목';
 
   useEffect(() => {
     if (!auctionComment) {
@@ -292,7 +347,7 @@ export default function LivePage() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-black p-3">
-      <div className="mb-2 flex shrink-0 items-center">
+      <div className="mb-2 flex shrink-0 items-center gap-3">
         <button
           className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-bold text-[#71717A] transition hover:bg-[rgba(255,255,255,0.05)] hover:text-[#A1A1AA]"
           onClick={() => navigate('/')}
@@ -311,6 +366,9 @@ export default function LivePage() {
           </svg>
           <GoHomeFill /> 홈으로
         </button>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-white">{streamTitle}</p>
+        </div>
       </div>
 
       <div className="flex min-h-0 flex-1 gap-3">
@@ -323,7 +381,7 @@ export default function LivePage() {
           />
         </div>
         <div className="relative min-w-0 flex-2 overflow-hidden rounded-2xl bg-background">
-          <StreamOverlay viewerCount={streamEnter?.viewerCount ?? 0} />
+          <StreamOverlay viewerCount={activeStreamEnter?.viewerCount ?? 0} />
           <SellerGuideOverlay />
           <StreamPlaceholder />
           <ControlBar
@@ -332,14 +390,17 @@ export default function LivePage() {
             activeBidAuctionId={activeBidAuctionId}
             introduceAuctionId={introduceAuctionId}
             startAuctionId={startAuctionId}
-            canIntroduce={canIntroduce}
-            canStart={canStart}
+            canIntroduce={canIntroduceAuction}
+            canStart={canStartAuction}
+            isStreamLive={isStreamLive}
+            isStartingStream={postStartStream.isPending}
+            onStartStream={handleStreamStart}
           />
 
-          {(streamEnter?.notice || auctionComment) && (
+          {(activeStreamEnter?.notice || auctionComment) && (
             <AuctionCommentToast
               key={auctionComment?.id ?? 'stream-notice'}
-              notice={streamEnter?.notice ?? null}
+              notice={activeStreamEnter?.notice ?? null}
               message={auctionComment?.message ?? null}
             />
           )}
@@ -376,7 +437,7 @@ export default function LivePage() {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <RightPanel isSeller={isSeller} auctionStatistics={auctionStatistics} streamEnter={streamEnter ?? null} />
+          <RightPanel isSeller={isSeller} auctionStatistics={auctionStatistics} streamEnter={activeStreamEnter} />
         </div>
       </div>
     </div>

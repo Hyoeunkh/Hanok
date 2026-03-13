@@ -2,6 +2,8 @@ import { http, HttpResponse } from 'msw';
 
 import { BASE_URL } from '@/api/instance';
 import type { LiveCardData, PageResponse } from '@/types';
+import { getRegisteredLiveById, getRegisteredLiveCards } from './LiveCreateHandler';
+import { getCurrentMockUser } from './mockState';
 
 const CATEGORY_CODES = [
   'SNEAKERS_SHOES', 'CLOTHING', 'WATCHES', 'BAGS_FASHION_ACCESSORIES',
@@ -55,6 +57,28 @@ const toNumber = (value: string | null, fallback: number) => {
 export const mainHandlers = [
   http.get(`${BASE_URL}/v1/streams/:streamId/enter`, ({ params }) => {
     const streamId = Number(params.streamId);
+    const registeredLive = getRegisteredLiveById(streamId);
+
+    if (registeredLive) {
+      const currentUser = getCurrentMockUser();
+
+      return HttpResponse.json({
+        streamId: registeredLive.streamId,
+        title: registeredLive.title,
+        category: registeredLive.category,
+        status: registeredLive.isLive ? 'LIVE' : 'SCHEDULED',
+        notice: registeredLive.notice ?? null,
+        seller: {
+          sellerId: currentUser?.userId ?? 1,
+          nickname: currentUser?.nickname ?? '판매자명',
+          profileImage: currentUser?.profileImage ?? null,
+          grade: 'GENERAL',
+        },
+        viewerCount: 0,
+        topBidders: [],
+      });
+    }
+
     const stream = MAIN_LIVE_STREAMS.find((item) => item.streamId === streamId) ?? MAIN_LIVE_STREAMS[0];
 
     return HttpResponse.json({
@@ -87,7 +111,9 @@ export const mainHandlers = [
     const page = Math.max(0, toNumber(url.searchParams.get('page'), 0));
     const size = Math.max(1, toNumber(url.searchParams.get('size'), 8));
 
-    let streams = [...MAIN_LIVE_STREAMS];
+    const registeredLiveCards = getRegisteredLiveCards();
+    const registeredIds = new Set(registeredLiveCards.map((stream) => stream.streamId));
+    let streams = [...registeredLiveCards, ...MAIN_LIVE_STREAMS.filter((stream) => !registeredIds.has(stream.streamId))];
 
     if (type === 'FOLLOWING') {
       streams = streams.filter((stream) => FOLLOWING_SELLER_IDS.has(stream.seller.sellerId));

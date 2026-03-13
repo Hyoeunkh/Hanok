@@ -4,12 +4,14 @@ import { BASE_URL } from '@/api/instance';
 import Logo from '@/assets/Logo.png';
 import type {
   DeleteStreamResponse,
+  ItemSyncPayload,
   Live,
+  LiveCardData,
   LiveStreamItem,
-  StartStreamRequest,
-  UpdateStreamRequest,
+  StreamRequest,
   UpdateStreamResponse,
 } from '@/types';
+import { getCurrentMockUser } from './mockState';
 
 const createStreamItems = (itemIds: number[], category: string, thumbnail: string | null): LiveStreamItem[] =>
   itemIds.map((itemId, index) => ({
@@ -22,6 +24,48 @@ const createStreamItems = (itemIds: number[], category: string, thumbnail: strin
     image1: thumbnail,
     createdAt: new Date(Date.now() - index * 60000).toISOString(),
   }));
+
+export const getRegisteredLiveById = (streamId: number) => registeredLives.find((item) => item.streamId === streamId);
+
+export const getInitialItemSyncPayloadForStream = (streamId: number): ItemSyncPayload | null => {
+  const live = getRegisteredLiveById(streamId);
+
+  if (!live) {
+    return null;
+  }
+
+  return {
+    items: live.items.map((item) => ({
+      auctionId: item.itemId,
+      itemName: item.name,
+      image: item.image1 ?? live.thumbnail ?? '',
+      startPrice: item.startPrice,
+      auctionStatus: item.status,
+      finalPrice: null,
+      itemCondition: item.itemCondition,
+    })),
+  };
+};
+
+export const getRegisteredLiveCards = (): LiveCardData[] => {
+  const currentUser = getCurrentMockUser();
+
+  return registeredLives.map((live) => ({
+    streamId: live.streamId,
+    title: live.title,
+    category: live.category,
+    thumbnailUri: live.thumbnail,
+    isLive: live.isLive,
+    viewerCount: 0,
+    scheduledAt: live.isLive ? null : live.scheduledAt,
+    startedAt: live.isLive ? live.createdAt : null,
+    seller: {
+      sellerId: currentUser?.userId ?? 1,
+      nickname: currentUser?.nickname ?? 'seller',
+      profileImageUri: currentUser?.profileImage ?? null,
+    },
+  }));
+};
 
 const registeredLives: Live[] = [
   {
@@ -64,15 +108,43 @@ const registeredLives: Live[] = [
 
 let nextLiveId = 4;
 
+const parseStreamRequest = async (request: Request) => {
+  let body: StreamRequest;
+  let thumbnailUrl: string | null = null;
+  const contentType = request.headers.get('content-type') || '';
+
+  if (contentType.includes('multipart/form-data')) {
+    const formData = await request.formData();
+    const requestPart = formData.get('request');
+    const text = requestPart instanceof Blob ? await requestPart.text() : (requestPart as string);
+    body = JSON.parse(text) as StreamRequest;
+
+    const thumbnailFile = formData.get('thumbnail');
+    if (thumbnailFile instanceof Blob) {
+      const buffer = await thumbnailFile.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+
+      for (let index = 0; index < bytes.length; index += 1) {
+        binary += String.fromCharCode(bytes[index]);
+      }
+
+      thumbnailUrl = `data:${thumbnailFile.type || 'image/png'};base64,${btoa(binary)}`;
+    }
+  } else {
+    body = (await request.json()) as StreamRequest;
+  }
+
+  return { body, thumbnailUrl };
+};
+
 export const LiveCreateHandlers = [
   http.get(`${BASE_URL}/v1/streams/scheduled`, ({ request }) => {
     const url = new URL(request.url);
     const page = Math.max(0, Number(url.searchParams.get('page') ?? '0'));
     const size = Math.max(1, Number(url.searchParams.get('size') ?? '8'));
 
-    const scheduled = registeredLives
-      .filter((live) => live.isLive || live.startType === 'SCHEDULED')
-      .map((live) => ({
+    const scheduled = registeredLives.map((live) => ({
         streamId: live.streamId,
         title: live.title,
         category: live.category,
@@ -100,32 +172,7 @@ export const LiveCreateHandlers = [
   }),
 
   http.post(`${BASE_URL}/v1/streams`, async ({ request }) => {
-    let body: StartStreamRequest;
-    const contentType = request.headers.get('content-type') || '';
-
-    let thumbnailUrl: string | null = null;
-
-    if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData();
-      const requestPart = formData.get('request');
-      const text = requestPart instanceof Blob ? await requestPart.text() : (requestPart as string);
-      body = JSON.parse(text) as StartStreamRequest;
-
-      const thumbnailFile = formData.get('thumbnail');
-      if (thumbnailFile instanceof Blob) {
-        const buffer = await thumbnailFile.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-
-        for (let index = 0; index < bytes.length; index += 1) {
-          binary += String.fromCharCode(bytes[index]);
-        }
-
-        thumbnailUrl = `data:${thumbnailFile.type || 'image/png'};base64,${btoa(binary)}`;
-      }
-    } else {
-      body = (await request.json()) as StartStreamRequest;
-    }
+    const { body, thumbnailUrl } = await parseStreamRequest(request);
 
     const newId = nextLiveId++;
     const newLive: Live = {
@@ -136,7 +183,7 @@ export const LiveCreateHandlers = [
       scheduledAt: body.scheduledAt || null,
       startType: body.startType,
       notice: body.notice,
-      isLive: body.startType === 'IMMEDIATE',
+      isLive: false,
       createdAt: new Date().toISOString(),
       items: createStreamItems(body.itemIds, body.category, thumbnailUrl),
     };
@@ -148,7 +195,7 @@ export const LiveCreateHandlers = [
       {
         streamId: newId,
         title: newLive.title,
-        status: body.startType === 'SCHEDULED' ? 'SCHEDULED' : 'LIVE',
+        status: 'SCHEDULED',
       },
       { status: 200 },
     );
@@ -156,27 +203,38 @@ export const LiveCreateHandlers = [
 
   http.post(`${BASE_URL}/v1/streams/:streamId/start`, async ({ params, request }) => {
     const streamId = Number(params.streamId);
-    const body = (await request.json()) as StartStreamRequest;
+    const { body, thumbnailUrl } = await parseStreamRequest(request);
+    const resolvedThumbnail = thumbnailUrl ?? registeredLives.find((live) => live.streamId === streamId)?.thumbnail ?? null;
 
     if (!registeredLives.find((live) => live.streamId === streamId)) {
       const newLive: Live = {
         streamId,
         title: body.title,
         category: body.category,
-        thumbnail: null,
+        thumbnail: resolvedThumbnail,
         scheduledAt: body.scheduledAt || null,
-        startType: 'IMMEDIATE',
+        startType: body.startType,
         notice: body.notice,
         isLive: true,
         createdAt: new Date().toISOString(),
-        items: createStreamItems(body.itemIds, body.category, null),
+        items: createStreamItems(body.itemIds, body.category, resolvedThumbnail),
       };
       registeredLives.push(newLive);
     } else {
-      const live = registeredLives.find((item) => item.streamId === streamId);
+      const liveIndex = registeredLives.findIndex((item) => item.streamId === streamId);
 
-      if (live) {
-        live.isLive = true;
+      if (liveIndex !== -1) {
+        registeredLives[liveIndex] = {
+          ...registeredLives[liveIndex],
+          title: body.title,
+          category: body.category,
+          thumbnail: resolvedThumbnail,
+          scheduledAt: body.scheduledAt || null,
+          startType: body.startType,
+          notice: body.notice,
+          isLive: true,
+          items: createStreamItems(body.itemIds, body.category, resolvedThumbnail),
+        };
       }
     }
 
@@ -201,29 +259,28 @@ export const LiveCreateHandlers = [
 
   http.patch(`${BASE_URL}/v1/streams/:streamId`, async ({ params, request }) => {
     const streamId = Number(params.streamId);
-    const body = (await request.json()) as UpdateStreamRequest;
+    const { body, thumbnailUrl } = await parseStreamRequest(request);
 
     const liveIndex = registeredLives.findIndex((item) => item.streamId === streamId);
 
     if (liveIndex !== -1) {
+      const resolvedThumbnail = thumbnailUrl ?? registeredLives[liveIndex].thumbnail;
       registeredLives[liveIndex] = {
         ...registeredLives[liveIndex],
         title: body.title,
         category: body.category,
+        thumbnail: resolvedThumbnail,
         startType: body.startType,
         scheduledAt: body.scheduledAt || null,
         notice: body.notice,
-        items: registeredLives[liveIndex].items.map((item) => ({
-          ...item,
-          category: body.category,
-        })),
+        items: createStreamItems(body.itemIds, body.category, resolvedThumbnail),
       };
     }
 
     const response: UpdateStreamResponse = {
       streamId,
       title: body.title,
-      status: body.startType === 'SCHEDULED' ? 'SCHEDULED' : 'LIVE',
+      status: liveIndex !== -1 && registeredLives[liveIndex].isLive ? 'LIVE' : 'SCHEDULED',
     };
 
     console.log('[Mock] 방송 수정:', response);
