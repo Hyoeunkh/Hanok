@@ -1,12 +1,15 @@
 package com.ssafy.be.domain.user.dto.response;
 
-import com.ssafy.be.domain.user.entity.User;
+import lombok.Builder;
+import lombok.Getter;
 
-public record UserProfileResponse(
-        String email,
-        String nickname,
-        String profileImage,
-        String phone,
-        Long balance,
-        Long depositedBalance
-) {}
+@Getter
+@Builder
+public class UserProfileResponse {
+    private final String email;
+    private final String nickname;
+    private final String profileImage;
+    private final String phone;
+    private final Long balance;
+    private final Long depositedBalance;
+}

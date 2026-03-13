@@ -263,15 +263,19 @@ public class UserService {
     public UserProfileResponse getMyProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
-        return new UserProfileResponse(
-                user.getEmail(),
-                user.getNickname(),
-                user.getProfileImage(),
-                user.getPhone(),
-                user.getBalance(),
-                user.getDepositedBidBalance()
+        return toUserProfileResponse(user);
+    }
+
+    private UserProfileResponse toUserProfileResponse(User user) {
+        return UserProfileResponse.builder()
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .phone(user.getPhone())
+                .balance(user.getBalance())
+                .depositedBalance(user.getDepositedBidBalance()
                         + user.getDepositedEscrowBalance()
-                        + user.getDepositedWithdrawBalance()
-        );
+                        + user.getDepositedWithdrawBalance())
+                .build();
     }
 }
