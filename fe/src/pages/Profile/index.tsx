@@ -197,10 +197,10 @@ export default function ProfilePage() {
           <div>
             {profile_image ? (
               <>
-                <img 
-                  src={profile_image} 
-                  alt={nickname} 
-                  className="w-[140px] h-[140px] min-w-[140px] min-h-[140px] flex-shrink-0 rounded-full object-contain object-center bg-[#1e1e2d]" 
+                <img
+                  src={profile_image}
+                  alt={nickname}
+                  className="w-[140px] h-[140px] min-w-[140px] min-h-[140px] flex-shrink-0 rounded-full object-contain object-center bg-[#1e1e2d]"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                     (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
@@ -232,8 +232,15 @@ export default function ProfilePage() {
               )}
               <div className="ml-auto flex gap-4">
                 {/* TODO: 수정api연결 필요 */}
-                <button className="border-none bg-transparent text-[#888] text-sm cursor-pointer hover:text-[var(--color-point)] transition-colors">수정</button>
-                <button onClick={() => setIsReportModalOpen(true)} className="border-none bg-transparent text-[#888] text-sm cursor-pointer hover:text-[var(--color-point)] transition-colors">신고</button>
+                <button className="border-none bg-transparent text-[#888] text-sm cursor-pointer hover:text-[var(--color-point)] transition-colors">
+                  수정
+                </button>
+                <button
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="border-none bg-transparent text-[#888] text-sm cursor-pointer hover:text-[var(--color-point)] transition-colors"
+                >
+                  신고
+                </button>
               </div>
             </div>
 
@@ -550,7 +557,7 @@ export default function ProfilePage() {
           onSubmit={(reportData) => {
             // TODO: 신고 API 연결
             console.log('신고 데이터:', reportData);
-            alert('신고가 접수되었습니다.');
+            showToast({ message: '신고가 접수되었습니다.' });
             setIsReportModalOpen(false);
           }}
         />

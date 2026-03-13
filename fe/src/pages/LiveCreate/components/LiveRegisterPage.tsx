@@ -217,12 +217,12 @@ export default function LiveRegisterPage() {
 
   const validateStreamForm = () => {
     if (!title.trim()) {
-      alert('방송 제목을 입력해주세요.');
+      showToast({ message: '방송 제목을 입력해주세요.' });
       return false;
     }
 
     if (selectedItems.length === 0) {
-      alert('방송에 등록할 물품을 선택해주세요.');
+      showToast({ message: '방송에 등록할 물품을 선택해주세요.' });
       return false;
     }
 
@@ -290,7 +290,7 @@ export default function LiveRegisterPage() {
         state: { autoOpenStartModal: true },
       });
     } catch {
-      alert(isEditMode ? '방송 수정에 실패했습니다.' : '방송 등록에 실패했습니다.');
+      showToast({ message: isEditMode ? '방송 수정에 실패했습니다.' : '방송 등록에 실패했습니다.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -320,7 +320,7 @@ export default function LiveRegisterPage() {
         if (startType === 'IMMEDIATE') {
           navigate(`/live/${streamId}`);
         } else {
-          alert('방송을 수정했습니다.');
+          showToast({ message: '방송을 수정했습니다.' });
           navigate('/lives');
         }
 
