@@ -115,6 +115,12 @@ public class User {
         increaseDepositedEscrowBalance(amount);
     }
 
+    // 에스크로 예치 취소
+    public void cancelDepositedEscrowBalance(Long amount) {
+        decreaseDepositedEscrowBalance(amount);
+        increaseBalance(amount);
+    }
+
     // 잔액 증가
     public void increaseBalance(Long amount) {
         if (amount <= 0) {
@@ -175,6 +181,18 @@ public class User {
         }
 
         this.depositedBidBalance -= amount;
+    }
+
+    private void decreaseDepositedEscrowBalance(Long amount) {
+        if (!hasSufficientDepositedEscrowBalance(amount)) {
+            throw new IllegalArgumentException("잔액이 부족합니다.");
+        }
+
+        this.depositedEscrowBalance -= amount;
+    }
+
+    private boolean hasSufficientDepositedEscrowBalance(Long amount) {
+        return this.depositedEscrowBalance >= amount;
     }
 
     private boolean hasSufficientDepositedBidBalance(Long amount) {

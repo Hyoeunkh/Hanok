@@ -17,8 +17,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import static com.ssafy.be.domain.escrow.entity.EscrowStatus.DEPOSITED;
-import static com.ssafy.be.domain.escrow.entity.EscrowStatus.SHIPPED;
+import static com.ssafy.be.domain.escrow.entity.EscrowStatus.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -41,6 +40,8 @@ public class Escrow {
     private String trackingNumber;
 
     private LocalDateTime submittedAt;
+
+    private String cancelReason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id")
@@ -103,11 +104,24 @@ public class Escrow {
         this.submittedAt = submittedAt;
     }
 
+    public void cancelEscrow(String cancelReason) {
+        if (!isAvailableCancelEscrow()) {
+            throw new IllegalArgumentException("취소할 수 있는 에스크로 상태가 아닙니다.");
+        }
+
+        this.escrowStatus = CANCELLED;
+        this.cancelReason = cancelReason;
+    }
+
     public boolean isEscrowSeller(Long userId) {
         return Objects.equals(this.seller.getUser().getId(), userId);
     }
 
     public boolean isAvailableRegisterTrackingNumber() {
+        return this.escrowStatus == DEPOSITED;
+    }
+
+    public boolean isAvailableCancelEscrow() {
         return this.escrowStatus == DEPOSITED;
     }
 }
