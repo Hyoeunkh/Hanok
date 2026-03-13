@@ -46,12 +46,6 @@ public class Item {
 
     private String image3;
 
-    private String courierName;
-
-    private String trackingNumber;
-
-    private LocalDateTime submittedAt;
-
     private LocalDateTime soldAt;
 
     @CreatedDate
@@ -74,9 +68,6 @@ public class Item {
                  String image1,
                  String image2,
                  String image3,
-                 String courierName,
-                 String trackingNumber,
-                 LocalDateTime submittedAt,
                  LocalDateTime soldAt,
                  LocalDateTime createdAt,
                  Seller seller) {
@@ -91,9 +82,6 @@ public class Item {
         this.image1 = image1;
         this.image2 = image2;
         this.image3 = image3;
-        this.courierName = courierName;
-        this.trackingNumber = trackingNumber;
-        this.submittedAt = submittedAt;
         this.soldAt = soldAt;
         this.createdAt = createdAt;
         this.seller = seller;
@@ -121,5 +109,4 @@ public class Item {
         this.status = ItemStatus.SOLD;
         this.soldAt = soldAt;
     }
-
 }
