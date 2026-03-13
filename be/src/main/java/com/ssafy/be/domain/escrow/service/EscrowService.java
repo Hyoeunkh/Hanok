@@ -4,6 +4,7 @@ import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.model.Bid;
 import com.ssafy.be.domain.escrow.dto.request.EscrowCancelRequest;
 import com.ssafy.be.domain.escrow.dto.request.TrackingNumberRegisterRequest;
+import com.ssafy.be.domain.escrow.dto.response.EscrowDetailResponse;
 import com.ssafy.be.domain.escrow.dto.response.EscrowListResponse;
 import com.ssafy.be.domain.escrow.entity.Escrow;
 import com.ssafy.be.domain.escrow.exception.EscorwErrorCode;
@@ -86,18 +87,41 @@ public class EscrowService {
     public List<EscrowListResponse> getAllEscrows(Long userId) {
         return escrowRepository.findAllBySellerUserId(userId).stream()
                 .map(escrow -> {
-                    Item item = escrow.getAuction().getItem();
+                            Item item = escrow.getAuction().getItem();
 
-                    return EscrowListResponse.builder()
-                            .escrowId(escrow.getId())
-                            .image(item.getImage1())
-                            .itemName(item.getName())
-                            .amount(escrow.getWinningPrice())
-                            .escrowStatus(escrow.getEscrowStatus())
-                            .createdAt(escrow.getCreatedAt())
-                            .build();
-                }
+                            return EscrowListResponse.builder()
+                                    .escrowId(escrow.getId())
+                                    .image(item.getImage1())
+                                    .itemName(item.getName())
+                                    .amount(escrow.getWinningPrice())
+                                    .escrowStatus(escrow.getEscrowStatus())
+                                    .createdAt(escrow.getCreatedAt())
+                                    .build();
+                        }
                 ).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public EscrowDetailResponse getEscrowDetail(Long escrowId, Long userId) {
+        Escrow escrow = escrowRepository.findByIdAndSellerUserId(escrowId, userId)
+                .orElseThrow(() -> new GlobalException(EscorwErrorCode.ESCROW_NOT_FOUND));
+
+        EscrowDetailResponse.WinningDto winningInfo = buildWinningInfo(escrow);
+        EscrowDetailResponse.ShippingAddressDto shippingAddress = buildShippingAddress(escrow.getShippingAddress());
+        EscrowDetailResponse.DeliveryDto delivery = buildDelivery(escrow);
+
+        return buildEscrowDetailResponse(
+                winningInfo,
+                shippingAddress,
+                delivery);
+    }
+
+    private static EscrowDetailResponse buildEscrowDetailResponse(EscrowDetailResponse.WinningDto winningInfo, EscrowDetailResponse.ShippingAddressDto shippingAddress, EscrowDetailResponse.DeliveryDto delivery) {
+        return EscrowDetailResponse.builder()
+                .winningInfo(winningInfo)
+                .shippingAddress(shippingAddress)
+                .delivery(delivery)
+                .build();
     }
 
     private static long calculateFeeAmount(Bid topBid) {
@@ -120,6 +144,34 @@ public class EscrowService {
         if (!escrow.isAvailableCancelEscrow()) {
             throw new GlobalException(EscorwErrorCode.ESCROW_INVALID_STATUS);
         }
+    }
+
+    private EscrowDetailResponse.WinningDto buildWinningInfo(Escrow escrow) {
+        return EscrowDetailResponse.WinningDto.builder()
+                .image(escrow.getAuction().getItem().getImage1())
+                .itemName(escrow.getAuction().getItem().getName())
+                .finalPrice(escrow.getWinningPrice())
+                .sellerName(escrow.getSeller().getUser().getNickname())
+                .sellerId(escrow.getSeller().getId())
+                .wonAt(escrow.getCreatedAt())
+                .build();
+    }
+
+    private EscrowDetailResponse.ShippingAddressDto buildShippingAddress(ShippingAddress shippingAddress) {
+        return EscrowDetailResponse.ShippingAddressDto.builder()
+                .name(shippingAddress.getRecipientName())
+                .phone(shippingAddress.getPhone())
+                .postalCode(shippingAddress.getPostalCode())
+                .address(shippingAddress.getAddress())
+                .addressDetail(shippingAddress.getAddressDetail())
+                .build();
+    }
+
+    private EscrowDetailResponse.DeliveryDto buildDelivery(Escrow escrow) {
+        return EscrowDetailResponse.DeliveryDto.builder()
+                .courierName(escrow.getCourierName())
+                .trackingNumber(escrow.getTrackingNumber())
+                .build();
     }
 }
 

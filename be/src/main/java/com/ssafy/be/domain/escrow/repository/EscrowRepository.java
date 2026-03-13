@@ -7,17 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EscrowRepository extends JpaRepository<Escrow, Long> {
-
-    @Query("""
-                select count(*) >0
-                from Escrow e
-                where e.id=:escrowId
-                and e.seller.user.id=:userId
-            """)
-    boolean existsEscrowSeller(@Param("escrowId") Long escrowId, @Param("userId") Long userId);
 
     @Query("""
             select e from Escrow e
@@ -26,5 +19,17 @@ public interface EscrowRepository extends JpaRepository<Escrow, Long> {
             where e.seller.user.id = :userId
             """)
     List<Escrow> findAllBySellerUserId(@Param("userId") Long userId);
+
+    @Query("""
+            select e from Escrow e
+            join fetch e.auction a
+            join fetch a.item
+            join fetch e.shippingAddress
+            join fetch e.seller s
+            join fetch s.user u
+            where e.id = :escrowId
+            and u.id = :userId
+            """)
+    Optional<Escrow> findByIdAndSellerUserId(@Param("escrowId") Long escrowId, @Param("userId") Long userId);
 }
 
