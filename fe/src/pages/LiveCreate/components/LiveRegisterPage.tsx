@@ -38,6 +38,7 @@ const toFallbackProduct = (item: LiveStreamItem): Product => ({
   category: item.category,
   auctionMethod: '',
 });
+import { useToast } from '@/components/common/Toast';
 
 export default function LiveRegisterPage() {
   const [searchParams] = useSearchParams();
@@ -70,8 +71,10 @@ export default function LiveRegisterPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [macroAnswers, setMacroAnswers] = useState<Record<string, string>>({});
 
+  const { showToast } = useToast();
   const defaultMacros = useMemo(() => CATEGORY_MACROS[categoryLabel] ?? [], [categoryLabel]);
 
   const macroFields = useMemo(() => {
@@ -185,7 +188,7 @@ export default function LiveRegisterPage() {
 
   const handleSchedule = () => {
     if (!title.trim()) {
-      alert('방송 제목을 입력해주세요.');
+      showToast({ message: '방송 제목을 입력해주세요.' });
       return;
     }
 
@@ -194,7 +197,7 @@ export default function LiveRegisterPage() {
 
   const handleEnter = () => {
     if (!title.trim()) {
-      alert('방송 제목을 입력해주세요.');
+      showToast({ message: '방송 제목을 입력해주세요.' });
       return;
     }
 
@@ -214,12 +217,12 @@ export default function LiveRegisterPage() {
 
   const validateStreamForm = () => {
     if (!title.trim()) {
-      alert('방송 제목을 입력해주세요.');
+      showToast({ message: '방송 제목을 입력해주세요.' });
       return false;
     }
 
     if (selectedItems.length === 0) {
-      alert('방송에 등록할 물품을 선택해주세요.');
+      showToast({ message: '방송에 등록할 물품을 선택해주세요.' });
       return false;
     }
 
@@ -228,15 +231,15 @@ export default function LiveRegisterPage() {
 
   const handleSaveMacros = () => {
     if (!isEditMode) {
-      alert('매크로는 방송 예약 또는 시작 시 함께 저장됩니다.');
+      showToast({ message: '매크로는 방송 예약 또는 시작 시 함께 저장됩니다.' });
       return;
     }
 
     postMacros.mutate(
       { streamId, body: { macros: buildMacrosPayload() } },
       {
-        onSuccess: () => alert('매크로를 저장했습니다.'),
-        onError: () => alert('매크로 저장에 실패했습니다.'),
+        onSuccess: () => showToast({ message: '매크로가 저장되었습니다.' }),
+        onError: () => showToast({ message: '매크로 저장에 실패하였습니다.' }),
       },
     );
   };
@@ -287,7 +290,7 @@ export default function LiveRegisterPage() {
         state: { autoOpenStartModal: true },
       });
     } catch {
-      alert(isEditMode ? '방송 수정에 실패했습니다.' : '방송 등록에 실패했습니다.');
+      showToast({ message: isEditMode ? '방송 수정에 실패했습니다.' : '방송 등록에 실패했습니다.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -317,7 +320,7 @@ export default function LiveRegisterPage() {
         if (startType === 'IMMEDIATE') {
           navigate(`/live/${streamId}`);
         } else {
-          alert('방송을 수정했습니다.');
+          showToast({ message: '방송을 수정했습니다.' });
           navigate('/lives');
         }
 
@@ -335,9 +338,9 @@ export default function LiveRegisterPage() {
           ...payload,
         });
         console.log('[Stream Start] openviduToken:', startRes.data?.openviduToken);
-        alert(`방송이 시작되었습니다! (ID: ${newStreamId})`);
+        showToast({ message: '방송이 시작되었습니다!' });
       } else {
-        alert(`방송이 예약되었습니다! (ID: ${newStreamId})`);
+        showToast({ message: '방송이 예약되었습니다!' });
       }
 
       await postMacros.mutateAsync({
@@ -351,7 +354,7 @@ export default function LiveRegisterPage() {
         navigate('/lives');
       }
     } catch {
-      alert(isEditMode ? '방송 수정에 실패했습니다.' : '방송 등록에 실패했습니다.');
+      showToast({ message: '방송 등록에 실패했습니다.' });
     } finally {
       setIsSubmitting(false);
     }
