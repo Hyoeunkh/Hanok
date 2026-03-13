@@ -4,7 +4,10 @@ import TrakingInputPage from './pages/TrackingInput';
 import ProfilePage from './pages/Profile';
 import SellerOnboardingPage from './pages/SellerOnboarding';
 import LivePage from './pages/Live';
+import LiveTestPage from './pages/LiveTest';
 import LiveCreatePage from './pages/LiveCreate';
+import LiveRegisterPage from './pages/LiveCreate/components/LiveRegisterPage';
+import LiveEditPage from './pages/LiveCreate/components/LiveEditPage';
 import ProductListPage from './pages/ProductList';
 import SignUpPage from './pages/SignUp';
 import LoginPage from './pages/Login';
@@ -17,6 +20,7 @@ function App() {
     <Routes>
       {/* 풀스크린 (Header/Footer 없음) */}
       <Route path="live/:id" element={<LivePage />} />
+      <Route path="live-test/:id" element={<LiveTestPage />} />
 
       <Route path="/" element={<MainLayout />}>
         <Route index element={<MainPage />} />
@@ -24,6 +28,8 @@ function App() {
         <Route path="profile/:id" element={<ProfilePage />} />
         <Route path="seller/register" element={<SellerOnboardingPage />} />
         <Route path="live/new" element={<LiveCreatePage />} />
+        <Route path="live/register" element={<LiveRegisterPage />} />
+        <Route path="live/edit/:id" element={<LiveEditPage />} />
         <Route path="products" element={<ProductListPage />} />
         <Route path="signup" element={<SignUpPage />} />
         <Route path="login" element={<LoginPage />} />

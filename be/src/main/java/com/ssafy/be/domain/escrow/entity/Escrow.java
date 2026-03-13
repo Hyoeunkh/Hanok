@@ -3,6 +3,7 @@ package com.ssafy.be.domain.escrow.entity;
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.seller.entity.Seller;
+import com.ssafy.be.domain.shippingaddress.entity.ShippingAddress;
 import com.ssafy.be.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,6 +15,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import static com.ssafy.be.domain.escrow.entity.EscrowStatus.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,6 +35,14 @@ public class Escrow {
     @Enumerated(EnumType.STRING)
     private EscrowStatus escrowStatus;
 
+    private String courierName;
+
+    private String trackingNumber;
+
+    private LocalDateTime submittedAt;
+
+    private String cancelReason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id")
     private Auction auction;
@@ -44,8 +56,8 @@ public class Escrow {
     private Seller seller;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
-    private Item item;
+    @JoinColumn(name = "shipping_address_id")
+    private ShippingAddress shippingAddress;
 
     @CreatedDate
     @Column(updatable = false)
@@ -57,21 +69,59 @@ public class Escrow {
     @Builder
     private Escrow(Long winningPrice,
                    Long feeAmount,
-                  EscrowStatus escrowStatus,
-                  Auction auction,
-                  User buyer,
-                  Seller seller,
-                  Item item,
-                  LocalDateTime createdAt,
-                  LocalDateTime modifiedAt) {
+                   EscrowStatus escrowStatus,
+                   String courierName,
+                   String trackingNumber,
+                   LocalDateTime submittedAt,
+                   Auction auction,
+                   User buyer,
+                   Seller seller,
+                   ShippingAddress shippingAddress,
+                   LocalDateTime createdAt,
+                   LocalDateTime modifiedAt) {
         this.winningPrice = winningPrice;
         this.feeAmount = feeAmount;
         this.escrowStatus = escrowStatus;
+        this.courierName = courierName;
+        this.trackingNumber = trackingNumber;
+        this.submittedAt = submittedAt;
         this.auction = auction;
         this.buyer = buyer;
         this.seller = seller;
-        this.item = item;
+        this.shippingAddress = shippingAddress;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
+    }
+
+    public void registerTrackingNumber(String carrierName, String trackingNumber, LocalDateTime submittedAt) {
+        if (!isAvailableRegisterTrackingNumber()) {
+            throw new IllegalArgumentException("운송장 번호를 등록할 수 있는 에스크로 상태가 아닙니다.");
+        }
+
+        this.escrowStatus = SHIPPED;
+        this.courierName = carrierName;
+        this.trackingNumber = trackingNumber;
+        this.submittedAt = submittedAt;
+    }
+
+    public void cancelEscrow(String cancelReason) {
+        if (!isAvailableCancelEscrow()) {
+            throw new IllegalArgumentException("취소할 수 있는 에스크로 상태가 아닙니다.");
+        }
+
+        this.escrowStatus = CANCELLED;
+        this.cancelReason = cancelReason;
+    }
+
+    public boolean isEscrowSeller(Long userId) {
+        return Objects.equals(this.seller.getUser().getId(), userId);
+    }
+
+    public boolean isAvailableRegisterTrackingNumber() {
+        return this.escrowStatus == DEPOSITED;
+    }
+
+    public boolean isAvailableCancelEscrow() {
+        return this.escrowStatus == DEPOSITED;
     }
 }

@@ -54,7 +54,6 @@ export default function AccountSection() {
         <p className="m-0 text-[15px] text-[#aaa]">계정을 관리합니다.</p>
       </div>
 
-      {/* 계정 정보 */}
       <div className="w-full box-border border border-[#2e2e40] rounded-2xl p-8 bg-[#0c0c14] flex flex-col gap-8">
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-3 m-0 text-lg font-bold text-white">
@@ -82,7 +81,6 @@ export default function AccountSection() {
         </div>
       </div>
 
-      {/* 알림 설정 */}
       <div className="w-full box-border border border-[#2e2e40] rounded-2xl p-8 bg-[#0c0c14] flex flex-col gap-6">
         <h3 className="flex items-center gap-3 m-0 text-lg font-bold text-white">
           <FiBell size={20} className="text-[#d9b36d]" />
@@ -100,7 +98,6 @@ export default function AccountSection() {
         </div>
       </div>
 
-      {/* 회원 탈퇴 */}
       <div className="w-full box-border border border-[#2e2e40] rounded-2xl p-8 bg-[#0c0c14] flex flex-col gap-6">
         <h3 className="flex items-center gap-3 m-0 text-lg font-bold text-white">
           <FiAlertTriangle size={20} className="text-red-500" />
@@ -110,8 +107,10 @@ export default function AccountSection() {
           <div className="flex flex-col gap-3">
             <span className="text-[15px] text-white font-bold">탈퇴 전 주의사항</span>
             <p className="m-0 text-[14px] text-[#aaa] leading-relaxed">
-              회원 탈퇴 시 모든 경매 내역과 평판 기록을 더 이상 플랫폼에서 확인할 수 없게 됩니다.<br />
-              지갑에 보관된 잔여 가상머니가 0원이어야만 탈퇴 절차를 진행할 수 있습니다. 진행 중인 경매나 정산 대기금이 있다면 모두 완료된 후 시도해 주세요.
+              회원 탈퇴 시 모든 경매 내역과 평판 기록을 더 이상 플랫폼에서 확인할 수 없게 됩니다.
+              <br />
+              지갑에 보관된 잔여 가상머니가 0원이어야만 탈퇴 절차를 진행할 수 있습니다. 진행 중인 경매나 정산 대기금이
+              있다면 모두 완료된 후 시도해 주세요.
             </p>
           </div>
           <button
@@ -123,7 +122,6 @@ export default function AccountSection() {
         </div>
       </div>
 
-      {/* 탈퇴 확인 모달 */}
       {isWithdrawModalOpen && (
         <div
           className="fixed inset-0 bg-black/70 z-[999] flex items-center justify-center"
@@ -147,7 +145,8 @@ export default function AccountSection() {
             </div>
 
             <p className="m-0 text-[14px] text-[#aaa] leading-relaxed bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-              탈퇴 후에는 계정 복구가 불가능합니다.<br />
+              탈퇴 후에는 계정 복구가 불가능합니다.
+              <br />
               비밀번호를 입력하여 본인 확인 후 탈퇴를 진행해 주세요.
             </p>
 
@@ -163,9 +162,7 @@ export default function AccountSection() {
               />
             </div>
 
-            {withdrawError && (
-              <p className="m-0 text-[13px] text-red-400">{withdrawError}</p>
-            )}
+            {withdrawError && <p className="m-0 text-[13px] text-red-400">{withdrawError}</p>}
 
             <div className="flex justify-end gap-3 mt-2">
               <button

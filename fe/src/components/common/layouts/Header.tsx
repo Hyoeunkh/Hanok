@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import Logo from '@/assets/Logo.png';
+import { getUserIdFromToken } from '@/utils/getUserIdFromToken';
 import SearchBar from '../SearchBar';
 import Button from '../Button';
 
@@ -17,8 +18,12 @@ export default function Header() {
   const sellerButtonLabel = sellerStatus?.isSeller ? '판매자 센터' : '판매자 등록';
   const sellerButtonPath = sellerStatus?.isSeller ? '/products' : '/seller/register';
 
+  const handleSellerButtonClick = () => {
+    navigate(isLoggedIn ? sellerButtonPath : '/login');
+  };
+
   const handleProfileClick = () => {
-    const userId = localStorage.getItem('userId');
+    const userId = getUserIdFromToken();
 
     navigate(userId ? `/profile/${userId}` : '/login');
   };
@@ -36,7 +41,7 @@ export default function Header() {
             <img src={Logo} alt="Logo" className="h-full w-full object-contain" />
           </button>
 
-          <Button onClick={() => navigate(sellerButtonPath)} className="ml-8 h-10 px-2">
+          <Button onClick={handleSellerButtonClick} className="ml-8 h-10 px-2">
             {sellerButtonLabel}
           </Button>
         </div>
@@ -87,7 +92,7 @@ function HeaderIcon({ children, onClick, ariaLabel, tooltip }: HeaderIconProps) 
         type="button"
         onClick={onClick}
         aria-label={ariaLabel}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-point text-background transition hover:bg-white"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-point text-white transition hover:bg-white hover:text-background"
       >
         {children}
       </button>

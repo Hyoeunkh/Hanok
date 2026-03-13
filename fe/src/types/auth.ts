@@ -3,29 +3,7 @@ export type LoginPayload = {
   password: string;
 };
 
-export type LoginResponse = {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    userId: number;
-    email: string;
-    phone: string;
-  };
-};
-
-export type LogoutPayload = {
-  refreshToken: string;
-};
-
-export type LogoutResponse = {
-  success: boolean;
-};
-
-export type RefreshTokenPayload = {
-  refreshToken: string;
-};
-
-export type RefreshTokenResponse = {
+export type LoginResponseData = {
   accessToken: string;
   refreshToken: string;
 };
@@ -35,18 +13,20 @@ export type SignUpPayload = {
   nickname: string;
   password: string;
   phone: string;
-  smsToken: string;
 };
 
-export type CheckEmailResponse = {
-  isDuplicated: boolean;
+export type SignUpResponseData = {
+  userId: number;
+  email: string;
+  nickname: string;
 };
 
-export type SmsCodeResponse = {
-  expireAt: string;
+export type IdentityVerificationRequest = {
+  identityVerificationId: string;
 };
 
-export type VerifySmsResponse = {
-  verified: boolean;
-  sessionToken: string;
+export type IdentityVerificationData = {
+  name: string;
+  phoneNumber: string;
+  birthDate: string;
 };

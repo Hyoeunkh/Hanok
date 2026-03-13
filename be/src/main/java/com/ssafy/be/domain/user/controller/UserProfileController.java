@@ -7,6 +7,7 @@ import com.ssafy.be.domain.seller.service.SellerService;
 import com.ssafy.be.domain.user.controller.api.UserProfileApi;
 import com.ssafy.be.domain.user.dto.request.AccountRegisterRequest;
 import com.ssafy.be.domain.user.dto.response.AccountRegisterResponse;
+import com.ssafy.be.domain.user.dto.response.UserProfileResponse;
 import com.ssafy.be.domain.user.service.UserService;
 import com.ssafy.be.global.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -70,5 +71,12 @@ public class UserProfileController implements UserProfileApi {
 
         Long userId = getUserId(principal);
         return ResponseEntity.ok(ApiResponse.success(sellerService.getSellerStatus(userId)));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getMyProfile(
+            @AuthenticationPrincipal String principal) {
+        Long userId = getUserId(principal);
+        return ResponseEntity.ok(ApiResponse.success(userService.getMyProfile(userId)));
     }
 }
