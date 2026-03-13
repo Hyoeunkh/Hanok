@@ -1,8 +1,10 @@
 package com.ssafy.be.domain.escrow.controller;
 
 import com.ssafy.be.domain.escrow.api.EscrowApi;
-import com.ssafy.be.domain.escrow.dto.EscrowCancelRequest;
-import com.ssafy.be.domain.escrow.dto.TrackingNumberRegisterRequest;
+import com.ssafy.be.domain.escrow.dto.request.EscrowCancelRequest;
+import com.ssafy.be.domain.escrow.dto.request.TrackingNumberRegisterRequest;
+import com.ssafy.be.domain.escrow.dto.response.EscrowDetailResponse;
+import com.ssafy.be.domain.escrow.dto.response.EscrowListResponse;
 import com.ssafy.be.domain.escrow.service.EscrowService;
 import com.ssafy.be.global.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -10,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/escrows")
@@ -31,9 +35,27 @@ public class EscrowController implements EscrowApi {
     public ResponseEntity<?> cancelEscrow(
             @RequestBody @Valid EscrowCancelRequest request,
             @PathVariable Long escrowId,
-            @AuthenticationPrincipal String principal) {
+            @AuthenticationPrincipal String principal
+    ) {
         escrowService.cancelEscrow(request, escrowId, getUserId(principal));
         return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllEscrows(
+            @AuthenticationPrincipal String principal
+    ) {
+        List<EscrowListResponse> response = escrowService.getAllEscrows(getUserId(principal));
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{escrowId}")
+    public ResponseEntity<?> getEscrowDetail(
+            @PathVariable Long escrowId,
+            @AuthenticationPrincipal String principal
+    ) {
+        EscrowDetailResponse response = escrowService.getEscrowDetail(escrowId, getUserId(principal));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     private Long getUserId(String principal) {
