@@ -55,6 +55,16 @@ public class SellerService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
 
+        // 닉네임 업데이트
+        if (request.nickname() != null) {
+            user.updateProfile(request.nickname(), null);
+        }
+
+        // 계좌 정보 업데이트
+        if (request.bankCode() != null && request.accountNum() != null && request.accountName() != null) {
+            user.updateAccount(request.bankCode(), request.accountName(), request.accountNum());
+        }
+
         Seller seller = Seller.builder()
                 .intro(request.intro() != null ? request.intro() : "")
                 .type(request.type())
