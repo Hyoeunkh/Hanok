@@ -86,11 +86,10 @@ public class UniqueBidRepository {
     }
 
 
-    // 특정 금액 입찰자
     public Optional<Long> findUserIdByAmount(Long auctionId, Long amount) {
-        return getAllBids(auctionId).values().stream()
-                .filter(o -> Long.parseLong(o.toString()) == amount)
-                .map(o -> Long.parseLong(o.toString()))
+        return getAllBids(auctionId).entrySet().stream()
+                .filter(entry -> Long.parseLong(entry.getValue().toString()) == amount)
+                .map(entry -> Long.parseLong(entry.getKey().toString()))
                 .findFirst();
     }
 

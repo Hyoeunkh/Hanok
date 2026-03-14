@@ -32,7 +32,7 @@ public class UniqueBidAuction {
     private String startedAt;
 
     @Builder
-    private UniqueBidAuction(Auction action, Long minPrice, Long maxPrice) {
+    private UniqueBidAuction(Auction auction, Long minPrice, Long maxPrice) {
         this.auction = auction;
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
