@@ -377,10 +377,10 @@ export default function LivePage() {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col bg-black p-3">
+    <div className="flex h-screen w-full flex-col bg-background p-3">
       <div className="mb-2 flex shrink-0 items-center gap-3">
         <button
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-bold text-[#71717A] transition hover:bg-[rgba(255,255,255,0.05)] hover:text-[#A1A1AA]"
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-bold text-neutral-500 transition hover:bg-white/5 hover:text-neutral-400"
           onClick={() => navigate('/')}
         >
           <svg

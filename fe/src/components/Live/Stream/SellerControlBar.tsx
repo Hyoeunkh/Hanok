@@ -71,32 +71,32 @@ export default function SellerControlBar({ introduceAuctionId, startAuctionId, c
           type="button"
           onClick={handleAuctionItemIntroduce}
           disabled={!canIntroduce}
-          className="flex flex-1 w-full items-center justify-center gap-2 rounded-xl border border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.05)] text-sm font-bold text-[#a1a1aa] transition hover:bg-[rgba(255,255,255,.1)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[rgba(255,255,255,.05)]"
+          className="flex flex-1 w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 text-sm font-bold text-neutral-400 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5"
         >
           <GoClock size={15} />
           설명 시작
-          <span className="rounded bg-[#27272a] px-1.5 py-0.5 text-[10px] text-[#71717a]">SPACE</span>
+          <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-500">SPACE</span>
         </button>
         <button
           type="button"
           onClick={handleAuctionStart}
           disabled={!canStart}
-          className="flex flex-1 w-full items-center justify-center gap-2 rounded-xl bg-[#C5A059] text-sm font-black text-black transition hover:bg-[#d4b068] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#C5A059]"
+          className="flex flex-1 w-full items-center justify-center gap-2 rounded-xl bg-gold text-sm font-black text-black transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gold"
         >
           <PlayIcon />
           경매 시작
-          <span className="rounded bg-[rgba(0,0,0,.15)] px-1.5 py-0.5 text-[10px] font-bold text-[rgba(0,0,0,.5)]">
+          <span className="rounded bg-black/15 px-1.5 py-0.5 text-[10px] font-bold text-black/50">
             ENTER
           </span>
         </button>
       </div>
 
       {/* 우하단: 미디어 컨트롤 */}
-      <div className="flex flex-col justify-center gap-3 rounded-2xl bg-[rgba(0,0,0,.6)] px-2.5">
-        <button className="flex h-10 w-10 items-center justify-center rounded-xl text-white transition hover:bg-[rgba(255,255,255,.1)]">
+      <div className="flex flex-col justify-center gap-3 rounded-2xl bg-black/60 px-2.5">
+        <button className="flex h-10 w-10 items-center justify-center rounded-xl text-white transition hover:bg-white/10">
           <LuMic size={18} />
         </button>
-        <button className="flex h-10 w-10 items-center justify-center rounded-xl text-white transition hover:bg-[rgba(255,255,255,.1)]">
+        <button className="flex h-10 w-10 items-center justify-center rounded-xl text-white transition hover:bg-white/10">
           <LuRadio size={18} />
         </button>
       </div>
