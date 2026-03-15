@@ -2,12 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { FaBroadcastTower, FaPlus } from 'react-icons/fa';
 import { useToast } from '@/components/common/Toast';
-import CategorySelectModal from './components/CategorySelectModal';
 import { useDeleteStream } from '@/api/hooks/useDeleteStream';
 import { useGetScheduledStreams } from '@/api/hooks/useGetScheduledStreams';
 import SideBar from '@/components/common/layouts/SideBar';
 import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
+import CategorySelectModal from '@/components/LiveCreate/CategorySelectModal';
 
 const getCategoryLabel = (categoryId: string): string =>
   MAIN_CATEGORY_ITEMS.find((c) => c.id === categoryId)?.label ?? categoryId;

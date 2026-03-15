@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from '@/components/common/Button';
 import { BANKS } from '../../pages/SellerOnboarding/constants';
-import type { AccountData } from '../../pages/SellerOnboarding';
+import type { AccountData } from '@/types';
 
 type Step3Props = {
   onPrev: () => void;
@@ -140,12 +140,21 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
           >
             {/* 모달 헤더 */}
             <div style={{ padding: '16px 20px 0', flexShrink: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}
+              >
                 <h3 style={{ fontSize: '17px', fontWeight: '700', color: 'white' }}>은행/증권사 선택</h3>
                 <button
                   type="button"
                   onClick={() => setShowBankModal(false)}
-                  style={{ background: 'none', border: 'none', color: '#8E8E93', fontSize: '24px', cursor: 'pointer', padding: '0' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#8E8E93',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '0',
+                  }}
                 >
                   &times;
                 </button>

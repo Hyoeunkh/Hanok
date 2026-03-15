@@ -6,10 +6,10 @@ import { useGetMe } from '@/api/hooks/useGetMe';
 import { useGetNotification } from '@/api/hooks/useGetNotification';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
 import { useLogout } from '@/api/hooks/usePostLogout';
-import AccountSection from './components/AccountSection';
-import FollowedStoresSection from './components/FollowedStoresSection';
-import ShippingSection from './components/ShippingSection';
-import PaymentSection from './components/PaymentSection';
+import AccountSection from '@/components/Settings/AccountSection';
+import FollowedStoresSection from '@/components/Settings/FollowedStoresSection';
+import ShippingSection from '@/components/Settings/ShippingSection';
+import PaymentSection from '@/components/Settings/PaymentSection';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -125,9 +125,7 @@ export default function SettingsPage() {
           {activeTab === 'shipping' && <ShippingSection />}
           {activeTab === 'payment' && <PaymentSection />}
           {activeTab !== 'account' && activeTab !== 'stores' && activeTab !== 'shipping' && activeTab !== 'payment' && (
-            <div className="flex items-center justify-center p-20 text-[#888]">
-              해당 메뉴는 준비 중입니다.
-            </div>
+            <div className="flex items-center justify-center p-20 text-[#888]">해당 메뉴는 준비 중입니다.</div>
           )}
         </div>
       </div>

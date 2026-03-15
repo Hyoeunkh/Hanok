@@ -10,6 +10,10 @@ import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import { usePatchFollow } from '@/api/hooks/usePatchFollow';
 import { useDeleteFollow } from '@/api/hooks/useDeleteFollow';
 import { FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
+import ReportModal from '@/components/Profile/ReportModal';
+import { useGetEscrows } from '@/api/hooks/useGetEscrows';
+import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
+import type { EscrowState } from '@/types';
 import { FiBell, FiCalendar, FiClock, FiGift, FiTruck, FiEdit2 } from 'react-icons/fi';
 
 const InstagramIcon = () => (
@@ -35,10 +39,6 @@ const CalendarIcon = () => <FiCalendar size={16} color="#888" />;
 const HistoryIcon = () => <FiClock size={18} color="currentColor" />;
 const GiftIcon = () => <FiGift size={32} color="#D9B36D" />;
 const TruckIcon = () => <FiTruck size={24} color="#D9B36D" />;
-import ReportModal from './components/ReportModal';
-import { useGetEscrows } from '@/api/hooks/useGetEscrows';
-import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
-import type { EscrowState } from '@/types';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
