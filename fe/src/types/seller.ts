@@ -16,7 +16,6 @@ export type BusinessType = 'INDIVIDUAL' | 'BUSINESS';
 
 export type RegisterAccountPayload = {
   bankCode: string;
-  bankName: string;
   accountNum: string;
   accountName: string;
 };

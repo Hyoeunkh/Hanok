@@ -7,15 +7,18 @@ const patchItemPath = (itemId: number) => `/v1/items/${itemId}`;
 export const usePatchItem = () => {
   return useMutation<UpdateItemResponse, Error, { itemId: number; payload: UpdateItemPayload }>({
     mutationFn: async ({ itemId, payload }) => {
-      const response = await getFetchInstance().patch(patchItemPath(itemId), {
-        name: payload.name,
-        description: payload.description,
-        category: payload.category,
-        startPrice: payload.startPrice,
-        bidUnit: payload.bidUnit,
-        auctionDuration: payload.auctionDuration,
-        itemCondition: payload.itemCondition,
-        tags: payload.tags ?? [],
+      const { images, ...request } = payload;
+      const formData = new FormData();
+      formData.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+
+      if (images) {
+        images.forEach((file) => formData.append('images', file));
+      }
+
+      const response = await getFetchInstance().patch(patchItemPath(itemId), formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     },

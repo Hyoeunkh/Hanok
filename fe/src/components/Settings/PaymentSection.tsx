@@ -30,7 +30,7 @@ export default function PaymentSection() {
     if (!form.bankCode || !form.accountNum || !form.accountName) return;
 
     registerAccount(
-      { bankCode: form.bankCode, bankName: form.bankName, accountNum: form.accountNum, accountName: form.accountName },
+      { bankCode: form.bankCode, accountNum: form.accountNum, accountName: form.accountName },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['account'] });
@@ -53,7 +53,7 @@ export default function PaymentSection() {
     );
   }
 
-  const hasAccount = accountData && accountData.bankName && accountData.accountNumber;
+  const hasAccount = accountData && accountData.bankName && accountData.accountNum;
 
   return (
     <div className="w-full box-border">
@@ -70,7 +70,8 @@ export default function PaymentSection() {
           {hasAccount ? (
             <div className="flex flex-col gap-2">
               <span className="text-white text-[17px] font-bold">{accountData.bankName}</span>
-              <span className="text-[#aaa] text-[15px]">{accountData.accountNumber}</span>
+              <span className="text-[#aaa] text-[15px]">{accountData.accountNum}</span>
+              <span className="text-[#aaa] text-[15px]">{accountData.accountName}</span>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -129,7 +130,6 @@ export default function PaymentSection() {
         </div>
       )}
 
-      {/* 은행 선택 모달 */}
       {showBankModal && (
         <div
           className="fixed inset-0 z-[1000] flex items-center justify-center"

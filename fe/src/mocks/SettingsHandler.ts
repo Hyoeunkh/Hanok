@@ -183,28 +183,35 @@ export const settingsHandlers = [
   }),
 
   // GET /v1/users/me/account
-  // 계좌 없는 상태로 테스트: bankName, accountNumber를 빈 값으로 설정
+  // 계좌 없는 상태로 테스트: bankName, accountNum, accountName을 빈 값으로 설정
   // 계좌 있는 상태로 테스트하려면 아래 값을 채우세요
   http.get(`${BASE_URL}/v1/users/me/account`, () => {
     return HttpResponse.json(
       {
         bankName: '',
-        accountNumber: '',
+        accountNum: '',
+        accountName: '',
       },
       { status: 200 },
     );
   }),
 
-  http.post(`${BASE_URL}/v1/users/me/accounts`, async ({ request }) => {
+  http.patch(`${BASE_URL}/v1/users/me/account`, async ({ request }) => {
     const body = (await request.json()) as {
       bankCode: string;
-      bankName: string;
       accountNum: string;
       accountName: string;
     };
 
     console.log('Mock: account registered', body);
-    return HttpResponse.json({ success: true }, { status: 200 });
+    return HttpResponse.json(
+      {
+        bankName: '신한은행',
+        accountNum: body.accountNum,
+        accountName: body.accountName,
+      },
+      { status: 200 },
+    );
   }),
 
   http.get(`${BASE_URL}/v1/users/me/addresses`, () =>

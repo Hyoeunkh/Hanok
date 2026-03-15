@@ -121,3 +121,14 @@ export type AccountData = {
   accountNum: string;
   accountName: string;
 };
+
+// ─── Juso (도로명주소 검색 API) ─────────────────────────────────────────────
+export type JusoResult = {
+  roadAddr: string;
+  jibunAddr: string;
+  zipNo: string;
+  bdNm: string;
+  siNm: string;
+  sggNm: string;
+  emdNm: string;
+};

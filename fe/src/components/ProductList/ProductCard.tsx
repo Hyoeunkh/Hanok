@@ -50,20 +50,22 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
           <div className="text-[#8E8E93] text-[13px]">
             {product.tags.map(tag => `#${tag}`).join(' ')}
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => onEdit(product.itemId)}
-              className="bg-transparent border-none text-[#C8C8C8] text-[13px] cursor-pointer"
-            >
-              수정
-            </button>
-            <button
-              onClick={() => onDelete(product.itemId)}
-              className="bg-transparent border-none text-[#C8C8C8] text-[13px] cursor-pointer"
-            >
-              삭제
-            </button>
-          </div>
+          {product.status === 'READY' && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => onEdit(product.itemId)}
+                className="bg-transparent border-none text-[#C8C8C8] text-[13px] cursor-pointer"
+              >
+                수정
+              </button>
+              <button
+                onClick={() => onDelete(product.itemId)}
+                className="bg-transparent border-none text-[#C8C8C8] text-[13px] cursor-pointer"
+              >
+                삭제
+              </button>
+            </div>
+          )}
         </div>
 
         <h3 className="text-white text-lg font-bold m-0 mb-1.5">

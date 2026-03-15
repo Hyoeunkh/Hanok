@@ -8,6 +8,7 @@ export type CreateItemPayload = {
   itemCondition: string;
   auctionType: string;
   tags?: string[];
+  images?: File[];
 };
 
 export type CreateItemResponse = {
@@ -24,8 +25,8 @@ export type UpdateItemPayload = {
   bidUnit?: number;
   auctionDuration?: number;
   itemCondition?: string;
-  auctionType?: string;
   tags?: string[];
+  images?: File[];
 };
 
 export type UpdateItemResponse = {

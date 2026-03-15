@@ -43,7 +43,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
       setImages([]);
       if (initialData) {
         setName(initialData.name);
-        setDescription(initialData.description);
+        setDescription('');
 
         const matchedCategory = MAIN_CATEGORY_ITEMS.find(c => c.label === initialData.category || c.id === initialData.category);
         setCategory(matchedCategory ? matchedCategory.id : '');
@@ -51,10 +51,10 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         setItemCondition(initialData.itemCondition || '');
 
         setStartPrice(initialData.startPrice.toString());
-        setBidUnit(initialData.bidUnit.toString());
-        setAuctionDuration(initialData.auctionDuration.toString());
-        setAuctionType(initialData.auctionType || 'ENGLISH');
-        setHashtags(initialData.tags ? initialData.tags.map(t => `#${t}`).join(' ') : '');
+        setBidUnit('');
+        setAuctionDuration('');
+        setAuctionType('');
+        setHashtags('');
 
         if (initialData.image1) {
           setExistingImages([initialData.image1]);
@@ -113,6 +113,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
             category,
             itemCondition,
             tags: parsedTags,
+            images: images.length > 0 ? images : undefined,
           }
         });
         console.log('상품 수정 완료');
@@ -127,6 +128,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           itemCondition,
           auctionType: auctionType || 'ENGLISH',
           tags: parsedTags,
+          images: images.length > 0 ? images : undefined,
         });
         console.log('상품 등록 완료');
       }
@@ -152,7 +154,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           {initialData ? '상품 정보 수정' : '새 상품 등록'}
         </h2>
 
-        {/* 이미지 업로드 영역 */}
         <input
           type="file"
           accept="image/png, image/jpeg"
@@ -169,7 +170,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         >
           {existingImages.length > 0 || images.length > 0 ? (
             <div className="flex gap-3 w-full overflow-x-auto p-2" onClick={(e) => e.stopPropagation()}>
-              {/* 기존 이미지 */}
               {existingImages.map((url, idx) => (
                 <div key={`exist-${idx}`} className="relative w-[120px] h-[120px] shrink-0">
                   <img src={url} alt="기존 이미지" className="w-full h-full object-cover rounded-lg" />
@@ -182,7 +182,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
                 </div>
               ))}
 
-              {/* 새로 추가된 이미지 */}
               {images.map((file, idx) => (
                 <div key={`new-${idx}`} className="relative w-[120px] h-[120px] shrink-0">
                   <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover rounded-lg" />
@@ -213,7 +212,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           )}
         </div>
 
-        {/* 상품명 */}
         <div className="mb-5">
           <label className={labelClass}>상품명 등록</label>
           <input
@@ -225,7 +223,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           />
         </div>
 
-        {/* 2단 그리드 1 */}
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>카테고리</label>
@@ -248,7 +245,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
         </div>
 
-        {/* 2단 그리드 2 */}
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>시작가</label>
@@ -270,7 +266,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
         </div>
 
-        {/* 2단 그리드 3 */}
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>경매시간</label>
@@ -291,7 +286,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
         </div>
 
-        {/* 상품 설명 */}
         <div className="mb-5">
           <label className={labelClass}>상품 설명</label>
           <textarea
@@ -302,7 +296,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           />
         </div>
 
-        {/* 해시 태그 */}
         <div className="mb-8">
           <label className={labelClass}>해시 태그(선택)</label>
           <input
@@ -315,7 +308,6 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
 
         {error && <div className="text-[#FF3B30] text-sm mb-4">{error}</div>}
 
-        {/* 하단 버튼 */}
         {initialData ? (
           <div className="flex gap-3">
             <Button variant="outline" onClick={onClose}>

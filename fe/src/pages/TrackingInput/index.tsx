@@ -213,6 +213,7 @@ export default function TrackingInput() {
   };
 
   const formatPrice = (price: number) => price.toLocaleString() + '원';
+  const formatDate = (dateStr: string) => dateStr.replace(/T/, ' ').replace(/:\d{2}(\.\d+)?Z?$/, '').replace(/Z$/, '');
 
   return (
     <>
@@ -286,7 +287,7 @@ export default function TrackingInput() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-lg font-bold">{item.itemName}</span>
-                        <span className="text-[#AEAEB2] text-[13px]">{item.createdAt}</span>
+                        <span className="text-[#AEAEB2] text-[13px]">{formatDate(item.createdAt)}</span>
                       </div>
                     </div>
                     <div className="text-lg font-bold">{formatPrice(item.amount)}</div>
@@ -349,7 +350,7 @@ export default function TrackingInput() {
                               : item.escrowState}
                         </span>
                         <span className="text-lg font-bold">{item.itemName}</span>
-                        <span className="text-[#AEAEB2] text-[13px]">{item.createdAt}</span>
+                        <span className="text-[#AEAEB2] text-[13px]">{formatDate(item.createdAt)}</span>
                       </div>
                     </div>
                     <div className="text-lg font-bold">{formatPrice(item.amount)}</div>
@@ -432,7 +433,7 @@ export default function TrackingInput() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span style={{ color: '#8E8E93', fontSize: '12px', fontWeight: 'bold' }}>거래 취소</span>
                         <span style={{ fontSize: '18px', fontWeight: '700' }}>{item.itemName}</span>
-                        <span style={{ color: '#AEAEB2', fontSize: '13px' }}>{item.createdAt}</span>
+                        <span style={{ color: '#AEAEB2', fontSize: '13px' }}>{formatDate(item.createdAt)}</span>
                       </div>
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: '700' }}>{formatPrice(item.amount)}</div>
@@ -502,7 +503,7 @@ export default function TrackingInput() {
                     {selectedItemDetail.winningInfo.itemName}
                   </p>
                   <p style={{ color: '#8E8E93', fontSize: '13px', marginBottom: '16px' }}>
-                    {selectedItemDetail.winningInfo.wonAt}
+                    {formatDate(selectedItemDetail.winningInfo.wonAt)}
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: '8px 12px', fontSize: '14px' }}>
                     <span style={{ color: '#AEAEB2' }}>낙찰가</span>

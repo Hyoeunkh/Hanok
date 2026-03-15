@@ -27,7 +27,7 @@ export default function SellerOnboardingPage() {
     }
   }, [sellerStatus, navigate, showToast]);
 
-  const hasExistingAccount = !!(accountData?.bankName && accountData?.accountNumber);
+  const hasExistingAccount = !!(accountData?.bankName && accountData?.accountNum);
 
   if (isLoading || isAccountLoading) {
     return (

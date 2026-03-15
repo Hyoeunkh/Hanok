@@ -1,21 +1,11 @@
 import { useState, useCallback } from 'react';
 import { FiX, FiSearch } from 'react-icons/fi';
 import { FaMapMarkerAlt } from 'react-icons/fa';
-import type { Address, AddressFormState, AddressModalMode } from '@/types';
+import type { Address, AddressFormState, AddressModalMode, JusoResult } from '@/types';
 import { useGetAddresses } from '@/api/hooks/useGetAddresses';
 import { usePostAddress } from '@/api/hooks/usePostAddress';
 import { usePatchAddress } from '@/api/hooks/usePatchAddress';
 import { useDeleteAddress } from '@/api/hooks/useDeleteAddress';
-
-type JusoResult = {
-  roadAddr: string;
-  jibunAddr: string;
-  zipNo: string;
-  bdNm: string;
-  siNm: string;
-  sggNm: string;
-  emdNm: string;
-};
 
 const JUSO_API_KEY = import.meta.env.VITE_JUSO_API_KEY as string;
 
@@ -34,8 +24,6 @@ export default function ShippingSection() {
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<AddressFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
-
-  // 주소 검색 상태
   const [addressSearchOpen, setAddressSearchOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState<JusoResult[]>([]);
@@ -44,7 +32,6 @@ export default function ShippingSection() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const countPerPage = 10;
-
   const { data, isLoading } = useGetAddresses();
   const { mutate: createAddress } = usePostAddress();
   const { mutate: updateAddress } = usePatchAddress();
@@ -116,7 +103,6 @@ export default function ShippingSection() {
     }
   };
 
-  // 도로명 주소 검색
   const searchAddress = useCallback(
     async (page: number = 1) => {
       if (!searchKeyword.trim()) {
@@ -136,7 +122,7 @@ export default function ShippingSection() {
           resultType: 'json',
         });
 
-        const res = await fetch(`/juso-api/addrlink/addrLinkApi.do?${params.toString()}`);
+        const res = await fetch(`https://business.juso.go.kr/addrlink/addrLinkApi.do?${params.toString()}`);
         const data = await res.json();
         const result = data.results;
 
@@ -255,7 +241,6 @@ export default function ShippingSection() {
         </div>
       )}
 
-      {/* 배송지 추가/수정 모달 */}
       {modalOpen && (
         <div
           className="fixed inset-0 bg-black/70 z-[999] flex items-center justify-center"
@@ -277,7 +262,6 @@ export default function ShippingSection() {
               </button>
             </div>
 
-            {/* 이름 */}
             <div className="flex flex-col gap-2">
               <label className="text-[14px] text-[#aaa] font-medium">이름</label>
               <input
@@ -289,7 +273,6 @@ export default function ShippingSection() {
               />
             </div>
 
-            {/* 배송지 별칭 */}
             <div className="flex flex-col gap-2">
               <label className="text-[14px] text-[#aaa] font-medium">배송지 별칭</label>
               <input
@@ -301,7 +284,6 @@ export default function ShippingSection() {
               />
             </div>
 
-            {/* 우편번호 + 주소 검색 버튼 */}
             <div className="flex flex-col gap-2">
               <label className="text-[14px] text-[#aaa] font-medium">우편번호</label>
               <div className="flex gap-2">
@@ -323,7 +305,6 @@ export default function ShippingSection() {
               </div>
             </div>
 
-            {/* 주소 (읽기 전용) */}
             <div className="flex flex-col gap-2">
               <label className="text-[14px] text-[#aaa] font-medium">주소</label>
               <input
@@ -335,7 +316,6 @@ export default function ShippingSection() {
               />
             </div>
 
-            {/* 상세 주소 */}
             <div className="flex flex-col gap-2">
               <label className="text-[14px] text-[#aaa] font-medium">상세 주소</label>
               <input
@@ -347,7 +327,6 @@ export default function ShippingSection() {
               />
             </div>
 
-            {/* 휴대폰 번호 */}
             <div className="flex flex-col gap-2">
               <label className="text-[14px] text-[#aaa] font-medium">휴대폰 번호</label>
               <input
@@ -379,7 +358,6 @@ export default function ShippingSection() {
         </div>
       )}
 
-      {/* 도로명 주소 검색 모달 */}
       {addressSearchOpen && (
         <div
           className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center"
@@ -399,7 +377,6 @@ export default function ShippingSection() {
               </button>
             </div>
 
-            {/* 검색 입력 */}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -422,7 +399,6 @@ export default function ShippingSection() {
               </button>
             </div>
 
-            {/* 안내 문구 */}
             {searchResults.length === 0 && !searchError && !searchLoading && (
               <div className="flex flex-col items-center gap-3 py-8 text-[#666]">
                 <FaMapMarkerAlt size={32} />
@@ -433,17 +409,14 @@ export default function ShippingSection() {
               </div>
             )}
 
-            {/* 로딩 */}
             {searchLoading && (
               <div className="flex items-center justify-center py-8">
                 <div className="w-6 h-6 border-3 border-[#333] border-t-[#d9b36d] rounded-full animate-spin" />
               </div>
             )}
 
-            {/* 에러 */}
             {searchError && <p className="m-0 text-[13px] text-red-400 text-center py-4">{searchError}</p>}
 
-            {/* 검색 결과 */}
             {!searchLoading && searchResults.length > 0 && (
               <>
                 <p className="m-0 text-[13px] text-[#888]">
@@ -471,7 +444,6 @@ export default function ShippingSection() {
                   ))}
                 </div>
 
-                {/* 페이지네이션 */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-1 pt-2">
                     <button
