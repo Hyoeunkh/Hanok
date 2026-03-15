@@ -111,6 +111,10 @@ export type ItemSyncItem = {
   auctionStatus: ItemSyncAuctionStatus;
   finalPrice: number | null;
   itemCondition: ItemSyncItemCondition;
+  description?: string;
+  bidUnit?: number;
+  auctionTime?: number;
+  images?: string[];
 };
 
 export type ItemSyncPayload = {
@@ -136,6 +140,10 @@ export type LiveStreamItem = {
   itemCondition: ItemSyncItemCondition;
   image1: string | null;
   createdAt: string;
+  description?: string;
+  bidUnit?: number;
+  auctionTime?: number;
+  images?: string[];
 };
 
 export type Live = {
