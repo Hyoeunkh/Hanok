@@ -11,11 +11,6 @@ export default function StreamOverlay({ viewerCount = 0 }: Props) {
         <div className="h-2 w-2 animate-pulse rounded-full bg-white" />
         <span className="text-xs font-black text-white">LIVE {viewerCount.toLocaleString('ko-KR')}</span>
       </div>
-
-      <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
-        <GoClock />
-        <span className="font-mono">08:45</span>
-      </div>
     </div>
   );
 }

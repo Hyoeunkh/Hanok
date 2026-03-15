@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { usePostStartStream } from '@/api/hooks/usePostStartStream';
 import { useGetStreamEnter } from '@/api/hooks/useGetStreamEnter';
+import { useStompViewerCount } from '@/hooks/useStompViewerCount';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
 import AuctionCommentToast from '@/components/Live/Stream/AuctionCommentToast';
@@ -141,6 +142,7 @@ export default function LivePage() {
   const shouldAutoOpenStartModal =
     (location.state as { autoOpenStartModal?: boolean } | null)?.autoOpenStartModal === true;
   const { data: streamEnter } = useGetStreamEnter(numericStreamId);
+  const { viewerCount } = useStompViewerCount();
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
   const [timer, setTimer] = useState<SyncedAuctionTimer | null>(null);
   const [winnerInfo, setWinnerInfo] = useState<BidWinnerPayload | null>(null);
@@ -412,7 +414,7 @@ export default function LivePage() {
           />
         </div>
         <div className="relative min-w-0 flex-2 overflow-hidden rounded-2xl bg-background">
-          <StreamOverlay viewerCount={activeStreamEnter?.viewerCount ?? 0} />
+          <StreamOverlay viewerCount={viewerCount} />
           {isSeller && <SellerGuideOverlay />}
           <StreamPlaceholder />
           <ControlBar
