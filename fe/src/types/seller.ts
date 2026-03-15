@@ -101,12 +101,12 @@ export type PostSellerNoticeResponse = {
   updatedAt: string;
 };
 
-export type PutSellerNoticePayload = {
-  title: string;
-  content: string;
+export type PatchSellerNoticePayload = {
+  title?: string;
+  content?: string;
 };
 
-export type PutSellerNoticeResponse = {
+export type PatchSellerNoticeResponse = {
   noticeId: number;
   title: string;
   content: string;

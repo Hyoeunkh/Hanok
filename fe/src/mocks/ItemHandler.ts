@@ -108,7 +108,9 @@ export const itemHandlers = [
   }),
 
   http.post(`${BASE_URL}/v1/items`, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+    const formData = await request.formData();
+    const requestBlob = formData.get('request');
+    const body = requestBlob ? JSON.parse(await (requestBlob as Blob).text()) as Record<string, unknown> : {};
 
     const newItem: MockItem = {
       itemId: Date.now() + Math.floor(Math.random() * 1000),
@@ -143,7 +145,9 @@ export const itemHandlers = [
       return HttpResponse.json({ message: 'Item not found' }, { status: 404 });
     }
 
-    const body = (await request.json()) as Record<string, unknown>;
+    const formData = await request.formData();
+    const requestBlob = formData.get('request');
+    const body = requestBlob ? JSON.parse(await (requestBlob as Blob).text()) as Record<string, unknown> : {};
     const currentItem = mockItems[itemIndex];
 
     mockItems[itemIndex] = {

@@ -111,104 +111,54 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
       {/* 은행 선택 모달 */}
       {showBankModal && (
         <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="fixed inset-0 z-[1000] flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
           onClick={() => setShowBankModal(false)}
         >
           <div
-            style={{
-              width: '100%',
-              maxWidth: '430px',
-              maxHeight: '70vh',
-              backgroundColor: '#1C1C1E',
-              borderRadius: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
+            className="w-full max-w-[430px] max-h-[70vh] bg-[#1C1C1E] rounded-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* 모달 헤더 */}
-            <div style={{ padding: '16px 20px 0', flexShrink: 0 }}>
-              <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}
-              >
-                <h3 style={{ fontSize: '17px', fontWeight: '700', color: 'white' }}>은행/증권사 선택</h3>
+            <div className="px-5 pt-4 shrink-0">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-[17px] font-bold text-white">은행/증권사 선택</h3>
                 <button
                   type="button"
                   onClick={() => setShowBankModal(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#8E8E93',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    padding: '0',
-                  }}
+                  className="bg-transparent border-none text-[#8E8E93] text-2xl cursor-pointer p-0"
                 >
                   &times;
                 </button>
               </div>
-
-              {/* 탭 */}
-              <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid #2C2C2E' }}>
+              <div className="flex border-b border-[#2C2C2E]">
                 {(['bank', 'stock'] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setBankTab(tab)}
-                    style={{
-                      flex: 1,
-                      padding: '10px 0',
-                      background: 'none',
-                      border: 'none',
-                      borderBottom: bankTab === tab ? '2px solid #CEAF82' : '2px solid transparent',
-                      color: bankTab === tab ? '#CEAF82' : '#8E8E93',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                    }}
+                    className={`flex-1 py-2.5 bg-transparent border-none text-sm font-semibold cursor-pointer ${
+                      bankTab === tab
+                        ? 'text-[#CEAF82] border-b-2 border-[#CEAF82]'
+                        : 'text-[#8E8E93] border-b-2 border-transparent'
+                    }`}
                   >
                     {tab === 'bank' ? '은행' : '증권사'}
                   </button>
                 ))}
               </div>
             </div>
-
-            {/* 목록 */}
-            <div style={{ overflowY: 'auto', padding: '8px 20px 20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <div className="overflow-y-auto px-5 pt-2 pb-5">
+              <div className="grid grid-cols-3 gap-2">
                 {currentList.map((b) => (
                   <button
                     key={b.code}
                     type="button"
                     onClick={() => handleSelectBank(b.code)}
-                    style={{
-                      padding: '12px 4px',
-                      backgroundColor: bank === b.code ? '#CEAF82' : '#2C2C2E',
-                      color: bank === b.code ? '#0B0C10' : '#E5E5EA',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: bank === b.code ? '700' : '400',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
+                    className={`py-3 px-1 border-none rounded-lg text-[13px] cursor-pointer text-center whitespace-nowrap overflow-hidden text-ellipsis ${
+                      bank === b.code
+                        ? 'bg-[#CEAF82] text-[#0B0C10] font-bold'
+                        : 'bg-[#2C2C2E] text-[#E5E5EA] font-normal'
+                    }`}
                   >
                     {b.name}
                   </button>

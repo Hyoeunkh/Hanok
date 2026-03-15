@@ -37,6 +37,12 @@ let mockNoticeItems: MockNoticeItem[] = [
 ];
 
 export const profileHandlers = [
+  http.patch(`${BASE_URL}/v1/sellers/:sellerId/profile`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, string>;
+    console.log('Mock: seller profile updated', body);
+    return HttpResponse.json({ status: 'SUCCESS', message: '수정 성공', data: {} }, { status: 200 });
+  }),
+
   http.get(`${BASE_URL}/v1/sellers/:sellerId/sold-auctions`, () => {
     return HttpResponse.json([
       {

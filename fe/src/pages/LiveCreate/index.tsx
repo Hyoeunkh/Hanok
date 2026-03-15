@@ -83,7 +83,7 @@ export default function LiveCreatePage() {
 
         <div className="flex-1 flex flex-col gap-1.5">
           <p className="text-[#888] text-sm">{formatScheduledAt(stream.scheduledAt)}</p>
-          <p className="text-white text-base font-semibold">방송 제목 : {stream.title}</p>
+          <p className="text-white text-base font-semibold">{stream.title}</p>
           <p className="text-[#888] text-sm">방송 카테고리 : {getCategoryLabel(stream.category)}</p>
         </div>
 

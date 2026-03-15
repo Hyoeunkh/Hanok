@@ -12,8 +12,10 @@ import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarIte
 export default function ProductListPage() {
   const [activeMenu, setActiveMenu] = useState('inventory');
   const [activeTab, setActiveTab] = useState<'ALL' | 'READY' | 'PENDING' | 'SOLD'>('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProductInitData, setEditProductInitData] = useState<Product | null>(null);
+  const itemsPerPage = 7;
 
   const { data: fetchedProducts } = useGetItems();
   const products = fetchedProducts || [];
@@ -52,7 +54,7 @@ export default function ProductListPage() {
   ] as const;
 
   return (
-    <div className="flex w-full max-w-[1200px] mx-auto gap-0 py-10 px-4 min-h-screen bg-[#0B0C10] text-white">
+    <div className="flex w-full max-w-[1200px] mx-auto gap-0 py-10 px-4 min-h-screen text-white">
       <SideBar
         items={sellerSidebarItems}
         activeItemId={activeMenu}
@@ -83,7 +85,7 @@ export default function ProductListPage() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  onClick={() => { setActiveTab(tab.id as typeof activeTab); setCurrentPage(1); }}
                   className={`bg-transparent border-none px-6 py-3 text-sm cursor-pointer relative ${
                     isActive ? 'text-white font-bold' : 'text-[#8E8E93] font-normal'
                   }`}
@@ -96,19 +98,54 @@ export default function ProductListPage() {
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="flex flex-col">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.itemId}
-                  product={product}
-                  onEdit={() => {
-                    setEditProductInitData(product);
-                    setIsModalOpen(true);
-                  }}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-col">
+                {filteredProducts
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((product) => (
+                    <ProductCard
+                      key={product.itemId}
+                      product={product}
+                      onEdit={() => {
+                        setEditProductInitData(product);
+                        setIsModalOpen(true);
+                      }}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+              </div>
+              {Math.ceil(filteredProducts.length / itemsPerPage) > 1 && (
+                <div className="flex items-center justify-center gap-2 py-4 mt-auto">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="px-3 py-1.5 bg-transparent border border-[#2C2C2E] text-[#aaa] text-[13px] rounded cursor-pointer hover:bg-[#2a2a3a] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  {Array.from({ length: Math.ceil(filteredProducts.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded text-[13px] border-none cursor-pointer transition-colors ${
+                        currentPage === page
+                          ? 'bg-[#d9b36d] text-[#111] font-bold'
+                          : 'bg-transparent text-[#aaa] hover:bg-[#2a2a3a]'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(Math.ceil(filteredProducts.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(filteredProducts.length / itemsPerPage)}
+                    className="px-3 py-1.5 bg-transparent border border-[#2C2C2E] text-[#aaa] text-[13px] rounded cursor-pointer hover:bg-[#2a2a3a] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    다음
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-[28px] font-bold text-white">새 물품을 등록 해주세요.</p>

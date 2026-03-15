@@ -14,7 +14,7 @@ interface ProductRegistrationModalProps {
 }
 
 const inputClass = 'w-full h-12 bg-[#0B0C10] border border-[#1C1C1E] rounded-lg text-white text-sm px-4 outline-none';
-const selectClass = `${inputClass} appearance-none bg-no-repeat bg-[right_14px_center] bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")]`;
+const selectClass = `${inputClass} pr-10 cursor-pointer`;
 const labelClass = 'block text-white text-sm font-semibold mb-2';
 
 export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, initialData }: ProductRegistrationModalProps) {
@@ -213,7 +213,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         </div>
 
         <div className="mb-5">
-          <label className={labelClass}>상품명 등록</label>
+          <label className={labelClass}>상품명 등록 ({name.length}/20)</label>
           <input
             className={inputClass}
             placeholder="상품명을 입력하세요(최대 20자)"
@@ -226,7 +226,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>카테고리</label>
-            <select className={selectClass} value={category} onChange={(e) => { setCategory(e.target.value); setError(''); }}>
+            <select className={selectClass} value={category} onChange={(e) => { setCategory(e.target.value); setError(''); }} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
               <option value="" disabled hidden>선택</option>
               {MAIN_CATEGORY_ITEMS.map(item => (
                 <option key={item.id} value={item.id}>{item.label}</option>
@@ -235,7 +235,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
           <div className="flex-1">
             <label className={labelClass}>물품 상태</label>
-            <select className={selectClass} value={itemCondition} onChange={(e) => setItemCondition(e.target.value)}>
+            <select className={selectClass} value={itemCondition} onChange={(e) => setItemCondition(e.target.value)} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
               <option value="" disabled hidden>선택</option>
               <option value="BRAND_NEW">미개봉 새제품</option>
               <option value="OPEN_BOX">개봉된 새상품</option>
@@ -269,7 +269,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>경매시간</label>
-            <select className={selectClass} value={auctionDuration} onChange={(e) => setAuctionDuration(e.target.value)}>
+            <select className={selectClass} value={auctionDuration} onChange={(e) => setAuctionDuration(e.target.value)} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
               <option value="" disabled hidden>경매시간을 선택하세요</option>
               <option value="10">10초</option>
               <option value="30">30초</option>
@@ -278,7 +278,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
           <div className="flex-1">
             <label className={labelClass}>경매방식</label>
-            <select className={selectClass} value={auctionType} onChange={(e) => setAuctionType(e.target.value)}>
+            <select className={selectClass} value={auctionType} onChange={(e) => setAuctionType(e.target.value)} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
               <option value="" disabled hidden>경매방식을 선택하세요</option>
               <option value="ENGLISH">영국식 오름차순</option>
               <option value="DUTCH">내림차순</option>
@@ -287,12 +287,13 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         </div>
 
         <div className="mb-5">
-          <label className={labelClass}>상품 설명</label>
+          <label className={labelClass}>상품 설명 ({description.length}/50)</label>
           <textarea
             className={`${inputClass} !h-[120px] pt-4 resize-none`}
-            placeholder="상품의 상태 정보를 상세히 적어주세요"
+            placeholder="상품의 상태 정보를 상세히 적어주세요 (최대 50자)"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => { if (e.target.value.length <= 50) setDescription(e.target.value); }}
+            maxLength={50}
           />
         </div>
 

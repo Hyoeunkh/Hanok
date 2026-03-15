@@ -4,7 +4,7 @@ import { useToast } from '@/components/common/Toast';
 import { useGetSellerProfile } from '@/api/hooks/useGetSellerProfile';
 import { useGetSellerNotice } from '@/api/hooks/useGetSellerNotice';
 import { usePostSellerNotice } from '@/api/hooks/usePostSellerNotice';
-import { usePutSellerNotice } from '@/api/hooks/usePutSellerNotice';
+import { usePatchSellerNotice } from '@/api/hooks/usePatchSellerNotice';
 import { useDeleteSellerNotice } from '@/api/hooks/useDeleteSellerNotice';
 import { useGetSellerNoticeDetail } from '@/api/hooks/useGetSellerNoticeDetail';
 import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
@@ -109,7 +109,7 @@ export default function ProfilePage() {
 
   const { data: notices = [] } = useGetSellerNotice(sellerId);
   const { mutate: postNotice } = usePostSellerNotice(sellerId);
-  const { mutate: putNotice } = usePutSellerNotice(sellerId);
+  const { mutate: patchNotice } = usePatchSellerNotice(sellerId);
   const { mutate: deleteNotice } = useDeleteSellerNotice(sellerId);
 
   const [viewNoticeId, setViewNoticeId] = useState<number | null>(null);
@@ -200,7 +200,7 @@ export default function ProfilePage() {
     if (modalMode === 'create') {
       postNotice({ title: noticeTitle, content: noticeContent }, { onSuccess: () => setIsModalOpen(false) });
     } else if (modalMode === 'edit' && editPostId) {
-      putNotice(
+      patchNotice(
         { noticeId: editPostId, payload: { title: noticeTitle, content: noticeContent } },
         { onSuccess: () => setIsModalOpen(false) },
       );
@@ -276,12 +276,14 @@ export default function ProfilePage() {
                     수정
                   </button>
                 )}
-                <button
-                  onClick={() => setIsReportModalOpen(true)}
-                  className="border-none bg-transparent text-[#888] text-sm cursor-pointer hover:text-[var(--color-point)] transition-colors"
-                >
-                  신고
-                </button>
+                {!isMyProfile && (
+                  <button
+                    onClick={() => setIsReportModalOpen(true)}
+                    className="border-none bg-transparent text-[#888] text-sm cursor-pointer hover:text-[var(--color-point)] transition-colors"
+                  >
+                    신고
+                  </button>
+                )}
               </div>
             </div>
 
@@ -356,6 +358,7 @@ export default function ProfilePage() {
             # 공지사항
           </button>
 
+          {isMyProfile && (
           <button
             className={`flex items-center gap-[6px] bg-transparent border-0 border-solid border-b-2 px-2 pb-4 text-base font-bold cursor-pointer transition-colors duration-200 -mb-[1px] relative z-10 ${
               activeTab === 'sales' ? 'text-[#d9b36d] border-[#d9b36d]' : 'text-[#888] border-transparent'
@@ -365,11 +368,12 @@ export default function ProfilePage() {
             <HistoryIcon />
             낙찰 이력
           </button>
+          )}
         </div>
 
         {activeTab === 'posts' && (
           <div className="flex flex-col gap-5">
-            {isOwner && (
+            {isMyProfile && (
               <div className="flex justify-end mt-[-15px] mb-[-5px]">
                 <button
                   className="flex items-center justify-center bg-transparent text-[#d9b36d] border-none cursor-pointer hover:text-[#c4a162] transition-colors p-0"
@@ -401,20 +405,22 @@ export default function ProfilePage() {
                         <span className="text-[13px] text-[#666]">{formatDate(post.createdAt).split(' ')[0]}</span>
                       </div>
                     </div>
-                    <div className="flex gap-3">
-                      <button
-                        className="bg-transparent border-none text-[#888] text-[13px] cursor-pointer hover:underline"
-                        onClick={(e) => { e.stopPropagation(); handleOpenEditModal(post.noticeId, post.title, post.content); }}
-                      >
-                        수정
-                      </button>
-                      <button
-                        className="bg-transparent border-none text-red-400 text-[13px] cursor-pointer hover:underline"
-                        onClick={(e) => { e.stopPropagation(); handleDeleteNotice(post.noticeId); }}
-                      >
-                        삭제
-                      </button>
-                    </div>
+                    {isMyProfile && (
+                      <div className="flex gap-3">
+                        <button
+                          className="bg-transparent border-none text-[#888] text-[13px] cursor-pointer hover:underline"
+                          onClick={(e) => { e.stopPropagation(); handleOpenEditModal(post.noticeId, post.title, post.content); }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="bg-transparent border-none text-red-400 text-[13px] cursor-pointer hover:underline"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteNotice(post.noticeId); }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
