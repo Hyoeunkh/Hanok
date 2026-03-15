@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/common/Toast';
-import type { BusinessType } from '@/types';
+import type { AccountData, BusinessType } from '@/types';
 import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import { useGetAccount } from '@/api/hooks/useGetAccount';
 import Step1 from '@/components/SellerOnboarding/Step1';
@@ -9,12 +9,6 @@ import StepIndicator from '@/components/SellerOnboarding/StepIndicator';
 import Step2 from '@/components/SellerOnboarding/Step2';
 import Step3 from '@/components/SellerOnboarding/Step3';
 import Step4 from '@/components/SellerOnboarding/Step4';
-
-export type AccountData = {
-  bankCode: string;
-  accountNum: string;
-  accountName: string;
-};
 
 export default function SellerOnboardingPage() {
   const navigate = useNavigate();

@@ -115,3 +115,9 @@ export type UpdateAddressPayload = {
 export type SetDefaultAddressPayload = {
   isDefault: boolean;
 };
+
+export type AccountData = {
+  bankCode: string;
+  accountNum: string;
+  accountName: string;
+};

@@ -85,7 +85,7 @@ export type GetSellerNoticeParams = {
 };
 
 export type NoticeItem = {
-  postId: number;
+  noticeId: number;
   title: string;
   content: string;
   createdAt: string;
@@ -103,7 +103,7 @@ export type PostSellerNoticePayload = {
 };
 
 export type PostSellerNoticeResponse = {
-  postId: number;
+  noticeId: number;
   title: string;
   content: string;
   createdAt: string;
@@ -115,7 +115,7 @@ export type PatchSellerNoticePayload = {
 };
 
 export type PatchSellerNoticeResponse = {
-  postId: number;
+  noticeId: number;
   title: string;
   content: string;
   updatedAt: string;

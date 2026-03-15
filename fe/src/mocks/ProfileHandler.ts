@@ -12,7 +12,7 @@ import {
 } from './mockState';
 
 type MockNoticeItem = {
-  postId: number;
+  noticeId: number;
   title: string;
   content: string;
   createdAt: string;
@@ -21,14 +21,14 @@ type MockNoticeItem = {
 
 let mockNoticeItems: MockNoticeItem[] = [
   {
-    postId: 5,
+    noticeId: 5,
     title: 'This week shipping notice',
     content: 'Orders placed this week will start shipping in three days.',
     createdAt: '2026-03-03T12:00:00Z',
     updatedAt: '2026-03-03T12:00:00Z',
   },
   {
-    postId: 6,
+    noticeId: 6,
     title: 'Weekend live schedule',
     content: 'The weekend live auction starts at 8 PM and featured lots open first.',
     createdAt: '2026-03-02T09:00:00Z',
@@ -95,9 +95,9 @@ export const profileHandlers = [
               soldAt: '2026-03-09T14:00:00Z',
             },
           ],
-          posts: [
+          notices: [
             {
-              postId: 10,
+              noticeId: 10,
               title: '이번 주 신상 입고 안내',
               context: '이번 주말에 에르메스 물량 풀립니다.',
               createdAt: '2026-03-08T12:00:00Z',
@@ -130,9 +130,9 @@ export const profileHandlers = [
             soldAt: '2026-03-01T14:00:00Z',
           },
         ],
-        posts: [
+        notices: [
           {
-            postId: 5,
+            noticeId: 5,
             title: '이번 주 방송 예고',
             context: '방송 이번주에 해요',
             createdAt: '2026-03-03T12:00:00Z',
@@ -159,10 +159,10 @@ export const profileHandlers = [
     );
   }),
 
-  http.post(`${BASE_URL}/v1/sellers/:sellerId/posts`, async ({ request }) => {
+  http.post(`${BASE_URL}/v1/sellers/:sellerId/notices`, async ({ request }) => {
     const body = (await request.json()) as { title: string; content: string };
     const newNotice: MockNoticeItem = {
-      postId: Date.now(),
+      noticeId: Date.now(),
       title: body.title,
       content: body.content,
       createdAt: new Date().toISOString(),
@@ -173,7 +173,7 @@ export const profileHandlers = [
 
     return HttpResponse.json(
       {
-        postId: newNotice.postId,
+        noticeId: newNotice.noticeId,
         title: newNotice.title,
         content: newNotice.content,
         createdAt: newNotice.createdAt,
@@ -182,12 +182,12 @@ export const profileHandlers = [
     );
   }),
 
-  http.patch(`${BASE_URL}/v1/sellers/:sellerId/posts/:postId`, async ({ request, params }) => {
-    const postId = Number(params.postId);
+  http.patch(`${BASE_URL}/v1/sellers/:sellerId/notices/:noticeId`, async ({ request, params }) => {
+    const noticeId = Number(params.noticeId);
     const body = (await request.json()) as { title: string; content: string };
 
     mockNoticeItems = mockNoticeItems.map((item) =>
-      item.postId === postId
+      item.noticeId === noticeId
         ? {
             ...item,
             title: body.title,
@@ -197,11 +197,11 @@ export const profileHandlers = [
         : item,
     );
 
-    const updatedNotice = mockNoticeItems.find((item) => item.postId === postId);
+    const updatedNotice = mockNoticeItems.find((item) => item.noticeId === noticeId);
 
     return HttpResponse.json(
       {
-        postId,
+        noticeId,
         title: updatedNotice?.title ?? body.title,
         content: updatedNotice?.content ?? body.content,
         updatedAt: updatedNotice?.updatedAt ?? new Date().toISOString(),
@@ -210,9 +210,9 @@ export const profileHandlers = [
     );
   }),
 
-  http.delete(`${BASE_URL}/v1/sellers/:sellerId/posts/:postId`, ({ params }) => {
-    const postId = Number(params.postId);
-    mockNoticeItems = mockNoticeItems.filter((item) => item.postId !== postId);
+  http.delete(`${BASE_URL}/v1/sellers/:sellerId/notices/:noticeId`, ({ params }) => {
+    const noticeId = Number(params.noticeId);
+    mockNoticeItems = mockNoticeItems.filter((item) => item.noticeId !== noticeId);
 
     return HttpResponse.json({ success: true }, { status: 200 });
   }),

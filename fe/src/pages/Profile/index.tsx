@@ -164,7 +164,7 @@ export default function ProfilePage() {
       postNotice({ title: noticeTitle, content: noticeContent }, { onSuccess: () => setIsModalOpen(false) });
     } else if (modalMode === 'edit' && editPostId) {
       patchNotice(
-        { postId: editPostId, payload: { title: noticeTitle, content: noticeContent } },
+        { noticeId: editPostId, payload: { title: noticeTitle, content: noticeContent } },
         { onSuccess: () => setIsModalOpen(false) },
       );
     }
@@ -344,7 +344,7 @@ export default function ProfilePage() {
             ) : (
               notices.map((post) => (
                 <div
-                  key={post.postId}
+                  key={post.noticeId}
                   className="border border-[#2e2e40] rounded-xl py-7 px-8 bg-[#0f0f16] flex flex-col gap-3"
                 >
                   <div className="flex justify-between items-start">
@@ -362,13 +362,13 @@ export default function ProfilePage() {
                     <div className="flex gap-3">
                       <button
                         className="bg-transparent border-none text-[#888] text-[13px] cursor-pointer hover:underline"
-                        onClick={() => handleOpenEditModal(post.postId, post.title, post.content)}
+                        onClick={() => handleOpenEditModal(post.noticeId, post.title, post.content)}
                       >
                         수정
                       </button>
                       <button
                         className="bg-transparent border-none text-red-400 text-[13px] cursor-pointer hover:underline"
-                        onClick={() => handleDeleteNotice(post.postId)}
+                        onClick={() => handleDeleteNotice(post.noticeId)}
                       >
                         삭제
                       </button>

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterSeller } from '@/api/hooks/usePostRegisterSeller';
 import Button from '@/components/common/Button';
-import type { AccountData } from '../../pages/SellerOnboarding';
-import type { BusinessType } from '@/types';
+import type { AccountData, BusinessType } from '@/types';
 import axios from 'axios';
 
 export default function Step4({
