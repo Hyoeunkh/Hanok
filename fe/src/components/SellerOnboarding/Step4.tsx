@@ -79,7 +79,6 @@ export default function Step4({
 
   return (
     <>
-      {/* 판매자명 */}
       <div style={{ marginBottom: '20px' }}>
         <label style={labelStyle}>판매자명</label>
         <input
@@ -95,7 +94,6 @@ export default function Step4({
         />
       </div>
 
-      {/* 판매자 소개글 */}
       <div style={{ marginBottom: '20px' }}>
         <label style={labelStyle}>판매자 소개글</label>
         <input
@@ -108,7 +106,6 @@ export default function Step4({
         />
       </div>
 
-      {/* SNS 링크 */}
       <div style={{ marginBottom: '24px' }}>
         <label style={labelStyle}>SNS 링크(선택)</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -138,7 +135,6 @@ export default function Step4({
 
       {error && <p style={{ color: '#FF453A', fontSize: '13px', marginBottom: '12px' }}>{error}</p>}
 
-      {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px' }}>
         <Button variant="outline" onClick={onPrev} className="w-30!">
           이전

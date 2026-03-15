@@ -94,7 +94,6 @@ export default function Step1({ onNext, businessType, setBusinessType, bizNumber
     <>
       <p style={{ fontSize: '15px', color: '#E5E5EA', marginBottom: '20px' }}>개인/법인 사업자 인증을 해주세요.</p>
 
-      {/* Business type selector */}
       <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
         <BusinessTypeCard
           label="개인 사업자"
@@ -118,7 +117,6 @@ export default function Step1({ onNext, businessType, setBusinessType, bizNumber
         />
       </div>
 
-      {/* Business registration number input */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
         <input
           type="text"
@@ -160,7 +158,6 @@ export default function Step1({ onNext, businessType, setBusinessType, bizNumber
         </p>
       )}
 
-      {/* Next button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '40px' }}>
         <Button onClick={handleNext} className="w-30!">
           다음

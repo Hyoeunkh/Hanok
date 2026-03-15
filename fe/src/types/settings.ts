@@ -1,4 +1,3 @@
-// ─── User Settings / Me ───────────────────────────────────────────────────────
 export type GetMeResponse = {
   email: string;
   nickname: string;
@@ -34,7 +33,6 @@ export type PatchNotificationResponse = {
   followStreamAlert: boolean;
 };
 
-// ─── User / Withdraw ──────────────────────────────────────────────────────────
 export type WithdrawPayload = {
   password: string;
 };
@@ -47,7 +45,6 @@ export type WithdrawResponse = {
   };
 };
 
-// ─── Following List ──────────────────────────────────────────────────────────
 export type FollowingSeller = {
   sellerId: number;
   nickname: string;
@@ -70,7 +67,6 @@ export type GetFollowingResponse = {
   hasNext: boolean;
 };
 
-// ─── Shipping Address ─────────────────────────────────────────────────────────
 export type Address = {
   id: number;
   label: string;
@@ -122,7 +118,6 @@ export type AccountData = {
   accountName: string;
 };
 
-// ─── Juso (도로명주소 검색 API) ─────────────────────────────────────────────
 export type JusoResult = {
   roadAddr: string;
   jibunAddr: string;

@@ -23,7 +23,7 @@ export default function SellerOnboardingPage() {
   useEffect(() => {
     if (sellerStatus?.isSeller) {
       showToast({ message: '이미 판매자로 등록되어 있습니다.' });
-      navigate('/'); // Redirect to home or inventory
+      navigate('/');
     }
   }, [sellerStatus, navigate, showToast]);
 
@@ -47,7 +47,7 @@ export default function SellerOnboardingPage() {
   }
 
   if (sellerStatus?.isSeller) {
-    return null; // Don't render if already a seller (handled by useEffect redirect)
+    return null;
   }
 
   return (

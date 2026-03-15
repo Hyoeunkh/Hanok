@@ -69,10 +69,8 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
         <p style={{ fontSize: '14px', color: '#C8C8C8' }}>판매 금액이 정산되는 계좌입니다.</p>
       </div>
 
-      {/* 계좌 정보 입력 */}
       <p style={{ fontSize: '14px', color: '#E5E5EA', marginBottom: '12px', fontWeight: '600' }}>계좌 정보 입력</p>
 
-      {/* 예금주명 */}
       <div style={{ marginBottom: '16px' }}>
         <input
           type="text"
@@ -86,7 +84,6 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
         />
       </div>
 
-      {/* 은행 선택 버튼 */}
       <div style={{ marginBottom: '16px' }}>
         <button
           type="button"
@@ -108,7 +105,6 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
         </button>
       </div>
 
-      {/* 은행 선택 모달 */}
       {showBankModal && (
         <div
           className="fixed inset-0 z-[1000] flex items-center justify-center"
@@ -169,7 +165,6 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
         </div>
       )}
 
-      {/* Account number */}
       <div style={{ marginBottom: '16px' }}>
         <input
           type="text"
@@ -186,7 +181,6 @@ export default function Step3({ onPrev, onNext }: Step3Props) {
 
       {error && <p style={{ color: '#FF453A', fontSize: '13px', paddingLeft: '4px', marginBottom: '8px' }}>{error}</p>}
 
-      {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px' }}>
         <Button variant="outline" onClick={onPrev} className="w-30!">
           이전

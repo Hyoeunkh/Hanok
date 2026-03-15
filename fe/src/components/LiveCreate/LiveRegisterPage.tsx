@@ -443,7 +443,6 @@ export default function LiveRegisterPage() {
       </div>
 
       <div className="flex gap-4 flex-1 min-h-0">
-        {/* 좌측 패널 - 경매 물품 목록 */}
         <aside
           className="w-[340px] shrink-0 flex flex-col rounded-2xl bg-[#050505] px-4 py-6"
           style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}
@@ -524,9 +523,7 @@ export default function LiveRegisterPage() {
           </button>
         </aside>
 
-        {/* 중앙 - 방송 미리보기 */}
         <div className="flex-1 min-w-0 relative rounded-2xl overflow-hidden bg-black flex flex-col">
-          {/* 상단 공지사항 바 */}
           {notice && (
             <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-2 bg-[#1a1a1a]/80 rounded-lg px-4 py-2 backdrop-blur-sm">
               <span className="text-[11px] font-bold text-[#A1A1AA] bg-[#2a2a2a] px-2 py-0.5 rounded">공지사항</span>
@@ -547,7 +544,6 @@ export default function LiveRegisterPage() {
 
         </div>
 
-        {/* 오른쪽 패널 - 방송 기본 설정 */}
         <aside
           className="w-[300px] shrink-0 flex flex-col rounded-2xl bg-[#050505] overflow-hidden"
           style={{ borderLeft: '1px solid rgba(255,255,255,0.05)' }}
