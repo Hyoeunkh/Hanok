@@ -80,7 +80,7 @@ export default function LeftPanel({
 
   return (
     <>
-      <div className="flex h-full w-full flex-col rounded-2xl border-r border-white/5 bg-background px-4 py-6">
+      <div className="flex h-full w-full flex-col rounded-2xl bg-background px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-xs font-bold text-neutral-400">경매 물품 목록</span>
           <span className="text-[11px] font-bold text-neutral-600">{totalCount}</span>
@@ -101,7 +101,7 @@ export default function LeftPanel({
             <>
               <div className="mt-1.5 flex items-center gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-700">종료</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-white/6 to-transparent" />
+                <div className="h-px flex-1 bg-gradient-to-r from-neutral-800 to-transparent" />
               </div>
 
               {doneItems.map((item) => (
@@ -113,7 +113,7 @@ export default function LeftPanel({
 
         {isSeller && (
           <button
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/7 bg-transparent px-4 py-2.5 text-xs font-bold text-neutral-500 transition-all hover:border-white/12 hover:bg-neutral-900 hover:text-neutral-300"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-800 bg-transparent px-4 py-2.5 text-xs font-bold text-neutral-500 transition-all hover:border-neutral-700 hover:bg-neutral-900 hover:text-neutral-300"
             onClick={() => setModalOpen(true)}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

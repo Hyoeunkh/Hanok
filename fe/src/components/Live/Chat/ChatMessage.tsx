@@ -58,7 +58,7 @@ export default function ChatMessage({ messages, connectionState }: Props) {
           return (
             <div key={message.id} className="flex flex-col items-start">
               <span className="mb-0.5 px-1.5 text-[10px] font-bold text-neutral-600">{message.nickname}</span>
-              <p className="inline-block max-w-[85%] rounded-[4px_16px_16px_16px] border border-white/5 bg-neutral-900 px-3 py-2 text-[13px] leading-relaxed text-neutral-200">
+              <p className="inline-block max-w-[85%] rounded-[4px_16px_16px_16px] border border-neutral-800 bg-neutral-900 px-3 py-2 text-[13px] leading-relaxed text-neutral-200">
                 {message.message}
               </p>
             </div>

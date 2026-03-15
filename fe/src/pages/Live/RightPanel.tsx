@@ -65,7 +65,7 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
               {getSellerInitial(sellerNickname)}
             </div>
           )}
-          <div className="min-w-0 truncate text-xs font-bold text-white">{sellerNickname}</div>
+          <div className="min-w-0 truncate text-xs font-bold text-neutral-100">{sellerNickname}</div>
         </div>
 
         {sellerId > 0 && !isSeller && !isOwnStore && (
@@ -75,8 +75,8 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
             disabled={isFollowActionPending}
             className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-bold transition ${
               isFollowing
-                ? 'border border-white/20 bg-transparent text-white hover:bg-white/10'
-                : 'bg-white text-black hover:bg-neutral-200'
+                ? 'border border-neutral-600 bg-transparent text-neutral-300 hover:bg-warm/10'
+                : 'bg-neutral-100 text-background hover:bg-neutral-200'
             } disabled:cursor-not-allowed disabled:opacity-50`}
           >
             {isFollowing ? '언팔로우' : '팔로우'}
@@ -85,10 +85,10 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
       </div>
 
       {isSeller ? (
-        <div className="flex border-b border-white/5">
+        <div className="flex border-b border-neutral-800">
           <button
             className={`flex-1 py-3 text-[13px] font-bold transition ${
-              activeTab === 'chat' ? 'border-b-2 border-gold text-white' : 'text-neutral-600'
+              activeTab === 'chat' ? 'border-b-2 border-gold text-neutral-100' : 'text-neutral-600'
             }`}
             onClick={() => setActiveTab('chat')}
           >
@@ -96,7 +96,7 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
           </button>
           <button
             className={`flex-1 py-3 text-[13px] font-bold transition ${
-              activeTab === 'auction' ? 'border-b-2 border-gold text-white' : 'text-neutral-600'
+              activeTab === 'auction' ? 'border-b-2 border-gold text-neutral-100' : 'text-neutral-600'
             }`}
             onClick={() => setActiveTab('auction')}
           >
@@ -104,8 +104,8 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
           </button>
         </div>
       ) : (
-        <div className="flex border-b border-white/5">
-          <div className="flex-1 border-b-2 border-gold py-3 text-center text-[13px] font-bold text-white">
+        <div className="flex border-b border-neutral-800">
+          <div className="flex-1 border-b-2 border-gold py-3 text-center text-[13px] font-bold text-neutral-100">
             채팅
           </div>
         </div>
