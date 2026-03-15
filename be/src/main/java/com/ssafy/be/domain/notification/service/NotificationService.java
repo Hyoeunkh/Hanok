@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    public static final String SSE_NOTIFICATION_EVENT = "notification";
     private final NotificationRepository notificationRepository;
     private final SseEmitterService sseEmitterService;
 
