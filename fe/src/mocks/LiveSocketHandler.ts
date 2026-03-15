@@ -192,8 +192,8 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '청자 투각 칠보문 향로',
       image: 'https://picsum.photos/400/300?random=2',
       startPrice: 130000,
-      auctionStatus: 'READY',
-      finalPrice: null,
+      auctionStatus: 'SOLD',
+      finalPrice: 195000,
       itemCondition: 'OPEN_BOX',
     },
     {
@@ -201,8 +201,8 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '백자 달항아리',
       image: 'https://picsum.photos/400/300?random=3',
       startPrice: 180000,
-      auctionStatus: 'READY',
-      finalPrice: null,
+      auctionStatus: 'SOLD',
+      finalPrice: 270000,
       itemCondition: 'REFURBISHED',
     },
     {
@@ -210,8 +210,8 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       itemName: '분청사기 철화 어문 장군',
       image: 'https://picsum.photos/400/300?random=4',
       startPrice: 95000,
-      auctionStatus: 'READY',
-      finalPrice: null,
+      auctionStatus: 'SOLD',
+      finalPrice: 142500,
       itemCondition: 'USED',
     },
     {
