@@ -181,7 +181,7 @@ public class UniqueBidAuctionService {
     }
 
     private UniqueBidAuction findByAuctionId(Long auctionId) {
-        return uniqueBidAuctionRepository.findByAuction_Id(auctionId)
+        return uniqueBidAuctionRepository.findByAuctionId(auctionId)
                 .orElseThrow(() -> new StompException(UniqueBidAuctionErrorCode.NOT_FOUND));
     }
 
