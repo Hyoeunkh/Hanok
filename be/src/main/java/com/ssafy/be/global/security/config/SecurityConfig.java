@@ -77,6 +77,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth ->
                                 auth.requestMatchers(
+                                                org.springframework.http.HttpMethod.OPTIONS,
                                                 "/api/v1/auth/**",
                                                 "/api/v1/streams/**",
                                                 "/api/v1/sellers/*/profile",

@@ -51,19 +51,12 @@ public class JwtUtil {
                 .compact();
     }
 
-    // 헤더에서 추출해 보고, 없으면 파라미터에서 추출하도록 변경
+    // 헤더에서 토큰 추출
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
+        if (bearer != null && bearer.toLowerCase().startsWith("bearer ")) {
             return bearer.substring(7);
         }
-
-        // SSE 등을 위해 쿼리 파라미터에서 토큰 지원
-        String tokenParameter = request.getParameter("token");
-        if (tokenParameter != null) {
-            return tokenParameter;
-        }
-
         return null;
     }
 
