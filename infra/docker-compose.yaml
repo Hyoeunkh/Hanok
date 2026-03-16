@@ -121,6 +121,23 @@ services:
       - grafana-data:/var/lib/grafana
     networks:
       - hanok-network
+
+  # =============================================
+  # InfluxDB (k6 결과 저장)
+  # =============================================
+  influxdb:
+    image: influxdb:1.8
+    container_name: hanok-influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      INFLUXDB_DB: k6
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+    networks:
+      - hanok-network
+
 # =============================================
 # Volume
 # =============================================
@@ -129,6 +146,7 @@ volumes:
   redis-data:
   prometheus-data:
   grafana-data:
+  influxdb-data:
 
 # =============================================
 # Network
