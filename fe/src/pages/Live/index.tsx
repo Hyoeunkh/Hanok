@@ -280,6 +280,19 @@ export default function LivePage() {
   }, [activeAuctionType, activeBidAuctionId, streamId]);
 
   useEffect(() => {
+    if (!streamId || !isStreamLive) {
+      return;
+    }
+
+    void sendStreamMessage(streamId, {
+      eventType: 'ITEM_SYNC',
+      payload: null,
+    }).catch((error) => {
+      console.error('[stream] failed to sync items after stream start', error);
+    });
+  }, [isStreamLive, streamId]);
+
+  useEffect(() => {
     if (!streamId) {
       return;
     }

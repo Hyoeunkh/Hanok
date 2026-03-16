@@ -96,14 +96,23 @@ export function ActiveItemCard({ item, isSelected, isSeller, onSelect }: ActiveC
   const [expanded, setExpanded] = useState(false);
   const statusBadge = STATUS_BADGE[item.status];
   const conditionBadge = CONDITION_BADGE[item.condition];
+  const isExpanded = isSeller ? isSelected : expanded;
   const borderClass = isSelected
     ? 'border-gold/55 shadow-[0_0_12px_rgba(205,145,80,0.15)]'
     : `${CARD_BORDER_CLASS[item.status]} ${item.status === 'LIVE' ? 'shadow-[0_0_12px_rgba(205,145,80,0.1)]' : ''}`;
+  const handleCardClick = () => {
+    if (isSeller) {
+      onSelect?.();
+      return;
+    }
+
+    setExpanded((prev) => !prev);
+  };
 
   return (
     <div
       className={`flex flex-col rounded-[20px] border bg-white/[0.02] p-3.5 transition-all duration-200 ${borderClass} cursor-pointer`}
-      onClick={isSeller ? onSelect : () => setExpanded((prev) => !prev)}
+      onClick={handleCardClick}
     >
       <div className="flex gap-3">
         {item.thumbnailUrl ? (
@@ -136,11 +145,16 @@ export function ActiveItemCard({ item, isSelected, isSeller, onSelect }: ActiveC
             className="rounded-full p-0.5 transition-colors hover:bg-white/10"
             onClick={(e) => {
               e.stopPropagation();
+              if (isSeller) {
+                onSelect?.();
+                return;
+              }
+
               setExpanded((prev) => !prev);
             }}
           >
             <svg
-              className={`h-3 w-3 text-neutral-600 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              className={`h-3 w-3 text-neutral-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
               viewBox="0 0 12 12"
               fill="none"
             >
@@ -150,7 +164,7 @@ export function ActiveItemCard({ item, isSelected, isSeller, onSelect }: ActiveC
         </div>
       </div>
 
-      {expanded && <ItemDetailAccordion item={item} />}
+      {isExpanded && <ItemDetailAccordion item={item} />}
     </div>
   );
 }

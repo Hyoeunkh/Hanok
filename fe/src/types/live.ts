@@ -177,6 +177,7 @@ export type LiveStreamItem = {
   category: string;
   startPrice: number;
   status: LiveStreamItemStatus;
+  auctionType?: LiveAuctionType;
   itemCondition: ItemSyncItemCondition;
   image1: string | null;
   createdAt: string;

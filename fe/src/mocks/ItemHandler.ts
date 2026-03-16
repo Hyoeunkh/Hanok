@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 
 import { BASE_URL } from '@/api/instance';
 import Logo from '@/assets/Logo.png';
-import type { ItemAuctionType } from '@/types';
+import type { ItemAuctionType, ItemSyncItemCondition } from '@/types';
 
 type MockItem = {
   itemId: number;
@@ -14,7 +14,7 @@ type MockItem = {
   startPrice: number;
   bidUnit: number;
   auctionDuration: number;
-  itemCondition: string;
+  itemCondition: ItemSyncItemCondition;
   category: string;
   auctionType: ItemAuctionType;
   createdAt: string;
@@ -33,7 +33,7 @@ let mockItems: MockItem[] = [
     auctionDuration: 30,
     itemCondition: 'BRAND_NEW',
     category: 'SNEAKERS_SHOES',
-    auctionType: 'BOTTOM_UP',
+    auctionType: 'UNIQUE_TOP',
     createdAt: '2026-03-13T05:25:50.043Z',
   },
   {
@@ -98,6 +98,8 @@ let mockItems: MockItem[] = [
   },
 ];
 
+export const getMockItemById = (itemId: number) => mockItems.find((item) => item.itemId === itemId);
+
 export const itemHandlers = [
   http.get(`${BASE_URL}/v1/items`, async ({ request }) => {
     const url = new URL(request.url);
@@ -121,7 +123,7 @@ export const itemHandlers = [
       startPrice: Number(body.startPrice) || 0,
       bidUnit: Number(body.bidUnit) || 1000,
       auctionDuration: Number(body.auctionDuration) || 60,
-      itemCondition: (body.itemCondition as string) || 'USED',
+      itemCondition: ((body.itemCondition as ItemSyncItemCondition | undefined) ?? 'USED'),
       category: (body.category as string) || 'ETC',
       auctionType: (body.auctionType as ItemAuctionType) || 'BOTTOM_UP',
       createdAt: new Date().toISOString(),
@@ -157,7 +159,7 @@ export const itemHandlers = [
       startPrice: body.startPrice ? Number(body.startPrice) : currentItem.startPrice,
       bidUnit: body.bidUnit ? Number(body.bidUnit) : currentItem.bidUnit,
       auctionDuration: body.auctionDuration ? Number(body.auctionDuration) : currentItem.auctionDuration,
-      itemCondition: (body.itemCondition as string) || currentItem.itemCondition,
+      itemCondition: ((body.itemCondition as ItemSyncItemCondition | undefined) ?? currentItem.itemCondition),
       category: (body.category as string) || currentItem.category,
     };
 

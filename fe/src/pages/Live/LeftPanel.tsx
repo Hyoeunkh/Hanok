@@ -95,7 +95,7 @@ export default function LeftPanel({
               item={item}
               isSelected={isSeller && selectedAuctionId === item.id}
               isSeller={isSeller}
-              onSelect={() => onSelectAuctionItem?.(selectedAuctionId === item.id ? null : item.id)}
+              onSelect={() => onSelectAuctionItem?.(item.id)}
             />
           ))}
 
