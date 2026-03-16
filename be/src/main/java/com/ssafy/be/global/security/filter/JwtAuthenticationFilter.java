@@ -59,6 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (JwtException | IllegalArgumentException e) {
+                log.error("[JWT] 토큰 검증 실패: {}", e.getMessage(), e);
                 SecurityContextHolder.clearContext();
             }
         }
