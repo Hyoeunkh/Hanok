@@ -16,9 +16,9 @@ export function useSSE({ onNotification, enabled }: UseSSEOptions) {
   useEffect(() => {
     if (!enabled) return;
 
-    const controller = new AbortController();
     let backoff = 1000;
     let cancelled = false;
+    let currentController: AbortController | null = null;
 
     const connect = async () => {
       if (cancelled) return;
@@ -26,12 +26,14 @@ export function useSSE({ onNotification, enabled }: UseSSEOptions) {
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) return;
 
+      currentController = new AbortController();
+
       try {
         const response = await fetch(`${BASE_URL}/v1/sse/subscribe`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-          signal: controller.signal,
+          signal: currentController.signal,
         });
 
         if (response.status === 401) {
@@ -98,7 +100,7 @@ export function useSSE({ onNotification, enabled }: UseSSEOptions) {
 
     return () => {
       cancelled = true;
-      controller.abort();
+      currentController?.abort();
     };
   }, [enabled]);
 }
