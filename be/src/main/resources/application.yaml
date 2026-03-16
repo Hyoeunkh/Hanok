@@ -22,9 +22,15 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+
+      web:
+        pageable:
+          serialization-mode: via-dto
   #      password: ${REDIS_PASSWORD:}
   #      ssl:
   #        enabled: ${REDIS_SSL_ENABLED:false}
+  jpa:
+    open-in-view: false
 
   jackson:
     time-zone: Asia/Seoul
