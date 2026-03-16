@@ -81,6 +81,7 @@ export const getInitialItemSyncPayloadForStream = (streamId: number): ItemSyncPa
       finalPrice: item.status === 'SOLD' ? Math.round(item.startPrice * 1.5) : null,
       itemCondition: item.itemCondition,
       description: item.description,
+      auctionType: item.auctionType,
       bidUnit: item.bidUnit,
       auctionTime: item.auctionTime,
       images: item.images,
@@ -129,6 +130,7 @@ const registeredLives: RegisteredLive[] = [
         description:
           '고려시대 12세기 상감청자 매병으로, 운학문(구름과 학) 무늬가 정교하게 시문되어 있습니다. 보존 상태가 매우 우수합니다.',
         bidUnit: 10000,
+        auctionType: 'UNIQUE_TOP',
         auctionTime: 30,
         images: [
           'https://picsum.photos/seed/101a/400/400',
@@ -149,6 +151,7 @@ const registeredLives: RegisteredLive[] = [
           '칠보문 투각 기법이 적용된 고려청자 향로입니다. 뚜껑의 투각 세공이 정밀하며, 향 연기가 문양 사이로 퍼지는 구조입니다.',
         bidUnit: 5000,
         auctionTime: 30,
+        auctionType: 'UNIQUE_TOP',
         images: [
           'https://picsum.photos/seed/102a/400/400',
           'https://picsum.photos/seed/102b/400/400',
@@ -167,6 +170,7 @@ const registeredLives: RegisteredLive[] = [
         description: '조선 후기 백자 달항아리로 둥근 형태가 특징입니다. 유약의 자연스러운 흐름이 잘 보존되어 있습니다.',
         bidUnit: 5000,
         auctionTime: 60,
+        auctionType: 'UNIQUE_TOP',
         images: [
           'https://picsum.photos/seed/103a/400/400',
           'https://picsum.photos/seed/103b/400/400',
@@ -186,6 +190,7 @@ const registeredLives: RegisteredLive[] = [
           '분청사기에 철화 기법으로 물고기 문양을 그린 장군(대형 항아리)입니다. 소박하면서도 힘찬 붓놀림이 특징입니다.',
         bidUnit: 3000,
         auctionTime: 30,
+        auctionType: 'UNIQUE_TOP',
         images: [
           'https://picsum.photos/seed/104a/400/400',
           'https://picsum.photos/seed/104b/400/400',
@@ -205,6 +210,7 @@ const registeredLives: RegisteredLive[] = [
           '전통 나전칠기 기법으로 제작된 보석함입니다. 자개 조각이 정밀하게 배치되어 화려한 광택을 자랑합니다.',
         bidUnit: 10000,
         auctionTime: 60,
+        auctionType: 'UNIQUE_TOP',
         images: [
           'https://picsum.photos/seed/105a/400/400',
           'https://picsum.photos/seed/105b/400/400',
@@ -224,6 +230,7 @@ const registeredLives: RegisteredLive[] = [
           '조선시대 청화백자로 용 문양이 힘차게 그려져 있습니다. 코발트 안료의 발색이 선명하게 남아 있습니다.',
         bidUnit: 5000,
         auctionTime: 30,
+        auctionType: 'UNIQUE_TOP',
         images: [
           'https://picsum.photos/seed/106a/400/400',
           'https://picsum.photos/seed/106b/400/400',
@@ -242,6 +249,7 @@ const registeredLives: RegisteredLive[] = [
         description: '삼국시대 금동 반가사유상 재현품입니다. 온화한 미소와 섬세한 손가락 표현이 돋보이는 작품입니다.',
         bidUnit: 20000,
         auctionTime: 60,
+        auctionType: 'UNIQUE_TOP',
         images: [
           'https://picsum.photos/seed/107a/400/400',
           'https://picsum.photos/seed/107b/400/400',
