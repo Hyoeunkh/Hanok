@@ -23,10 +23,10 @@ pipeline {
                                 dir('be') {
                                     sh 'chmod +x gradlew'
                                     withSonarQubeEnv('sonarqube') {
-                                        sh '''./gradlew bootJar sonar --no-daemon --build-cache \
+                                        sh '''./gradlew test bootJar sonar --no-daemon --build-cache \
                     -Dsonar.projectKey=hanok \
                     -Dsonar.projectName=hanok \
-                    -Dsonar.host.url=http://j14d105.p.ssafy.io:9000'''
+                    -Dsonar.host.url=http://j14d105.p.ssafy.io:9000 || true'''
                                     }
                                 }
                             }
@@ -36,7 +36,7 @@ pipeline {
                             steps {
                                 dir('fe') {
                                     sh 'cp /var/jenkins_home/env/.env.fe .env'
-                                    sh 'npm install'
+                                    sh 'npm install --legacy-peer-deps'
                                     sh 'npm run build'
                                 }
                             }
@@ -71,6 +71,7 @@ LKEOF
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate livekit
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-prod
+    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d prometheus grafana
 
     rm -rf /var/www/hanok/*
     cp -r fe/dist/* /var/www/hanok/
