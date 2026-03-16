@@ -500,11 +500,7 @@ export default function LivePage() {
       if (isBidWinnerEvent(event) && event.payload) {
         setWinnerInfo({
           payload: event.payload,
-          itemCond:
-            liveAuctionItem?.itemCondition ??
-            introducingAuctionItem?.itemCondition ??
-            lastActiveItemRef.current?.itemCondition ??
-            '',
+          itemCond: lastActiveItemRef.current?.itemCondition ?? '',
         });
         return;
       }

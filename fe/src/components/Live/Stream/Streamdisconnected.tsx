@@ -11,11 +11,6 @@ export default function StreamDisconnected({ initialSeconds = 30, onTimeout }: P
   const calledRef = useRef(false);
 
   useEffect(() => {
-    setSecs(initialSeconds);
-    calledRef.current = false;
-  }, [initialSeconds]);
-
-  useEffect(() => {
     if (secs <= 0) {
       if (!calledRef.current) {
         calledRef.current = true;
