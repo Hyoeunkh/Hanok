@@ -1,14 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  FaArrowLeft,
-
-  FaCalendarAlt,
-  FaCamera,
-  FaCircle,
-
-  FaTimes,
-} from 'react-icons/fa';
+import { FaArrowLeft, FaCalendarAlt, FaCamera, FaCircle, FaTimes } from 'react-icons/fa';
 import { MdLiveTv } from 'react-icons/md';
 import { CATEGORY_MACROS } from '@/constants/macro';
 import { useGetItemsByCategory } from '@/api/hooks/useGetItems';
@@ -37,7 +29,7 @@ const toFallbackProduct = (item: LiveStreamItem): Product => ({
   auctionDuration: 0,
   itemCondition: item.itemCondition,
   category: item.category,
-  auctionType: '',
+  auctionType: 'BOTTOM_UP',
 });
 
 export default function LiveRegisterPage() {
@@ -227,7 +219,6 @@ export default function LiveRegisterPage() {
     return true;
   };
 
-
   const buildStreamRequest = (startType: 'SCHEDULED' | 'IMMEDIATE', scheduledAtValue?: string): StreamRequest => {
     const resolvedScheduledAt = (scheduledAtValue ?? scheduledAt) || undefined;
 
@@ -353,7 +344,6 @@ export default function LiveRegisterPage() {
     }
   };
 
-
   const sellerEntryButtonLabel = isEditMode ? '방송 입장' : '방송 준비';
   const pageTitle = isEditMode ? '라이브 방송 수정' : '라이브 방송 등록';
   const scheduleButtonLabel = isEditMode ? '예약 수정' : '방송 예약';
@@ -428,9 +418,7 @@ export default function LiveRegisterPage() {
       </div>
 
       <div className="flex gap-4 flex-1 min-h-0">
-        <aside
-          className="w-[340px] shrink-0 flex flex-col rounded-2xl bg-[#050505] px-4 py-6 border-r border-white/5"
-        >
+        <aside className="w-[340px] shrink-0 flex flex-col rounded-2xl bg-[#050505] px-4 py-6 border-r border-white/5">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-xs font-bold text-[#A1A1AA]">경매 물품 목록</span>
             <span className="text-[11px] font-bold text-[#52525B]">{selectedItems.length}</span>
@@ -452,7 +440,11 @@ export default function LiveRegisterPage() {
                     className="h-16 w-16 shrink-0 rounded-[14px] bg-[#27272A]"
                     style={
                       item.images && item.images.length > 0
-                        ? { backgroundImage: `url(${item.images[0]})`, backgroundPosition: 'center', backgroundSize: 'cover' }
+                        ? {
+                            backgroundImage: `url(${item.images[0]})`,
+                            backgroundPosition: 'center',
+                            backgroundSize: 'cover',
+                          }
                         : undefined
                     }
                   />
@@ -462,17 +454,13 @@ export default function LiveRegisterPage() {
                       <span className="text-[13px] font-black text-[#C5A059]">
                         {item.startPrice.toLocaleString()}원
                       </span>
-                      <span
-                        className="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold text-[rgba(255,220,140,0.95)] bg-[rgba(197,160,89,0.08)]"
-                      >
+                      <span className="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold text-[rgba(255,220,140,0.95)] bg-[rgba(197,160,89,0.08)]">
                         {conditionLabel}
                       </span>
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end justify-center">
-                    <span
-                      className="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold text-[#71717A] bg-[rgba(113,113,122,0.15)] border border-[rgba(113,113,122,0.3)]"
-                    >
+                    <span className="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold text-[#71717A] bg-[rgba(113,113,122,0.15)] border border-[rgba(113,113,122,0.3)]">
                       대기
                     </span>
                     <button
@@ -515,12 +503,9 @@ export default function LiveRegisterPage() {
               </div>
             )}
           </div>
-
         </div>
 
-        <aside
-          className="w-[300px] shrink-0 flex flex-col rounded-2xl bg-[#050505] overflow-hidden border-l border-white/5"
-        >
+        <aside className="w-[300px] shrink-0 flex flex-col rounded-2xl bg-[#050505] overflow-hidden border-l border-white/5">
           <div className="px-4 py-4 border-b border-[rgba(255,255,255,0.05)]">
             <span className="text-xs font-bold text-white">방송 기본 설정</span>
           </div>
@@ -563,7 +548,9 @@ export default function LiveRegisterPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-[#52525B] uppercase tracking-wider">상단 고정 공지사항 (선택)</label>
+              <label className="text-[10px] font-bold text-[#52525B] uppercase tracking-wider">
+                상단 고정 공지사항 (선택)
+              </label>
               <input
                 type="text"
                 value={notice}
@@ -601,14 +588,18 @@ export default function LiveRegisterPage() {
                       <input
                         type="text"
                         value={macroAnswers[macro.questionType] ?? ''}
-                        onChange={(e) => { setMacroAnswers((prev) => ({ ...prev, [macro.questionType]: e.target.value })); }}
+                        onChange={(e) => {
+                          setMacroAnswers((prev) => ({ ...prev, [macro.questionType]: e.target.value }));
+                        }}
                         placeholder="응답을 입력해주세요."
                         className="flex-1 min-w-0 bg-transparent border border-[rgba(255,255,255,0.07)] rounded-lg px-2 py-1.5 text-white text-[11px] placeholder:text-[#3F3F46] outline-none focus:border-[rgba(197,160,89,0.4)] transition-colors"
                       />
                     </div>
                   );
                 })}
-                {!macroFields.length && <p className="text-[#52525B] text-xs font-bold">해당 카테고리의 매크로가 없습니다.</p>}
+                {!macroFields.length && (
+                  <p className="text-[#52525B] text-xs font-bold">해당 카테고리의 매크로가 없습니다.</p>
+                )}
               </div>
             </div>
           </div>
