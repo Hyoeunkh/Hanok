@@ -119,6 +119,11 @@ export type UniqueAuctionEndPayload = {
   topDuplicates: UniqueAuctionEndDuplicate[] | null;
 };
 
+export type StompErrorPayload = {
+  code: string;
+  message: string;
+};
+
 export type BidSyncPayload = {
   item: {
     bidUnit: number;
@@ -310,6 +315,10 @@ export type BroadcastStreamEvent =
       payload: null;
     }
   | {
+      eventType: 'UNIQUE_AUCTION_END';
+      payload?: UniqueAuctionEndPayload;
+    }
+  | {
       eventType: 'ITEM_INTRODUCE';
       payload: null;
     }
@@ -336,8 +345,14 @@ export type PrivateStreamEvent =
       payload?: UniqueBidAckPayload;
     }
   | {
-      eventType: 'UNIQUE_AUCTION_END';
-      payload?: UniqueAuctionEndPayload;
+      eventType: string;
+      payload?: unknown;
+    };
+
+export type ErrorStreamEvent =
+  | {
+      eventType: 'ERROR';
+      payload?: StompErrorPayload;
     }
   | {
       eventType: string;
