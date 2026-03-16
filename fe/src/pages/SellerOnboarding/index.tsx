@@ -80,7 +80,7 @@ export default function SellerOnboardingPage() {
         )}
 
         {currentStep === 2 && (
-          <Step2 onPrev={() => setCurrentStep(1)} onNext={() => setCurrentStep(hasExistingAccount ? 4 : 3)} />
+          <Step2 onPrev={() => setCurrentStep(1)} onNext={() => setCurrentStep(3)} />
         )}
 
         {currentStep === 3 && (
@@ -91,12 +91,13 @@ export default function SellerOnboardingPage() {
               setCurrentStep(4);
             }}
             hasExistingAccount={hasExistingAccount}
+            existingAccount={accountData ?? null}
           />
         )}
 
         {currentStep === 4 && (
           <Step4
-            onPrev={() => setCurrentStep(hasExistingAccount ? 2 : 3)}
+            onPrev={() => setCurrentStep(3)}
             businessType={businessType}
             businessNumber={businessNumber}
             account={account}

@@ -12,8 +12,9 @@ const mockPendingWalletCharges = new Map<string, number>();
 // 계좌 없는 상태 테스트: 빈 값으로 설정
 // 계좌 있는 상태 테스트: bankName, accountNumber를 채우세요
 const mockAccount = {
-  bankName: '',
-  accountNumber: '',
+  bankName: '신한은행',
+  accountNum: '110-123-456789',
+  accountName: '홍길동',
 };
 
 const mockTradeReports = {

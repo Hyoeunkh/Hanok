@@ -188,9 +188,9 @@ export const settingsHandlers = [
   http.get(`${BASE_URL}/v1/users/me/account`, () => {
     return HttpResponse.json(
       {
-        bankName: '',
-        accountNum: '',
-        accountName: '',
+        bankName: '신한은행',
+        accountNum: '110-123-456789',
+        accountName: '홍길동',
       },
       { status: 200 },
     );
