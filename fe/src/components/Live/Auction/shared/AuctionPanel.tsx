@@ -1,13 +1,62 @@
 import SellerStats from '../Seller/SellerStats';
 import SellerPriceInfo from '../Seller/SellerPriceInfo';
 import BidFeed from '../Seller/BidFeed';
-import type { AuctionStatisticsPayload } from '@/types';
+import type { AuctionStatisticsPayload, LiveAuctionType, UniqueBidSyncPayload } from '@/types';
 
 interface Props {
+  isSeller: boolean;
+  auctionType: LiveAuctionType | null;
   auctionStatistics: AuctionStatisticsPayload | null;
+  uniqueBidSync: UniqueBidSyncPayload | null;
 }
 
-export default function SellerAuctionPanel({ auctionStatistics }: Props) {
+function formatPrice(value: number) {
+  return value.toLocaleString('ko-KR');
+}
+
+export default function AuctionPanel({ isSeller, auctionType, auctionStatistics, uniqueBidSync }: Props) {
+  if (auctionType === 'UNIQUE_TOP') {
+    const bidRange = uniqueBidSync?.bidRange;
+
+    return (
+      <div className="bid-feed-scroll flex h-full flex-col gap-4 overflow-y-auto p-4">
+        <div className="rounded-2xl bg-neutral-900 p-5">
+          <div className="text-[10px] font-bold uppercase tracking-tigher text-neutral-500">UNIQUE AUCTION</div>
+          <div className="mt-2 text-3xl font-black text-ember">
+            <span className="tabular-nums font-black">{uniqueBidSync?.participantCount ?? 0}</span>
+            <span className="ml-2 text-sm font-bold text-neutral-500">명 참여</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-neutral-900 p-4">
+            <div className="text-[10px] font-bold text-neutral-500">입찰 범위</div>
+            <div className="mt-2 text-sm font-black text-neutral-100">
+              {bidRange ? `${formatPrice(bidRange.minPrice)} ~ ${formatPrice(bidRange.maxPrice)}` : '-'}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-neutral-900 p-4">
+            <div className="text-[10px] font-bold text-neutral-500">입찰 단위</div>
+            <div className="mt-2 text-sm font-black text-neutral-100">
+              {bidRange ? `${formatPrice(bidRange.bidUnit)}원` : '-'}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-4">
+          <div className="text-[10px] font-bold uppercase tracking-[.08em] text-neutral-500">STATUS</div>
+          <p className="mt-2 text-xs leading-6 text-neutral-300">
+            {isSeller
+              ? '입찰 금액은 경매 종료 전까지 공개되지 않습니다. 참여 인원만 실시간으로 갱신됩니다.'
+              : uniqueBidSync?.hasBid
+                ? '이미 입찰을 완료했습니다. 동일 상품에는 한 번만 입찰할 수 있습니다.'
+                : '입찰 금액은 비공개입니다. 범위와 단위를 맞춰 한 번만 입찰할 수 있습니다.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const effectiveCurrentPrice = auctionStatistics
     ? Math.max(auctionStatistics.currentPrice, auctionStatistics.startPrice)
     : 0;

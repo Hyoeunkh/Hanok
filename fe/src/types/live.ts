@@ -87,6 +87,38 @@ export type AuctionStatisticsPayload = {
   recentBids: AuctionStatisticsRecentBid[];
 };
 
+export type UniqueBidRange = {
+  minPrice: number;
+  maxPrice: number;
+  bidUnit: number;
+};
+
+export type UniqueAuctionStatsPayload = {
+  participantCount: number;
+};
+
+export type UniqueBidSyncPayload = {
+  bidRange: UniqueBidRange;
+  timer: StreamTimerPayload;
+  participantCount: number;
+  hasBid: boolean;
+};
+
+export type UniqueBidAckPayload = {
+  amount: number;
+};
+
+export type UniqueAuctionEndDuplicate = {
+  price: number;
+  cnt: number;
+};
+
+export type UniqueAuctionEndPayload = {
+  isWon: boolean;
+  winnerPrice: number | null;
+  topDuplicates: UniqueAuctionEndDuplicate[] | null;
+};
+
 export type BidSyncPayload = {
   item: {
     bidUnit: number;
@@ -251,12 +283,31 @@ export type BroadcastStreamEvent =
       payload?: BidSyncPayload | null;
     }
   | {
+      eventType: 'UNIQUE_BID_SYNC';
+      payload?: UniqueBidSyncPayload | null;
+    }
+  | {
       eventType: 'AUCTION_STATISTICS';
       payload?: AuctionStatisticsPayload;
     }
   | {
+      eventType: 'UNIQUE_AUCTION_STATS';
+      payload?: UniqueAuctionStatsPayload | null;
+    }
+  | {
       eventType: 'ITEM_SYNC';
       payload?: ItemSyncPayload | null;
+    }
+  | {
+      eventType: 'UNIQUE_AUCTION_START';
+      payload?: {
+        bidRange?: UniqueBidRange;
+        timer?: StreamTimerPayload;
+      };
+    }
+  | {
+      eventType: 'UNIQUE_AUCTION_INTRODUCE';
+      payload: null;
     }
   | {
       eventType: 'ITEM_INTRODUCE';
@@ -279,6 +330,14 @@ export type PrivateStreamEvent =
   | {
       eventType: 'BID_WINNER';
       payload?: BidWinnerPayload;
+    }
+  | {
+      eventType: 'UNIQUE_BID_ACK';
+      payload?: UniqueBidAckPayload;
+    }
+  | {
+      eventType: 'UNIQUE_AUCTION_END';
+      payload?: UniqueAuctionEndPayload;
     }
   | {
       eventType: string;

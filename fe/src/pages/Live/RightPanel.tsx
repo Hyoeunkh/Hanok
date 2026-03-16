@@ -4,17 +4,19 @@ import { useDeleteFollow } from '@/api/hooks/useDeleteFollow';
 import { usePatchFollow } from '@/api/hooks/usePatchFollow';
 import AuctionPanel from '@/components/Live/Auction/shared/AuctionPanel';
 import ChatPanel from '@/components/Live/Chat/ChatPanel';
-import type { AuctionStatisticsPayload, StreamEnterResponse } from '@/types';
+import type { AuctionStatisticsPayload, LiveAuctionType, StreamEnterResponse, UniqueBidSyncPayload } from '@/types';
 
 interface Props {
   isSeller: boolean;
+  auctionType: LiveAuctionType | null;
   auctionStatistics: AuctionStatisticsPayload | null;
+  uniqueBidSync: UniqueBidSyncPayload | null;
   streamEnter: StreamEnterResponse | null;
 }
 
 const getSellerInitial = (nickname?: string) => nickname?.trim().charAt(0).toUpperCase() || 'Y';
 
-export default function RightPanel({ isSeller, auctionStatistics, streamEnter }: Props) {
+export default function RightPanel({ isSeller, auctionType, auctionStatistics, uniqueBidSync, streamEnter }: Props) {
   const [activeTab, setActiveTab] = useState<'chat' | 'auction'>('chat');
   const [followStateOverride, setFollowStateOverride] = useState<{ sellerId: number; value: boolean } | null>(null);
   const { mutate: patchFollow, isPending: isFollowPending } = usePatchFollow();
@@ -104,7 +106,16 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {activeTab === 'auction' ? <AuctionPanel auctionStatistics={auctionStatistics} /> : <ChatPanel />}
+        {activeTab === 'auction' ? (
+          <AuctionPanel
+            isSeller={isSeller}
+            auctionType={auctionType}
+            auctionStatistics={auctionStatistics}
+            uniqueBidSync={uniqueBidSync}
+          />
+        ) : (
+          <ChatPanel />
+        )}
       </div>
     </div>
   );

@@ -7,7 +7,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
 import BidAccessModal from '@/components/Live/Auction/Buyer/BidAccessModal';
 import KeyboardGuide from '@/components/Live/Auction/Buyer/KeyboardGuide';
-import type { BidSyncPayload } from '@/types';
+import { useToast } from '@/components/common/Toast';
+import type { BidSyncPayload, LiveAuctionType, UniqueBidSyncPayload } from '@/types';
 import { sendStreamMessage } from '@/websocket/stompClient';
 
 const CUSTOM_UNIT_OPTIONS = [
@@ -21,12 +22,15 @@ type BidTab = 'quick' | 'custom';
 type BidAccessModalType = 'login' | 'shipping' | null;
 
 interface Props {
+  auctionType: LiveAuctionType | null;
   bidSync: BidSyncPayload | null;
+  uniqueBidSync: UniqueBidSyncPayload | null;
   activeAuctionId: number | null;
 }
 
-export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
+export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, activeAuctionId }: Props) {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { id: streamId } = useParams<{ id: string }>();
   const isLoggedIn = Boolean(localStorage.getItem('accessToken'));
   const { data: wallet } = useGetWallet(isLoggedIn);
@@ -41,31 +45,24 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
   const [bidAccessModal, setBidAccessModal] = useState<BidAccessModalType>(null);
 
   const balance = wallet?.balance ?? 0;
-  const currentBid = bidSync?.item.currentPrice ?? 0;
-  const sellerUnit = bidSync?.item.bidUnit ?? 1000;
-  const hasActiveAuction = Boolean(bidSync);
+  const isUniqueAuction = auctionType === 'UNIQUE_TOP';
+  const currentPrice = isUniqueAuction ? uniqueBidSync?.bidRange.minPrice ?? 0 : bidSync?.item.currentPrice ?? 0;
+  const baseBidUnit = isUniqueAuction ? uniqueBidSync?.bidRange.bidUnit ?? 1000 : bidSync?.item.bidUnit ?? 1000;
+  const uniqueMinPrice = uniqueBidSync?.bidRange.minPrice ?? 0;
+  const uniqueMaxPrice = uniqueBidSync?.bidRange.maxPrice ?? 0;
+  const uniqueBidUnit = uniqueBidSync?.bidRange.bidUnit ?? 1000;
+  const hasPlacedUniqueBid = uniqueBidSync?.hasBid ?? false;
+  const hasActiveAuction = isUniqueAuction ? Boolean(uniqueBidSync) : Boolean(bidSync);
   const isFreeMode = tab === 'custom' && customUnit === 0;
-  const quickUnit = tab === 'quick' ? sellerUnit : customUnit;
-  const minimumBidAmount = currentBid + quickUnit;
+  const quickUnit = tab === 'quick' ? baseBidUnit : customUnit;
+  const minimumBidAmount = isUniqueAuction ? uniqueMinPrice : currentPrice + quickUnit;
   const displayedBidAmount = isFreeMode ? bidAmount : Math.max(bidAmount, minimumBidAmount);
   const effectiveBidAmount = hasActiveAuction ? Math.max(displayedBidAmount, minimumBidAmount) : displayedBidAmount;
-  const increment = hasActiveAuction ? effectiveBidAmount - currentBid : 0;
+  const increment = isUniqueAuction || !hasActiveAuction ? 0 : effectiveBidAmount - currentPrice;
   const isInsufficientBalance = isLoggedIn && hasActiveAuction && effectiveBidAmount > balance;
+  const isBidDisabled = isInsufficientBalance || (isUniqueAuction && hasPlacedUniqueBid);
   const hasRegisteredShippingAddress = true;
   // TODO: replace hasRegisteredShippingAddress with the shipping address lookup API result.
-
-  useEffect(() => {
-    if (!streamId) {
-      return;
-    }
-
-    void sendStreamMessage(streamId, {
-      eventType: 'BID_SYNC',
-      payload: null,
-    }).catch((error) => {
-      console.error('[stream] failed to send BID_SYNC', error);
-    });
-  }, [streamId]);
 
   const handleBidPlace = useCallback(() => {
     if (!hasActiveAuction) {
@@ -87,25 +84,58 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
     }
 
     if (!streamId) {
-      console.error('[stream] missing streamId for BID_PLACED');
+      console.error('[stream] missing streamId for bid');
       return;
     }
 
     if (activeAuctionId === null) {
-      console.error('[stream] missing active auctionId for BID_PLACED');
+      console.error('[stream] missing active auctionId for bid');
       return;
     }
 
+    if (isUniqueAuction) {
+      if (hasPlacedUniqueBid) {
+        showToast({ message: '이미 입찰한 상품입니다.' });
+        return;
+      }
+
+      if (effectiveBidAmount < uniqueMinPrice || effectiveBidAmount > uniqueMaxPrice) {
+        showToast({
+          message: `입찰가는 ${uniqueMinPrice.toLocaleString()}원 ~ ${uniqueMaxPrice.toLocaleString()}원 범위여야 합니다.`,
+        });
+        return;
+      }
+
+      if ((effectiveBidAmount - uniqueMinPrice) % uniqueBidUnit !== 0) {
+        showToast({ message: `${uniqueBidUnit.toLocaleString()}원 단위로만 입찰할 수 있습니다.` });
+        return;
+      }
+    }
+
     void sendStreamMessage(streamId, {
-      eventType: 'BID_PLACED',
+      eventType: isUniqueAuction ? 'UNIQUE_BID_PLACE' : 'BID_PLACED',
       payload: {
         auctionId: activeAuctionId,
         amount: effectiveBidAmount,
       },
     }).catch((error) => {
-      console.error('[stream] failed to send BID_PLACED', error);
+      console.error('[stream] failed to send bid', error);
     });
-  }, [hasActiveAuction, isLoggedIn, hasRegisteredShippingAddress, isInsufficientBalance, streamId, activeAuctionId, effectiveBidAmount]);
+  }, [
+    hasActiveAuction,
+    isLoggedIn,
+    hasRegisteredShippingAddress,
+    isInsufficientBalance,
+    streamId,
+    activeAuctionId,
+    isUniqueAuction,
+    hasPlacedUniqueBid,
+    effectiveBidAmount,
+    uniqueMinPrice,
+    uniqueMaxPrice,
+    uniqueBidUnit,
+    showToast,
+  ]);
 
   const handleBidAccessAction = () => {
     if (bidAccessModal === 'login') {
@@ -130,8 +160,9 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
       return;
     }
 
-    setBidAmount((prev) => Math.min(balance, Math.max(prev, minimumBidAmount) + quickUnit));
-  }, [isFreeMode, balance, minimumBidAmount, quickUnit]);
+    const upperBound = isUniqueAuction ? uniqueMaxPrice : balance;
+    setBidAmount((prev) => Math.min(upperBound, Math.max(prev, minimumBidAmount) + quickUnit));
+  }, [isFreeMode, isUniqueAuction, uniqueMaxPrice, balance, minimumBidAmount, quickUnit]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -165,14 +196,14 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
           break;
         case 'ArrowLeft': {
           event.preventDefault();
-          const currentIndex = CUSTOM_UNIT_OPTIONS.findIndex((o) => o.value === customUnit);
+          const currentIndex = CUSTOM_UNIT_OPTIONS.findIndex((option) => option.value === customUnit);
           const prevIndex = (currentIndex - 1 + CUSTOM_UNIT_OPTIONS.length) % CUSTOM_UNIT_OPTIONS.length;
           setCustomUnit(CUSTOM_UNIT_OPTIONS[prevIndex].value);
           break;
         }
         case 'ArrowRight': {
           event.preventDefault();
-          const currentIndex = CUSTOM_UNIT_OPTIONS.findIndex((o) => o.value === customUnit);
+          const currentIndex = CUSTOM_UNIT_OPTIONS.findIndex((option) => option.value === customUnit);
           const nextIndex = (currentIndex + 1) % CUSTOM_UNIT_OPTIONS.length;
           setCustomUnit(CUSTOM_UNIT_OPTIONS[nextIndex].value);
           break;
@@ -228,14 +259,14 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
                   className={`flex-1 rounded-md py-1.5 text-xs font-bold transition ${tab === 'quick' ? 'bg-neutral-800 text-neutral-100' : 'text-neutral-500'}`}
                   onClick={() => setTab('quick')}
                 >
-                  입찰하기
+                  빠른 입찰
                 </button>
                 <button
                   type="button"
                   className={`flex-1 rounded-md py-1.5 text-xs font-bold transition ${tab === 'custom' ? 'bg-neutral-800 text-neutral-100' : 'text-neutral-500'}`}
                   onClick={() => setTab('custom')}
                 >
-                  자율입찰
+                  직접 입찰
                 </button>
               </div>
 
@@ -252,14 +283,25 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
                     type="button"
                     className="flex flex-3 items-center rounded-xl bg-gold px-3 text-neutral-100 transition hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-45"
                     onClick={handleBidPlace}
-                    disabled={isInsufficientBalance}
+                    disabled={isBidDisabled}
                   >
                     <div className="flex flex-1 flex-col items-center gap-1">
                       <div className="flex items-center gap-2 text-sm font-black">
                         <IoCheckmark size={16} strokeWidth={4} />
-                        {hasActiveAuction ? `${effectiveBidAmount.toLocaleString()}원으로 입찰` : '입찰'}
+                        {hasPlacedUniqueBid
+                          ? '입찰 완료'
+                          : hasActiveAuction
+                            ? `${effectiveBidAmount.toLocaleString()}원으로 입찰`
+                            : '입찰'}
                       </div>
-                      {hasActiveAuction && <span className="text-xs font-bold text-gold-light">(+{increment.toLocaleString()})</span>}
+                      {hasActiveAuction && !isUniqueAuction && (
+                        <span className="text-xs font-bold text-gold-light">(+{increment.toLocaleString()})</span>
+                      )}
+                      {hasActiveAuction && isUniqueAuction && (
+                        <span className="text-xs font-bold text-gold-light">
+                          {uniqueMinPrice.toLocaleString()} ~ {uniqueMaxPrice.toLocaleString()}
+                        </span>
+                      )}
                     </div>
                     <span className="rounded bg-warm/15 px-1.5 py-3 text-[10px] font-bold text-gold-light">
                       ENTER
@@ -334,14 +376,22 @@ export default function BuyerControlBar({ bidSync, activeAuctionId }: Props) {
                     type="button"
                     className="flex flex-1 items-center rounded-xl bg-gold px-3 text-neutral-100 transition hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-45"
                     onClick={handleBidPlace}
-                    disabled={isInsufficientBalance}
+                    disabled={isBidDisabled}
                   >
                     <div className="flex flex-1 flex-col items-center gap-0.5">
-                      <span className="text-lg font-black">입찰</span>
-                      {hasActiveAuction && (
+                      <span className="text-lg font-black">{hasPlacedUniqueBid ? '완료' : '입찰'}</span>
+                      {hasActiveAuction && !isUniqueAuction && (
                         <>
                           <span className="text-[10px] font-bold tabular-nums text-gold-light">{effectiveBidAmount.toLocaleString()}원</span>
                           <span className="text-[10px] font-bold text-gold">+{increment.toLocaleString()}</span>
+                        </>
+                      )}
+                      {hasActiveAuction && isUniqueAuction && (
+                        <>
+                          <span className="text-[10px] font-bold tabular-nums text-gold-light">{effectiveBidAmount.toLocaleString()}원</span>
+                          <span className="text-[10px] font-bold text-gold">
+                            {hasPlacedUniqueBid ? '1회 입찰 완료' : `${uniqueBidUnit.toLocaleString()}원 단위`}
+                          </span>
                         </>
                       )}
                     </div>
