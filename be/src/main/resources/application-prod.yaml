@@ -32,3 +32,6 @@ management:
     metrics:
       export:
         enabled: true
+  metrics:
+    tags:
+      application: hanok-backend
