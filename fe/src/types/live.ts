@@ -145,7 +145,7 @@ export type Live = {
   thumbnail: string | null;
   scheduledAt: string | null;
   startType: 'SCHEDULED' | 'IMMEDIATE';
-  notice?: string;
+  notice: string | null;
   isLive: boolean;
   createdAt: string;
   items: LiveStreamItem[];

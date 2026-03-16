@@ -122,6 +122,19 @@ const registeredLives: RegisteredLive[] = [
   },
   {
     streamId: 3,
+    title: 'Sneaker live auction',
+    category: 'SNEAKERS_SHOES',
+    thumbnail: Logo,
+    scheduledAt: null,
+    startType: 'IMMEDIATE',
+    notice: '한정판 스니커즈 라이브 경매 진행중!',
+    isLive: true,
+    createdAt: new Date(Date.now() - 1800000).toISOString(),
+    items: createStreamItems([301, 302], 'SNEAKERS_SHOES', Logo),
+    ...defaultSeedSellerSnapshot,
+  },
+  {
+    streamId: 4,
     title: 'Watch archive session',
     category: 'WATCHES',
     thumbnail: Logo,
@@ -135,7 +148,7 @@ const registeredLives: RegisteredLive[] = [
   },
 ];
 
-let nextLiveId = 4;
+let nextLiveId = 5;
 
 const parseStreamRequest = async (request: Request) => {
   let body: StreamRequest;
@@ -216,7 +229,7 @@ export const LiveCreateHandlers = [
       thumbnail: thumbnailUrl,
       scheduledAt: body.scheduledAt || null,
       startType: body.startType,
-      notice: body.notice,
+      notice: body.notice ?? null,
       isLive: false,
       createdAt: new Date().toISOString(),
       items: createStreamItems(body.itemIds, body.category, thumbnailUrl),
@@ -261,7 +274,7 @@ export const LiveCreateHandlers = [
         thumbnail: resolvedThumbnail,
         scheduledAt: body.scheduledAt || null,
         startType: body.startType,
-        notice: body.notice,
+        notice: body.notice ?? null,
         isLive: true,
         createdAt: new Date().toISOString(),
         items: createStreamItems(body.itemIds, body.category, resolvedThumbnail),
@@ -278,7 +291,7 @@ export const LiveCreateHandlers = [
           thumbnail: resolvedThumbnail,
           scheduledAt: body.scheduledAt || null,
           startType: body.startType,
-          notice: body.notice,
+          notice: body.notice ?? null,
           isLive: true,
           items: createStreamItems(body.itemIds, body.category, resolvedThumbnail),
         };
@@ -320,7 +333,7 @@ export const LiveCreateHandlers = [
         thumbnail: resolvedThumbnail,
         startType: body.startType,
         scheduledAt: body.scheduledAt || null,
-        notice: body.notice,
+        notice: body.notice ?? null,
         items: createStreamItems(body.itemIds, body.category, resolvedThumbnail),
       };
     }
