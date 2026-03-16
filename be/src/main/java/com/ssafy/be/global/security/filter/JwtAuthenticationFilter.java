@@ -27,52 +27,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BLACKLIST_PREFIX = "blacklist:";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-
-        System.out.println("요청 URI 및 메서드: " + request.getRequestURI() + " [" + request.getMethod() + "]");
-        System.out.println("들어온 헤더: " + request.getHeader("Authorization"));
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = jwtUtil.resolveToken(request);
 
         if (token != null) {
+            System.out.println("1. 토큰 추출 성공");
+
             try {
-                // 블랙리스트 체크 (로그아웃된 토큰 차단)
+                // Redis 체크
                 if (redisService.exists(BLACKLIST_PREFIX + token)) {
+                    System.out.println("2. 블랙리스트에 등록된 토큰입니다.");
                     SecurityContextHolder.clearContext();
-                    // 차단 시 바로 401 에러를 내려주고 리턴해야 합니다.
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Logged out token");
                     return;
                 }
+                System.out.println("3. Redis 블랙리스트 검사 통과");
 
+                // 토큰 검증
                 Claims claims = jwtUtil.validateToken(token);
+                System.out.println("4. 토큰 검증 성공! 사용자 ID: " + claims.getSubject());
 
-                // 1. 토큰 Claim에서 "role"을 꺼내어 권한 객체로 변환
+                // 권한 세팅 및 인증 객체 생성
                 String role = claims.get("role", String.class);
-                List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities =
-                        (role != null) ? List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(role)) : List.of();
+                String authority = (role != null && role.startsWith("ROLE_")) ? role : "ROLE_" + role;
 
-                // 2. 권한 목록을 포함하여 Authentication 생성
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 claims.getSubject(),
                                 null,
-                                authorities
+                                List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(authority))
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println("5. SecurityContext 등록 완료: " + SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
 
-            } catch (JwtException | IllegalArgumentException e) {
+            } catch (Exception e) {
+                System.err.println("토큰 처리 중 치명적 에러 발생: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                e.printStackTrace();
                 SecurityContextHolder.clearContext();
-                // 3. 예외가 터졌을 때도 컨트롤러로 넘기지 말고 여기서 바로 차단
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"message\": \"유효하지 않거나 만료된 토큰입니다.\"}");
-                return; // 필터 체인 종료
             }
+        } else {
+            System.out.println("들어온 토큰이 없습니다. (null)");
         }
+
         filterChain.doFilter(request, response);
     }
 }
