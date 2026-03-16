@@ -779,6 +779,8 @@ const handleAuctionItemIntroduce = (destination: string, body: string) => {
     eventType: 'ITEM_INTRODUCE',
     payload: null,
   });
+
+  broadcastItemSync(streamId);
 };
 
 const handleUniqueAuctionItemIntroduce = (destination: string, body: string) => {
@@ -798,6 +800,8 @@ const handleUniqueAuctionItemIntroduce = (destination: string, body: string) => 
     eventType: 'UNIQUE_AUCTION_INTRODUCE',
     payload: null,
   });
+
+  broadcastItemSync(streamId);
 };
 
 const handleChatMessage = (destination: string, body: string) => {
