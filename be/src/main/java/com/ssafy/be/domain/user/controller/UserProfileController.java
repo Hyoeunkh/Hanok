@@ -6,6 +6,7 @@ import com.ssafy.be.domain.seller.dto.response.SellerStatusResponse;
 import com.ssafy.be.domain.seller.service.SellerService;
 import com.ssafy.be.domain.user.controller.api.UserProfileApi;
 import com.ssafy.be.domain.user.dto.request.AccountRegisterRequest;
+import com.ssafy.be.domain.user.dto.request.PasswordUpdateRequest;
 import com.ssafy.be.domain.user.dto.response.AccountRegisterResponse;
 import com.ssafy.be.domain.user.dto.response.UserProfileResponse;
 import com.ssafy.be.domain.user.service.UserService;
@@ -46,7 +47,7 @@ public class UserProfileController implements UserProfileApi {
 
         Long userId = getUserId(principal);
         AccountRegisterResponse response = userService.registerAccount(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @Override
@@ -78,5 +79,22 @@ public class UserProfileController implements UserProfileApi {
             @AuthenticationPrincipal String principal) {
         Long userId = getUserId(principal);
         return ResponseEntity.ok(ApiResponse.success(userService.getMyProfile(userId)));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AccountRegisterResponse>> getAccount(
+            @AuthenticationPrincipal String principal) {
+        Long userId = getUserId(principal);
+        return ResponseEntity.ok(ApiResponse.success(userService.getAccount(userId)));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> updatePassword(
+            @AuthenticationPrincipal String principal,
+            @RequestBody PasswordUpdateRequest request) {
+
+        Long userId = getUserId(principal);
+        userService.updatePassword(userId, request);
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }

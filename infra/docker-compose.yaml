@@ -45,35 +45,6 @@ services:
       retries: 5
 
   # =============================================
-  # Backend (dev)
-  # =============================================
-  backend-dev:
-    image: hanok-backend:dev
-    container_name: hanok-backend-dev
-    restart: unless-stopped
-    ports:
-      - "8081:8080"
-    networks:
-      - hanok-network
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_HOST: hanok-mysql
-      DB_PORT: 3306
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-      PORTONE_BASE_URL: ${PORTONE_BASE_URL}
-      PORTONE_STORE_ID: ${PORTONE_STORE_ID}
-      PORTONE_SECRET_KEY: ${PORTONE_SECRET_KEY}
-      PORTONE_SECRET_WEBHOOK: ${PORTONE_SECRET_WEBHOOK}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
-  # =============================================
   # Backend (prod)
   # =============================================
   backend-prod:
@@ -105,11 +76,11 @@ services:
       REDIS_PORT: 6379
       GCS_CREDENTIALS_PATH: ${GCS_CREDENTIALS_PATH}
       GOOGLE_APPLICATION_CREDENTIALS: /app/gcs-key.json
+      BIZNO_API_KEY: ${BIZNO_API_KEY}
 
   # =============================================
   # LiveKit
   # =============================================
-
   livekit:
     image: livekit/livekit-server:latest
     container_name: hanok-livekit
@@ -123,7 +94,7 @@ services:
       - hanok-network
 
 # =============================================
-# Volume (데이터 영속성)
+# Volume
 # =============================================
 volumes:
   mysql-data:

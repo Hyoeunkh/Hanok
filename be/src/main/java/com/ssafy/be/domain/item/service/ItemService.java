@@ -1,13 +1,18 @@
 package com.ssafy.be.domain.item.service;
 
+import com.ssafy.be.domain.auction.entity.Auction;
+import com.ssafy.be.domain.auction.entity.AuctionStatus;
+import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.item.dto.request.ItemRegisterRequest;
 import com.ssafy.be.domain.item.dto.request.ItemUpdateRequest;
 import com.ssafy.be.domain.item.dto.response.ItemRegisterResponse;
 import com.ssafy.be.domain.item.dto.response.ItemSummaryResponse;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.item.entity.ItemStatus;
+import com.ssafy.be.domain.item.entity.Tag;
 import com.ssafy.be.domain.item.exception.ItemErrorCode;
 import com.ssafy.be.domain.item.repository.ItemRepository;
+import com.ssafy.be.domain.item.repository.TagRepository;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
@@ -18,6 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ssafy.be.domain.auction.entity.AuctionType;
+import com.ssafy.be.domain.item.entity.Tag;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -27,6 +37,8 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final SellerRepository sellerRepository;
+    private final AuctionRepository auctionRepository;
+    private final TagRepository tagRepository;
     private final GcsClient gcsClient;
 
     @Transactional
@@ -35,6 +47,22 @@ public class ItemService {
                 .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
         Item saved = itemRepository.save(buildItem(request, seller));
+
+        if (request.tags() != null && !request.tags().isEmpty()) {
+            List<Tag> tags = request.tags().stream()
+                    .map(name -> Tag.builder()
+                            .name(name)
+                            .item(saved)
+                            .build())
+                    .toList();
+            tagRepository.saveAll(tags);
+        }
+
+        auctionRepository.save(Auction.builder()
+                .auctionStatus(AuctionStatus.READY)
+                .auctionType(request.auctionType())
+                .item(saved)
+                .build());
 
         if (images != null && !images.isEmpty()) {
             try {
@@ -80,15 +108,31 @@ public class ItemService {
                 ? itemRepository.findBySellerIdAndStatus(seller.getId(), status)
                 : itemRepository.findBySellerId(seller.getId());
 
+        List<Long> itemIds = items.stream()
+                .map(Item::getId)
+                .toList();
+
+        Map<Long, AuctionType> auctionTypeMap = auctionRepository.findByItemIdIn(itemIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        a -> a.getItem().getId(),
+                        Auction::getAuctionType
+                ));
+
         return items.stream()
                 .map(i -> new ItemSummaryResponse(
                         i.getId(),
                         i.getName(),
-                        i.getCategory(),
-                        i.getStartPrice(),
-                        i.getStatus(),
-                        i.getItemCondition(),
+                        i.getDescription(),
+                        i.getTags().stream().map(Tag::getName).toList(),
                         i.getImage1(),
+                        i.getStartPrice(),
+                        i.getBidUnit(),
+                        i.getAuctionDuration(),
+                        i.getItemCondition(),
+                        i.getCategory(),
+                        auctionTypeMap.get(i.getId()),
+                        i.getStatus(),
                         i.getCreatedAt()
                 ))
                 .toList();
@@ -105,6 +149,17 @@ public class ItemService {
         item.update(request.name(), request.description(), request.category(),
                 request.startPrice(), request.bidUnit(), request.auctionDuration(),
                 request.itemCondition());
+
+        if (request.tags() != null) {
+            tagRepository.deleteAllByItemId(itemId);  // 기존 태그 전체 삭제
+            List<Tag> tags = request.tags().stream()
+                    .map(name -> Tag.builder()
+                            .name(name)
+                            .item(item)
+                            .build())
+                    .toList();
+            tagRepository.saveAll(tags);
+        }
 
         if (images != null && !images.isEmpty()) {
             // 기존 이미지 삭제

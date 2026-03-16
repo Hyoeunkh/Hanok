@@ -11,6 +11,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,13 +48,10 @@ public class Item {
 
     private String image3;
 
-    private String courierName;
-
-    private String trackingNumber;
-
-    private LocalDateTime submittedAt;
-
     private LocalDateTime soldAt;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tag> tags = new ArrayList<>();
 
     @CreatedDate
     @Column(updatable = false)
@@ -74,9 +73,6 @@ public class Item {
                  String image1,
                  String image2,
                  String image3,
-                 String courierName,
-                 String trackingNumber,
-                 LocalDateTime submittedAt,
                  LocalDateTime soldAt,
                  LocalDateTime createdAt,
                  Seller seller) {
@@ -91,9 +87,6 @@ public class Item {
         this.image1 = image1;
         this.image2 = image2;
         this.image3 = image3;
-        this.courierName = courierName;
-        this.trackingNumber = trackingNumber;
-        this.submittedAt = submittedAt;
         this.soldAt = soldAt;
         this.createdAt = createdAt;
         this.seller = seller;
@@ -121,5 +114,4 @@ public class Item {
         this.status = ItemStatus.SOLD;
         this.soldAt = soldAt;
     }
-
 }
