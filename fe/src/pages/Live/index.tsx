@@ -272,7 +272,7 @@ export default function LivePage() {
     }
 
     void sendStreamMessage(streamId, {
-      eventType: activeAuctionType === 'UNIQUE' ? 'UNIQUE_BID_SYNC' : 'BID_SYNC',
+      eventType: activeAuctionType === 'UNIQUE_TOP' ? 'UNIQUE_BID_SYNC' : 'BID_SYNC',
       payload: null,
     }).catch((error) => {
       console.error('[stream] failed to sync active auction state', error);
@@ -422,7 +422,10 @@ export default function LivePage() {
         setWinnerInfo({
           payload: event.payload,
           itemCond:
-            liveAuctionItem?.itemCondition ?? introducingAuctionItem?.itemCondition ?? lastActiveItemRef.current?.itemCondition ?? '',
+            liveAuctionItem?.itemCondition ??
+            introducingAuctionItem?.itemCondition ??
+            lastActiveItemRef.current?.itemCondition ??
+            '',
         });
         return;
       }
