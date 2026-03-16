@@ -253,4 +253,22 @@ export const settingsHandlers = [
   http.delete(`${BASE_URL}/v1/users/me/addresses/:id`, () =>
     HttpResponse.json({ message: 'Address deleted successfully.' }, { status: 200 }),
   ),
+
+  http.patch(`${BASE_URL}/v1/users/me/password`, async () => {
+    return HttpResponse.json(
+      { status: 'SUCCESS', message: '비밀번호가 변경되었습니다.', data: {} },
+      { status: 200 },
+    );
+  }),
+
+  http.patch(`${BASE_URL}/v1/users/me/profile-image`, async () => {
+    return HttpResponse.json(
+      {
+        status: 'SUCCESS',
+        message: '프로필 이미지가 업로드되었습니다.',
+        data: 'https://api.dicebear.com/7.x/adventurer/svg?seed=updated',
+      },
+      { status: 200 },
+    );
+  }),
 ];
