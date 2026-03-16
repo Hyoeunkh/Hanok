@@ -22,6 +22,13 @@ public class SearchService {
     public List<StreamSearchResult> search(String keyword) {
         String trimmed = keyword.trim();
 
+        // IN BOOLEAN MODE에서는 특수기호 연산자로 취급 -> 처리필요
+        String safeKeyword = trimmed.replaceAll("[+\\-><()~*\"@]", " ").trim();
+
+        if (safeKeyword.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         // 방송 -> 아이템 -> 태그 순의 key 순서 보장을 위해 linkedhashmap
         Map<Long, StreamSearchResult> resultMap = new LinkedHashMap<>();
 

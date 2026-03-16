@@ -11,27 +11,28 @@ import java.util.List;
 @Repository
 public interface StreamSearchRepository {
 
-    // 방송 이름 매칭
-    @Query("SELECT s FROM Stream s WHERE s.title LIKE %:keyword%")
+    //FULLTEXT는 JPA로 안되서 native sql
+
+    @Query(value = """
+        SELECT * FROM stream
+        WHERE MATCH(title) AGAINST(:keyword IN BOOLEAN MODE)
+    """, nativeQuery = true)
     List<Stream> searchByStreamTitle(@Param("keyword") String keyword);
 
-    // 아이템 명 매칭
-    @Query("""
-        SELECT DISTINCT s FROM Auction a
-        JOIN a.stream s
-        JOIN a.item i
-        WHERE i.name LIKE %:keyword%
-    """)
+    @Query(value = """
+        SELECT DISTINCT s.* FROM auction a
+        JOIN stream s ON a.stream_id = s.id
+        JOIN item i ON a.item_id = i.id
+        WHERE MATCH(i.name) AGAINST(:keyword IN BOOLEAN MODE)
+    """, nativeQuery = true)
     List<Stream> searchByItemName(@Param("keyword") String keyword);
 
-
-    // 태그 - 아이템 매핑
-    @Query("""
-        SELECT DISTINCT s FROM Tag t
-        JOIN t.item i
-        JOIN Auction a ON a.item = i
-        JOIN a.stream s
-        WHERE t.name LIKE %:keyword%
-    """)
+    @Query(value = """
+        SELECT DISTINCT s.* FROM tag t
+        JOIN item i ON t.item_id = i.id
+        JOIN auction a ON a.item_id = i.id
+        JOIN stream s ON a.stream_id = s.id
+        WHERE MATCH(t.name) AGAINST(:keyword IN BOOLEAN MODE)
+    """, nativeQuery = true)
     List<Stream> searchByTagName(@Param("keyword") String keyword);
 }
