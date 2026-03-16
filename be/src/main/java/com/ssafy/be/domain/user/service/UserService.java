@@ -74,19 +74,12 @@ public class UserService {
 
         // 3. Entity 생성
         // DTO 내부의 toEntity()로 변환 (Service에서 직접 new User() 하지 않음)
-        User user = User.builder()
-                .email(requestDto.email())
-                .password(encodedPassword)
-                .nickname(requestDto.nickname())
-                .phone(requestDto.phone())
-                .profileImage("https://storage.googleapis.com/hanok-storage/profiles/default/default-profile.png")
-                .isActive(true)
-                .balance(0L)
-                .depositedEscrowBalance(0L)
-                .depositedWithdrawBalance(0L)
-                .depositedBidBalance(0L)
-                .notificationSetting(true)
-                .build();
+        User user = User.createUser(
+                requestDto.email(),
+                encodedPassword,
+                requestDto.nickname(),
+                requestDto.phone()
+        );
 
         // 4. DB 저장
         // JpaRepository의 save() → INSERT INTO user ...
