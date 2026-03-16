@@ -1,6 +1,6 @@
-import SellerStats from './SellerStats';
-import SellerPriceInfo from './SellerPriceInfo';
-import BidFeed from './BidFeed';
+import SellerStats from '../Seller/SellerStats';
+import SellerPriceInfo from '../Seller/SellerPriceInfo';
+import BidFeed from '../Seller/BidFeed';
 import type { AuctionStatisticsPayload } from '@/types';
 
 interface Props {
@@ -28,9 +28,7 @@ export default function SellerAuctionPanel({ auctionStatistics }: Props) {
 
       {/* 물품명 칩 */}
       <div className="-mt-2 flex items-center gap-2">
-        <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-[10px] font-bold text-gold">
-          경매중
-        </span>
+        <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-[10px] font-bold text-gold">경매중</span>
         <span className="text-xs font-bold text-white">{auctionStatistics?.itemName ?? '데이터 수신 대기중'}</span>
       </div>
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useDeleteFollow } from '@/api/hooks/useDeleteFollow';
 import { usePatchFollow } from '@/api/hooks/usePatchFollow';
-import SellerAuctionPanel from '@/components/Live/Auction/Seller/SellerAuctionPanel';
+import AuctionPanel from '@/components/Live/Auction/shared/AuctionPanel';
 import ChatPanel from '@/components/Live/Chat/ChatPanel';
 import type { AuctionStatisticsPayload, StreamEnterResponse } from '@/types';
 
@@ -84,39 +84,27 @@ export default function RightPanel({ isSeller, auctionStatistics, streamEnter }:
         )}
       </div>
 
-      {isSeller ? (
-        <div className="flex border-b border-neutral-800">
-          <button
-            className={`flex-1 py-3 text-[13px] font-bold transition ${
-              activeTab === 'chat' ? 'border-b-2 border-gold text-neutral-100' : 'text-neutral-600'
-            }`}
-            onClick={() => setActiveTab('chat')}
-          >
-            채팅
-          </button>
-          <button
-            className={`flex-1 py-3 text-[13px] font-bold transition ${
-              activeTab === 'auction' ? 'border-b-2 border-gold text-neutral-100' : 'text-neutral-600'
-            }`}
-            onClick={() => setActiveTab('auction')}
-          >
-            경매 현황
-          </button>
-        </div>
-      ) : (
-        <div className="flex border-b border-neutral-800">
-          <div className="flex-1 border-b-2 border-gold py-3 text-center text-[13px] font-bold text-neutral-100">
-            채팅
-          </div>
-        </div>
-      )}
+      <div className="flex border-b border-neutral-800">
+        <button
+          className={`flex-1 py-3 text-[13px] font-bold transition ${
+            activeTab === 'chat' ? 'border-b-2 border-gold text-neutral-100' : 'text-neutral-600'
+          }`}
+          onClick={() => setActiveTab('chat')}
+        >
+          채팅
+        </button>
+        <button
+          className={`flex-1 py-3 text-[13px] font-bold transition ${
+            activeTab === 'auction' ? 'border-b-2 border-gold text-neutral-100' : 'text-neutral-600'
+          }`}
+          onClick={() => setActiveTab('auction')}
+        >
+          경매 현황
+        </button>
+      </div>
 
       <div className="flex-1 overflow-y-auto">
-        {isSeller && activeTab === 'auction' ? (
-          <SellerAuctionPanel auctionStatistics={auctionStatistics} />
-        ) : (
-          <ChatPanel topBidders={streamEnter?.topBidders} />
-        )}
+        {activeTab === 'auction' ? <AuctionPanel auctionStatistics={auctionStatistics} /> : <ChatPanel />}
       </div>
     </div>
   );
