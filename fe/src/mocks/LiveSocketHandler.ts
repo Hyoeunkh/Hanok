@@ -1,4 +1,4 @@
-import { ws, type WebSocketData } from 'msw';
+﻿import { ws, type WebSocketData } from 'msw';
 
 import type { AuctionStatisticsPayload, BidSyncPayload, ItemSyncPayload } from '@/types';
 import { getStreamSocketConnectUrl } from '@/websocket/socket';
@@ -57,6 +57,7 @@ const streamTimerStates = new Map<string, MockTimerState>();
 const streamAuctionStatisticsStates = new Map<string, MockAuctionStatisticsState>();
 const streamBidSyncStates = new Map<string, MockBidSyncState>();
 const streamUniqueBidSyncStates = new Map<string, MockUniqueBidSyncState>();
+const streamUniqueBidAmountsStates = new Map<string, number[]>();
 const streamItemSyncStates = new Map<string, ItemSyncPayload>();
 const winnerAnnouncementTimers = new Map<string, number>();
 
@@ -169,15 +170,12 @@ const broadcastToDestination = (destination: string, payload: unknown) => {
       return;
     }
 
-    let sent = false;
-
     subscriptions.forEach((subscribedDestination, subscriptionId) => {
-      if (sent || subscribedDestination !== destination) {
+      if (subscribedDestination !== destination) {
         return;
       }
 
       client.send(serializeFrame(createMessageFrame(subscriptionId, destination, payload)));
-      sent = true;
     });
   });
 };
@@ -202,7 +200,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '고려시대 12세기 상감청자 매병으로, 운학문(구름과 학) 무늬가 정교하게 시문되어 있습니다.',
       bidUnit: 10000,
       auctionTime: 30,
-      images: ['https://picsum.photos/seed/101a/400/400', 'https://picsum.photos/seed/101b/400/400', 'https://picsum.photos/seed/101c/400/400'],
+      images: [
+        'https://picsum.photos/seed/101a/400/400',
+        'https://picsum.photos/seed/101b/400/400',
+        'https://picsum.photos/seed/101c/400/400',
+      ],
     },
     {
       auctionId: 102,
@@ -216,7 +218,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '칠보문 투각 기법이 적용된 고려청자 향로입니다.',
       bidUnit: 5000,
       auctionTime: 30,
-      images: ['https://picsum.photos/seed/102a/400/400', 'https://picsum.photos/seed/102b/400/400', 'https://picsum.photos/seed/102c/400/400'],
+      images: [
+        'https://picsum.photos/seed/102a/400/400',
+        'https://picsum.photos/seed/102b/400/400',
+        'https://picsum.photos/seed/102c/400/400',
+      ],
     },
     {
       auctionId: 103,
@@ -230,7 +236,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '조선 후기 백자 달항아리로 둥근 형태가 특징입니다.',
       bidUnit: 5000,
       auctionTime: 60,
-      images: ['https://picsum.photos/seed/103a/400/400', 'https://picsum.photos/seed/103b/400/400', 'https://picsum.photos/seed/103c/400/400'],
+      images: [
+        'https://picsum.photos/seed/103a/400/400',
+        'https://picsum.photos/seed/103b/400/400',
+        'https://picsum.photos/seed/103c/400/400',
+      ],
     },
     {
       auctionId: 104,
@@ -244,7 +254,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '분청사기에 철화 기법으로 물고기 문양을 그린 장군입니다.',
       bidUnit: 3000,
       auctionTime: 30,
-      images: ['https://picsum.photos/seed/104a/400/400', 'https://picsum.photos/seed/104b/400/400', 'https://picsum.photos/seed/104c/400/400'],
+      images: [
+        'https://picsum.photos/seed/104a/400/400',
+        'https://picsum.photos/seed/104b/400/400',
+        'https://picsum.photos/seed/104c/400/400',
+      ],
     },
     {
       auctionId: 105,
@@ -258,7 +272,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '전통 나전칠기 기법으로 제작된 보석함입니다.',
       bidUnit: 10000,
       auctionTime: 60,
-      images: ['https://picsum.photos/seed/105a/400/400', 'https://picsum.photos/seed/105b/400/400', 'https://picsum.photos/seed/105c/400/400'],
+      images: [
+        'https://picsum.photos/seed/105a/400/400',
+        'https://picsum.photos/seed/105b/400/400',
+        'https://picsum.photos/seed/105c/400/400',
+      ],
     },
     {
       auctionId: 106,
@@ -272,7 +290,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '조선시대 청화백자로 용 문양이 힘차게 그려져 있습니다.',
       bidUnit: 5000,
       auctionTime: 30,
-      images: ['https://picsum.photos/seed/106a/400/400', 'https://picsum.photos/seed/106b/400/400', 'https://picsum.photos/seed/106c/400/400'],
+      images: [
+        'https://picsum.photos/seed/106a/400/400',
+        'https://picsum.photos/seed/106b/400/400',
+        'https://picsum.photos/seed/106c/400/400',
+      ],
     },
     {
       auctionId: 107,
@@ -286,7 +308,11 @@ const createDefaultItemSyncPayload = (): ItemSyncPayload => ({
       description: '삼국시대 금동 반가사유상 재현품입니다.',
       bidUnit: 20000,
       auctionTime: 60,
-      images: ['https://picsum.photos/seed/107a/400/400', 'https://picsum.photos/seed/107b/400/400', 'https://picsum.photos/seed/107c/400/400'],
+      images: [
+        'https://picsum.photos/seed/107a/400/400',
+        'https://picsum.photos/seed/107b/400/400',
+        'https://picsum.photos/seed/107c/400/400',
+      ],
     },
   ],
 });
@@ -387,6 +413,29 @@ const completeLiveItem = (streamId: string, finalPrice: number) => {
           ...item,
           auctionStatus: 'SOLD',
           finalPrice,
+        };
+      }
+
+      return item;
+    }),
+  };
+
+  streamItemSyncStates.set(streamId, nextPayload);
+  return nextPayload;
+};
+
+const completeUniqueLiveItem = (streamId: string, isWon: boolean, winnerPrice: number | null) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? getInitialItemSyncPayload(streamId);
+  let completed = false;
+
+  const nextPayload: ItemSyncPayload = {
+    items: itemSyncPayload.items.map((item) => {
+      if (!completed && item.auctionStatus === 'LIVE') {
+        completed = true;
+        return {
+          ...item,
+          auctionStatus: isWon ? 'SOLD' : 'UNSOLD',
+          finalPrice: isWon ? winnerPrice : null,
         };
       }
 
@@ -575,6 +624,63 @@ const scheduleWinnerAnnouncement = (streamId: string) => {
   winnerAnnouncementTimers.set(streamId, winnerAnnouncementTimer);
 };
 
+const scheduleUniqueAuctionEnd = (streamId: string) => {
+  clearWinnerAnnouncement(streamId);
+
+  const currentState = streamTimerStates.get(streamId);
+
+  if (!currentState) {
+    return;
+  }
+
+  const remainingMs = Math.max(0, currentState.startedAtMs + currentState.durationSeconds * 1000 - Date.now());
+  const winnerAnnouncementTimer = globalThis.setTimeout(() => {
+    const bidAmounts = streamUniqueBidAmountsStates.get(streamId) ?? [];
+    const priceCountMap = new Map<number, number>();
+
+    bidAmounts.forEach((amount) => {
+      priceCountMap.set(amount, (priceCountMap.get(amount) ?? 0) + 1);
+    });
+
+    const uniquePrices = [...priceCountMap.entries()]
+      .filter(([, count]) => count === 1)
+      .map(([price]) => price)
+      .sort((a, b) => b - a);
+    const winnerPrice = uniquePrices[0] ?? null;
+    const topDuplicates =
+      winnerPrice === null
+        ? [...priceCountMap.entries()]
+            .filter(([, count]) => count > 1)
+            .sort((a, b) => b[0] - a[0])
+            .slice(0, 3)
+            .map(([price, cnt]) => ({ price, cnt }))
+        : null;
+
+    broadcastToDestination(`/broadcast/streams/${streamId}`, {
+      eventType: 'UNIQUE_AUCTION_CALCULATING',
+      payload: null,
+    });
+
+    completeUniqueLiveItem(streamId, winnerPrice !== null, winnerPrice);
+    streamTimerStates.delete(streamId);
+    streamUniqueBidSyncStates.delete(streamId);
+    streamUniqueBidAmountsStates.delete(streamId);
+
+    broadcastToDestination(`/broadcast/streams/${streamId}`, {
+      eventType: 'UNIQUE_AUCTION_END',
+      payload: {
+        isWon: winnerPrice !== null,
+        winnerPrice,
+        topDuplicates,
+      },
+    });
+
+    winnerAnnouncementTimers.delete(streamId);
+  }, remainingMs);
+
+  winnerAnnouncementTimers.set(streamId, winnerAnnouncementTimer);
+};
+
 const handleAuctionStart = (destination: string, body: string) => {
   const streamId = getStreamIdFromDestination(destination);
   const payload = JSON.parse(body) as {
@@ -621,6 +727,7 @@ const handleAuctionStart = (destination: string, body: string) => {
       timer: createTimerPayload(state, nowMs),
     },
   });
+  broadcastAuctionComment(streamId, '경매가 시작되었습니다.');
 
   if (bidAmount > 0) {
     broadcastAuctionComment(streamId, `현재 최고 입찰가 ${bidAmount.toLocaleString('ko-KR')}원입니다!`);
@@ -661,7 +768,9 @@ const handleUniqueAuctionStart = (destination: string, body: string) => {
     },
     participantCount: 0,
   });
+  streamUniqueBidAmountsStates.set(streamId, []);
   activateNextReadyItem(streamId, auctionId);
+  scheduleUniqueAuctionEnd(streamId);
 
   broadcastToDestination(`/broadcast/streams/${streamId}`, {
     eventType: 'UNIQUE_AUCTION_START',
@@ -672,6 +781,44 @@ const handleUniqueAuctionStart = (destination: string, body: string) => {
         bidUnit,
       },
       timer: createTimerPayload(state, nowMs),
+    },
+  });
+  broadcastAuctionComment(streamId, '경매가 시작되었습니다.');
+};
+
+const handleUniqueBidPlace = (destination: string, body: string) => {
+  const streamId = getStreamIdFromDestination(destination);
+  const payload = JSON.parse(body) as {
+    payload?: {
+      amount?: number;
+    };
+  };
+  const amount = payload.payload?.amount ?? 0;
+  const currentAmounts = streamUniqueBidAmountsStates.get(streamId) ?? [];
+  const nextAmounts = amount > 0 ? [...currentAmounts, amount] : currentAmounts;
+
+  streamUniqueBidAmountsStates.set(streamId, nextAmounts);
+
+  const currentState = streamUniqueBidSyncStates.get(streamId);
+
+  if (currentState) {
+    streamUniqueBidSyncStates.set(streamId, {
+      ...currentState,
+      participantCount: nextAmounts.length,
+    });
+  }
+
+  broadcastToDestination(`/user/private/streams/${streamId}`, {
+    eventType: 'UNIQUE_BID_ACK',
+    payload: {
+      amount,
+    },
+  });
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'UNIQUE_AUCTION_STATS',
+    payload: {
+      participantCount: nextAmounts.length,
     },
   });
 };
@@ -779,8 +926,6 @@ const handleAuctionItemIntroduce = (destination: string, body: string) => {
     eventType: 'ITEM_INTRODUCE',
     payload: null,
   });
-
-  broadcastItemSync(streamId);
 };
 
 const handleUniqueAuctionItemIntroduce = (destination: string, body: string) => {
@@ -800,8 +945,6 @@ const handleUniqueAuctionItemIntroduce = (destination: string, body: string) => 
     eventType: 'UNIQUE_AUCTION_INTRODUCE',
     payload: null,
   });
-
-  broadcastItemSync(streamId);
 };
 
 const handleChatMessage = (destination: string, body: string) => {
@@ -874,6 +1017,10 @@ const handleSendFrame = (frame: StompFrame) => {
 
     if (body.eventType === 'BID_PLACED') {
       handleBidPlace(frame.headers.destination, frame.body);
+    }
+
+    if (body.eventType === 'UNIQUE_BID_PLACE') {
+      handleUniqueBidPlace(frame.headers.destination, frame.body);
     }
 
     if (body.eventType === 'BID_SYNC') {
