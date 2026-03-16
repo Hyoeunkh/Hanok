@@ -78,9 +78,7 @@ public class SecurityConfig {
                 // URL별 인증 규칙
                 .authorizeHttpRequests(
                         auth ->
-                                auth
-                                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
-                                        .requestMatchers(
+                                auth.requestMatchers(
                                                 "/api/v1/auth/**",
                                                 "/api/v1/streams/**",
                                                 "/api/v1/sellers/*/profile",
