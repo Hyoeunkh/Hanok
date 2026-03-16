@@ -4,7 +4,7 @@ import Button from '@/components/common/Button';
 import { usePostItem } from '@/api/hooks/usePostItem';
 import { usePatchItem } from '@/api/hooks/usePatchItem';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
-import type { Product } from '@/types';
+import type { ItemAuctionType, Product } from '@/types';
 
 interface ProductRegistrationModalProps {
   isOpen: boolean;
@@ -14,10 +14,16 @@ interface ProductRegistrationModalProps {
 }
 
 const inputClass = 'w-full h-12 bg-[#0B0C10] border border-[#1C1C1E] rounded-lg text-white text-sm px-4 outline-none';
-const selectClass = `${inputClass} pr-10 cursor-pointer`;
+const selectArrowStyle = { backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")` };
+const selectClass = `${inputClass} pr-10 cursor-pointer appearance-none bg-no-repeat bg-[position:right_14px_center]`;
 const labelClass = 'block text-white text-sm font-semibold mb-2';
 
-export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, initialData }: ProductRegistrationModalProps) {
+export default function ProductRegistrationModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  initialData,
+}: ProductRegistrationModalProps) {
   const { mutateAsync: createItem, isPending: isCreating } = usePostItem();
   const { mutateAsync: updateItem, isPending: isUpdating } = usePatchItem();
 
@@ -30,7 +36,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
   const [startPrice, setStartPrice] = useState('');
   const [bidUnit, setBidUnit] = useState('');
   const [auctionDuration, setAuctionDuration] = useState('');
-  const [auctionType, setAuctionType] = useState('');
+  const [auctionType, setAuctionType] = useState<ItemAuctionType | ''>('');
   const [hashtags, setHashtags] = useState('');
 
   const [images, setImages] = useState<File[]>([]);
@@ -45,7 +51,9 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         setName(initialData.name);
         setDescription('');
 
-        const matchedCategory = MAIN_CATEGORY_ITEMS.find(c => c.label === initialData.category || c.id === initialData.category);
+        const matchedCategory = MAIN_CATEGORY_ITEMS.find(
+          (c) => c.label === initialData.category || c.id === initialData.category,
+        );
         setCategory(matchedCategory ? matchedCategory.id : '');
 
         setItemCondition(initialData.itemCondition || '');
@@ -53,7 +61,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         setStartPrice(initialData.startPrice.toString());
         setBidUnit('');
         setAuctionDuration('');
-        setAuctionType('');
+        setAuctionType(initialData.auctionType);
         setHashtags('');
 
         if (initialData.images && initialData.images.length > 0) {
@@ -62,9 +70,16 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           setExistingImages([]);
         }
       } else {
-        setName(''); setDescription(''); setCategory(''); setItemCondition('');
-        setStartPrice(''); setBidUnit(''); setAuctionDuration(''); setAuctionType('');
-        setHashtags(''); setExistingImages([]);
+        setName('');
+        setDescription('');
+        setCategory('');
+        setItemCondition('');
+        setStartPrice('');
+        setBidUnit('');
+        setAuctionDuration('');
+        setAuctionType('');
+        setHashtags('');
+        setExistingImages([]);
       }
       setError('');
     }
@@ -79,26 +94,32 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         setError('이미지는 최대 3장까지 업로드 가능합니다.');
         return;
       }
-      setImages(prev => [...prev, ...newFiles]);
+      setImages((prev) => [...prev, ...newFiles]);
       setError('');
     }
   };
 
   const removeNewImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeExistingImage = (index: number) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
-    if (!name) { setError('상품명을 입력해주세요'); return; }
-    if (!category) { setError('카테고리를 선택해주세요'); return; }
+    if (!name) {
+      setError('상품명을 입력해주세요');
+      return;
+    }
+    if (!category) {
+      setError('카테고리를 선택해주세요');
+      return;
+    }
     const parsedTags = hashtags
       .split(/\s+/)
-      .map(tag => tag.replace(/^#/, '').trim())
-      .filter(tag => tag.length > 0);
+      .map((tag) => tag.replace(/^#/, '').trim())
+      .filter((tag) => tag.length > 0);
 
     try {
       if (initialData) {
@@ -114,7 +135,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
             itemCondition,
             tags: parsedTags,
             images: images.length > 0 ? images : undefined,
-          }
+          },
         });
         console.log('상품 수정 완료');
       } else {
@@ -126,7 +147,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           bidUnit: Number(bidUnit.replace(/\D/g, '')) || 1000,
           category,
           itemCondition,
-          auctionType: auctionType || 'ENGLISH',
+          auctionType: auctionType || 'BOTTOM_UP',
           tags: parsedTags,
           images: images.length > 0 ? images : undefined,
         });
@@ -150,9 +171,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           <FaTimes size={20} />
         </button>
 
-        <h2 className="text-white text-xl font-bold mt-0 mb-6">
-          {initialData ? '상품 정보 수정' : '새 상품 등록'}
-        </h2>
+        <h2 className="text-white text-xl font-bold mt-0 mb-6">{initialData ? '상품 정보 수정' : '새 상품 등록'}</h2>
 
         <input
           type="file"
@@ -184,7 +203,11 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
 
               {images.map((file, idx) => (
                 <div key={`new-${idx}`} className="relative w-[120px] h-[120px] shrink-0">
-                  <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover rounded-lg" />
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="preview"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
                   <button
                     onClick={() => removeNewImage(idx)}
                     className="absolute top-1 right-1 bg-black/50 text-white border-none rounded-full w-6 h-6 cursor-pointer flex items-center justify-center"
@@ -218,7 +241,10 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
             className={inputClass}
             placeholder="상품명을 입력하세요(최대 20자)"
             value={name}
-            onChange={(e) => { setName(e.target.value); setError(''); }}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError('');
+            }}
             maxLength={20}
           />
         </div>
@@ -226,7 +252,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>카테고리</label>
-            <select className={selectClass} value={category} onChange={(e) => { setCategory(e.target.value); setError(''); }} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
+            <select className={selectClass} value={category} onChange={(e) => { setCategory(e.target.value); setError(''); }} style={selectArrowStyle}>
               <option value="" disabled hidden>선택</option>
               {MAIN_CATEGORY_ITEMS.map(item => (
                 <option key={item.id} value={item.id}>{item.label}</option>
@@ -235,7 +261,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
           <div className="flex-1">
             <label className={labelClass}>물품 상태</label>
-            <select className={selectClass} value={itemCondition} onChange={(e) => setItemCondition(e.target.value)} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
+            <select className={selectClass} value={itemCondition} onChange={(e) => setItemCondition(e.target.value)} style={selectArrowStyle}>
               <option value="" disabled hidden>선택</option>
               <option value="BRAND_NEW">미개봉 새제품</option>
               <option value="OPEN_BOX">개봉된 새상품</option>
@@ -269,7 +295,7 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>경매시간</label>
-            <select className={selectClass} value={auctionDuration} onChange={(e) => setAuctionDuration(e.target.value)} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
+            <select className={selectClass} value={auctionDuration} onChange={(e) => setAuctionDuration(e.target.value)} style={selectArrowStyle}>
               <option value="" disabled hidden>경매시간을 선택하세요</option>
               <option value="10">10초</option>
               <option value="30">30초</option>
@@ -278,10 +304,10 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
           </div>
           <div className="flex-1">
             <label className={labelClass}>경매방식</label>
-            <select className={selectClass} value={auctionType} onChange={(e) => setAuctionType(e.target.value)} style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
+            <select className={selectClass} value={auctionType} onChange={(e) => setAuctionType(e.target.value as ItemAuctionType | '')} style={selectArrowStyle}>
               <option value="" disabled hidden>경매방식을 선택하세요</option>
-              <option value="ENGLISH">영국식 오름차순</option>
-              <option value="DUTCH">내림차순</option>
+              <option value="BOTTOM_UP">상향식</option>
+              <option value="UNIQUE">유일최고가</option>
             </select>
           </div>
         </div>
@@ -292,7 +318,9 @@ export default function ProductRegistrationModal({ isOpen, onClose, onSuccess, i
             className={`${inputClass} !h-[120px] pt-4 resize-none`}
             placeholder="상품의 상태 정보를 상세히 적어주세요 (최대 50자)"
             value={description}
-            onChange={(e) => { if (e.target.value.length <= 50) setDescription(e.target.value); }}
+            onChange={(e) => {
+              if (e.target.value.length <= 50) setDescription(e.target.value);
+            }}
             maxLength={50}
           />
         </div>
