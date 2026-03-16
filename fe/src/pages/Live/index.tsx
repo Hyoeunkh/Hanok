@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { usePostStartStream } from '@/api/hooks/usePostStartStream';
 import { useGetStreamEnter } from '@/api/hooks/useGetStreamEnter';
@@ -10,6 +10,8 @@ import UniqueAuctionResultModal from '@/components/Live/Auction/Buyer/UniqueAuct
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
 import AuctionCommentToast from '@/components/Live/Stream/AuctionCommentToast';
 import ControlBar from '@/components/Live/Stream/ControlBar';
+import StreamDisconnected from '@/components/Live/Stream/Streamdisconnected';
+import StreamEnded from '@/components/Live/Stream/StreamEnded';
 import SellerGuideOverlay from '@/components/Live/Stream/SellerGuideOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
@@ -25,6 +27,7 @@ import type {
   PrivateStreamEvent,
   StompErrorPayload,
   StreamRequest,
+  StreamState,
   StreamEnterResponse,
   StreamTimerPayload,
   SyncedAuctionTimer,
@@ -96,6 +99,21 @@ const isUniqueAuctionEndEvent = (
 ): event is Extract<BroadcastStreamEvent, { eventType: 'UNIQUE_AUCTION_END' }> =>
   event.eventType === 'UNIQUE_AUCTION_END';
 
+const isStreamPausedEvent = (
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'STREAM_PAUSED' }> =>
+  event.eventType === 'STREAM_PAUSED' || ('event' in event && event.event === 'stream:paused');
+
+const isStreamResumedEvent = (
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'STREAM_RESUMED' }> =>
+  event.eventType === 'STREAM_RESUMED' || ('event' in event && event.event === 'stream:resumed');
+
+const isStreamFailedEvent = (
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'STREAM_FAILED' }> =>
+  event.eventType === 'STREAM_FAILED' || ('event' in event && event.event === 'stream:failed');
+
 const isLegacyUniqueAuctionEndEvent = (event: {
   eventType: string;
   payload?: unknown;
@@ -125,6 +143,7 @@ const createSyncedTimer = (timer: StreamTimerPayload): SyncedAuctionTimer => ({
 });
 
 export default function LivePage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const location = useLocation();
@@ -146,6 +165,7 @@ export default function LivePage() {
   const [bidSync, setBidSync] = useState<BidSyncPayload | null>(null);
   const [uniqueBidSync, setUniqueBidSync] = useState<UniqueBidSyncPayload | null>(null);
   const [itemSync, setItemSync] = useState<ItemSyncPayload | null>(null);
+  const [streamState, setStreamState] = useState<StreamState>('live');
   const [uniqueAuctionResult, setUniqueAuctionResult] = useState<{
     itemName: string;
     payload: UniqueAuctionEndPayload;
@@ -322,6 +342,7 @@ export default function LivePage() {
 
     const handleBroadcastEvent = (event: BroadcastStreamEvent) => {
       if (isAuctionStartEvent(event) && event.payload?.timer) {
+        setStreamState('live');
         setTimer(createSyncedTimer(event.payload.timer));
         setUniqueBidSync(null);
         setUniqueAuctionResult(null);
@@ -340,6 +361,7 @@ export default function LivePage() {
       }
 
       if (isUniqueAuctionStartEvent(event) && event.payload?.bidRange && event.payload?.timer) {
+        setStreamState('live');
         setBidSync(null);
         setAuctionStatistics(null);
         setUniqueAuctionResult(null);
@@ -390,6 +412,25 @@ export default function LivePage() {
           event.payload?.items.find((item) => item.auctionStatus === 'INTRODUCING') ??
           null;
         void requestActiveAuctionSync(nextActiveItem);
+        return;
+      }
+
+      if (isStreamPausedEvent(event)) {
+        setStreamState('disconnected');
+        setTimer(null);
+        return;
+      }
+
+      if (isStreamResumedEvent(event)) {
+        setStreamState('live');
+        void requestItemSync();
+        return;
+      }
+
+      if (isStreamFailedEvent(event)) {
+        setStreamState('ended');
+        setLiveStateOverride(false);
+        setTimer(null);
         return;
       }
 
@@ -605,6 +646,21 @@ export default function LivePage() {
               itemName={uniqueAuctionResult.itemName}
               payload={uniqueAuctionResult.payload}
               onClose={handleUniqueAuctionResultClose}
+            />
+          )}
+          {streamState === 'disconnected' && (
+            <StreamDisconnected
+              initialSeconds={30}
+              onTimeout={() => {
+                setStreamState('ended');
+              }}
+            />
+          )}
+          {streamState === 'ended' && (
+            <StreamEnded
+              onClose={() => {
+                navigate(-1);
+              }}
             />
           )}
         </div>

@@ -264,6 +264,18 @@ export type ScheduledStreamsResponse = {
 
 export type BroadcastStreamEvent =
   | {
+      eventType: 'STREAM_PAUSED';
+      payload: null;
+    }
+  | {
+      eventType: 'STREAM_RESUMED';
+      payload: null;
+    }
+  | {
+      eventType: 'STREAM_FAILED';
+      payload: null;
+    }
+  | {
       eventType: 'AUCTION_START';
       payload?: {
         item?: {
@@ -332,7 +344,8 @@ export type BroadcastStreamEvent =
       payload: null;
     }
   | {
-      eventType: string;
+      eventType?: string;
+      event?: string;
       payload?: unknown;
     };
 

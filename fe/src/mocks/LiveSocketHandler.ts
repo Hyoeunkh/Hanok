@@ -30,6 +30,10 @@ type MockUniqueBidSyncState = {
   };
   participantCount: number;
 };
+type MockPausedTimerState = {
+  remainingSeconds: number;
+  finalPrice: number;
+};
 
 const AUCTION_DURATION_SECONDS = 10;
 const SNIPING_THRESHOLD_SECONDS = 5;
@@ -60,6 +64,7 @@ const streamUniqueBidSyncStates = new Map<string, MockUniqueBidSyncState>();
 const streamUniqueBidAmountsStates = new Map<string, number[]>();
 const streamItemSyncStates = new Map<string, ItemSyncPayload>();
 const winnerAnnouncementTimers = new Map<string, number>();
+const streamPausedTimerStates = new Map<string, MockPausedTimerState>();
 
 const createTimestamp = (ms: number) => new Date(ms).toISOString();
 
@@ -336,6 +341,72 @@ const clearWinnerAnnouncement = (streamId: string) => {
 
   globalThis.clearTimeout(winnerAnnouncementTimer);
   winnerAnnouncementTimers.delete(streamId);
+};
+
+const getActiveLiveItem = (streamId: string) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? getInitialItemSyncPayload(streamId);
+  return itemSyncPayload.items.find((item) => item.auctionStatus === 'LIVE') ?? null;
+};
+
+const pauseStreamForReconnect = (streamId: string) => {
+  const currentState = streamTimerStates.get(streamId);
+
+  if (currentState) {
+    const remainingSeconds = Math.max(
+      1,
+      Math.ceil((currentState.startedAtMs + currentState.durationSeconds * 1000 - Date.now()) / 1000),
+    );
+
+    streamPausedTimerStates.set(streamId, {
+      remainingSeconds,
+      finalPrice: currentState.finalPrice,
+    });
+  }
+
+  clearWinnerAnnouncement(streamId);
+  streamTimerStates.delete(streamId);
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'STREAM_PAUSED',
+    payload: null,
+  });
+};
+
+const resumeStreamAfterReconnect = (streamId: string) => {
+  const pausedState = streamPausedTimerStates.get(streamId);
+
+  if (pausedState) {
+    streamTimerStates.set(streamId, {
+      durationSeconds: pausedState.remainingSeconds,
+      startedAtMs: Date.now(),
+      finalPrice: pausedState.finalPrice,
+    });
+
+    const activeItem = getActiveLiveItem(streamId);
+    if (activeItem?.auctionType === 'UNIQUE_TOP') {
+      scheduleUniqueAuctionEnd(streamId);
+    } else {
+      scheduleWinnerAnnouncement(streamId);
+    }
+
+    streamPausedTimerStates.delete(streamId);
+  }
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'STREAM_RESUMED',
+    payload: null,
+  });
+};
+
+const failStreamAfterReconnectTimeout = (streamId: string) => {
+  clearWinnerAnnouncement(streamId);
+  streamTimerStates.delete(streamId);
+  streamPausedTimerStates.delete(streamId);
+
+  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+    eventType: 'STREAM_FAILED',
+    payload: null,
+  });
 };
 
 const activateNextReadyItem = (streamId: string, targetAuctionId?: number) => {
@@ -1006,6 +1077,21 @@ const handleChatMessage = (destination: string, body: string) => {
     return;
   }
 
+  if (message === '/pause') {
+    pauseStreamForReconnect(streamId);
+    return;
+  }
+
+  if (message === '/resume') {
+    resumeStreamAfterReconnect(streamId);
+    return;
+  }
+
+  if (message === '/fail') {
+    failStreamAfterReconnectTimeout(streamId);
+    return;
+  }
+
   broadcastChatEvent(streamId, {
     eventType: 'CHAT_MESSAGE',
     payload: {
@@ -1095,6 +1181,18 @@ const handleSendFrame = (frame: StompFrame) => {
 
     if (body.eventType === 'MACRO_TEMPLATE') {
       handleMacroTemplate(frame.headers.destination, frame.body);
+    }
+
+    if (body.eventType === 'STREAM_PAUSED') {
+      pauseStreamForReconnect(getStreamIdFromDestination(frame.headers.destination));
+    }
+
+    if (body.eventType === 'STREAM_RESUMED') {
+      resumeStreamAfterReconnect(getStreamIdFromDestination(frame.headers.destination));
+    }
+
+    if (body.eventType === 'STREAM_FAILED') {
+      failStreamAfterReconnectTimeout(getStreamIdFromDestination(frame.headers.destination));
     }
   }
 };
