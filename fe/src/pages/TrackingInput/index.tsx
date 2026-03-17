@@ -6,7 +6,7 @@ import { useToast } from '@/components/common/Toast';
 import SideBar from '@/components/common/layouts/SideBar';
 import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 
-import { useGetEscrows } from '@/api/hooks/useGetEscrows';
+import { useGetEscrowsSeller } from '@/api/hooks/useGetEscrowsSeller';
 import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
 import { usePostTrackingInfo } from '@/api/hooks/usePostTrackingInfo';
 import { usePostCancelEscrow } from '@/api/hooks/usePostCancelEscrow';
@@ -75,7 +75,7 @@ function CancelModal({
 
 export default function TrackingInput() {
   const [activeMenu, setActiveMenu] = useState('delivery');
-  const { data: escrowsResponse } = useGetEscrows();
+  const { data: escrowsResponse } = useGetEscrowsSeller();
   const items = escrowsResponse?.data || [];
 
   const { mutate: submitTracking } = usePostTrackingInfo();
@@ -88,7 +88,7 @@ export default function TrackingInput() {
   const currentSelectedItem = items.find((i) => String(i.escrowId) === selectedItemId);
   const isTrackingSubmitted =
     currentSelectedItem &&
-    (currentSelectedItem.escrowState === 'INVOICE_SUBMITTED' || currentSelectedItem.escrowState === 'COMPLETED');
+    (currentSelectedItem.escrowStatus === 'INVOICE_SUBMITTED' || currentSelectedItem.escrowStatus === 'COMPLETED');
 
   const { data: detailResponse } = useGetEscrowDetail(selectedItemId);
   const selectedItemDetail = detailResponse?.data;
@@ -98,11 +98,11 @@ export default function TrackingInput() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showCourierModal, setShowCourierModal] = useState(false);
 
-  const pendingItems = items.filter((item) => item.escrowState === 'DEPOSITED');
+  const pendingItems = items.filter((item) => item.escrowStatus === 'DEPOSITED');
   const completedItems = items.filter(
-    (item) => item.escrowState === 'INVOICE_SUBMITTED' || item.escrowState === 'COMPLETED',
+    (item) => item.escrowStatus === 'INVOICE_SUBMITTED' || item.escrowStatus === 'COMPLETED',
   );
-  const cancelledItems = items.filter((item) => item.escrowState === 'CANCELLED');
+  const cancelledItems = items.filter((item) => item.escrowStatus === 'CANCELLED');
 
   const handleSelectItem = (id: string | number | undefined) => {
     if (!id) return;
@@ -171,8 +171,8 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-[#2C2C2E] rounded-xl overflow-hidden shrink-0">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.itemName} className="w-full h-full object-cover" />
+                        {item.image ? (
+                          <img src={item.image} alt={item.itemName} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[#8E8E93] text-xs">
                             이미지 준비중
@@ -217,8 +217,8 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-[#2C2C2E] rounded-xl overflow-hidden shrink-0">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.itemName} className="w-full h-full object-cover" />
+                        {item.image ? (
+                          <img src={item.image} alt={item.itemName} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[#8E8E93] text-xs">
                             이미지 준비중
@@ -227,11 +227,11 @@ export default function TrackingInput() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-[#CEAF82] text-xs font-bold">
-                          {item.escrowState === 'INVOICE_SUBMITTED'
+                          {item.escrowStatus === 'INVOICE_SUBMITTED'
                             ? '배송중'
-                            : item.escrowState === 'COMPLETED'
+                            : item.escrowStatus === 'COMPLETED'
                               ? '배송 완료'
-                              : item.escrowState}
+                              : item.escrowStatus}
                         </span>
                         <span className="text-lg font-bold">{item.itemName}</span>
                         <span className="text-[#AEAEB2] text-[13px]">{formatDate(item.createdAt)}</span>
@@ -265,9 +265,9 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-[#2C2C2E] rounded-xl overflow-hidden shrink-0">
-                        {item.imageUrl ? (
+                        {item.image ? (
                           <img
-                            src={item.imageUrl}
+                            src={item.image}
                             alt={item.itemName}
                             className="w-full h-full object-cover grayscale"
                           />

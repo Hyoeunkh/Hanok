@@ -429,7 +429,7 @@ export default function ProfilePage() {
             onClick={() => setActiveTab('sales')}
           >
             <HistoryIcon />
-            낙찰 이력
+            판매 내역
           </button>
           )}
         </div>
@@ -511,7 +511,7 @@ export default function ProfilePage() {
                 const ui = getEscrowStateUI(sale.escrowStatus);
                 return (
                   <div
-                    key={sale.escrowId}
+                    key={sale.itemName}
                     className={`flex py-4 items-center justify-between ${index > 0 ? 'border-t border-[#1a1a26] mt-4 pt-8' : ''}`}
                   >
                     <div className="flex items-center gap-6 flex-1">
