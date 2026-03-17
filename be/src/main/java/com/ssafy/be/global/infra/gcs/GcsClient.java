@@ -38,6 +38,8 @@ public class GcsClient {
     public void deleteImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) return;
 
+        if (imageUrl.contains("default-profile")) return;
+
         String fileName = imageUrl.replace(buildPublicUrl(""), "");
         storage.delete(BlobId.of(bucketName, fileName));
     }
