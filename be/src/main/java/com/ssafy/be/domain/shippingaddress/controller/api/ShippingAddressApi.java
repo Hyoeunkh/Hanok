@@ -12,14 +12,14 @@ import java.util.List;
 public interface ShippingAddressApi {
 
     @Operation(summary = "배송지 추가")
-    ResponseEntity<ShippingAddressResponse> addAddress(Long userId, ShippingAddressRequest request);
+    ResponseEntity<ShippingAddressResponse> addAddress(String principal, ShippingAddressRequest request);
 
     @Operation(summary = "배송지 목록 조회")
-    ResponseEntity<List<ShippingAddressResponse>> getAddresses(Long userId);
+    ResponseEntity<List<ShippingAddressResponse>> getAddresses(String principal);
 
     @Operation(summary = "배송지 수정")
-    ResponseEntity<ShippingAddressResponse> updateAddress(Long userId, Long addressId, ShippingAddressRequest request);
+    ResponseEntity<ShippingAddressResponse> updateAddress(String principal, Long addressId, ShippingAddressRequest request);
 
     @Operation(summary = "배송지 삭제")
-    ResponseEntity<Void> deleteAddress(Long userId, Long addressId);
+    ResponseEntity<Void> deleteAddress(String principal, Long addressId);
 }

@@ -1,6 +1,5 @@
 package com.ssafy.be.domain.item.controller;
 
-import com.ssafy.be.domain.item.controller.api.ItemApi;
 import com.ssafy.be.domain.item.dto.request.ItemRegisterRequest;
 import com.ssafy.be.domain.item.dto.request.ItemUpdateRequest;
 import com.ssafy.be.domain.item.dto.response.ItemRegisterResponse;
@@ -21,40 +20,40 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/items")
 @RequiredArgsConstructor
-public class ItemController implements ItemApi {
+public class ItemController {
 
     private final ItemService itemService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ItemRegisterResponse> register(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String principal,
             @RequestPart("request") @Valid ItemRegisterRequest request,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(itemService.register(userId, request, images));
+                .body(itemService.register(Long.parseLong(principal), request, images));
     }
 
     @GetMapping
     public ResponseEntity<List<ItemSummaryResponse>> getItems(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String principal,
             @RequestParam(required = false) ItemStatus status) {
-        return ResponseEntity.ok(itemService.getItems(userId, status));
+        return ResponseEntity.ok(itemService.getItems(Long.parseLong(principal), status));
     }
 
     @PatchMapping(value = "/{itemId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ItemRegisterResponse> updateItem(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String principal,
             @PathVariable Long itemId,
             @RequestPart("request") @Valid ItemUpdateRequest request,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        return ResponseEntity.ok(itemService.updateItem(userId, itemId, request, images));
+        return ResponseEntity.ok(itemService.updateItem(Long.parseLong(principal), itemId, request, images));
     }
 
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> deleteItem(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String principal,
             @PathVariable Long itemId) {
-        itemService.deleteItem(userId, itemId);
+        itemService.deleteItem(Long.parseLong(principal), itemId);
         return ResponseEntity.noContent().build();
     }
 }
