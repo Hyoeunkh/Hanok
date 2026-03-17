@@ -38,7 +38,6 @@ export type RegisterSellerPayload = {
 export type RegisterSellerResponse = {
   sellerId: number;
   nickname: string;
-  grade: string;
 };
 
 export type SellerStatusResponse = {
@@ -100,6 +99,15 @@ export type PostSellerNoticeResponse = {
   content: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type PatchSellerProfilePayload = {
+  nickname?: string;
+  profileImage?: string;
+  intro?: string;
+  instaUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
 };
 
 export type PatchSellerNoticePayload = {

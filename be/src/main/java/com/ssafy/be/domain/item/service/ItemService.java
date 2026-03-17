@@ -23,13 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ssafy.be.domain.auction.entity.AuctionType;
-import com.ssafy.be.domain.item.entity.Tag;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +58,6 @@ public class ItemService {
 
         auctionRepository.save(Auction.builder()
                 .auctionStatus(AuctionStatus.READY)
-                .auctionType(request.auctionType())
                 .item(saved)
                 .build());
 
@@ -88,6 +85,7 @@ public class ItemService {
                 .auctionDuration(request.auctionDuration())
                 .status(ItemStatus.READY)
                 .itemCondition(request.itemCondition())
+                .auctionType(request.auctionType())
                 .seller(seller)
                 .build();
     }
@@ -101,6 +99,7 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public List<ItemSummaryResponse> getItems(Long userId, ItemStatus status) {
+        //
         Seller seller = sellerRepository.findByUserId(userId)
                 .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
@@ -108,30 +107,21 @@ public class ItemService {
                 ? itemRepository.findBySellerIdAndStatus(seller.getId(), status)
                 : itemRepository.findBySellerId(seller.getId());
 
-        List<Long> itemIds = items.stream()
-                .map(Item::getId)
-                .toList();
-
-        Map<Long, AuctionType> auctionTypeMap = auctionRepository.findByItemIdIn(itemIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        a -> a.getItem().getId(),
-                        Auction::getAuctionType
-                ));
-
         return items.stream()
                 .map(i -> new ItemSummaryResponse(
                         i.getId(),
                         i.getName(),
                         i.getDescription(),
                         i.getTags().stream().map(Tag::getName).toList(),
-                        i.getImage1(),
+                        Stream.of(i.getImage1(), i.getImage2(), i.getImage3())  // 변경
+                                .filter(Objects::nonNull)
+                                .toList(),
                         i.getStartPrice(),
                         i.getBidUnit(),
                         i.getAuctionDuration(),
                         i.getItemCondition(),
                         i.getCategory(),
-                        auctionTypeMap.get(i.getId()),
+                        i.getAuctionType(),
                         i.getStatus(),
                         i.getCreatedAt()
                 ))

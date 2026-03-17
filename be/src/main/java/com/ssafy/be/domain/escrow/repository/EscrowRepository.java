@@ -1,6 +1,7 @@
 package com.ssafy.be.domain.escrow.repository;
 
 import com.ssafy.be.domain.escrow.entity.Escrow;
+import com.ssafy.be.domain.escrow.entity.EscrowStatus;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +25,15 @@ public interface EscrowRepository extends JpaRepository<Escrow, Long> {
             select e from Escrow e
             join fetch e.auction a
             join fetch a.item
+            where e.buyer.id = :userId
+            order by e.createdAt desc
+            """)
+    List<Escrow> findAllByBuyerUserId(@Param("userId") Long userId);
+
+    @Query("""
+            select e from Escrow e
+            join fetch e.auction a
+            join fetch a.item
             join fetch e.shippingAddress
             join fetch e.seller s
             join fetch s.user u
@@ -39,5 +49,7 @@ public interface EscrowRepository extends JpaRepository<Escrow, Long> {
             where e.seller.id = :sellerId
             """)
     List<Escrow> findBySellerId(Long sellerId);
+
+    long countBySellerIdAndEscrowStatus(Long sellerId, EscrowStatus status);
 }
 

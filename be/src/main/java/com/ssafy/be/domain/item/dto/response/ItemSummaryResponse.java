@@ -1,6 +1,6 @@
 package com.ssafy.be.domain.item.dto.response;
 
-import com.ssafy.be.domain.auction.entity.AuctionType;
+import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.item.entity.ItemCondition;
 import com.ssafy.be.domain.item.entity.ItemStatus;
@@ -13,7 +13,7 @@ public record ItemSummaryResponse(
         String name,
         String description,
         List<String> tags,
-        String image1,
+        List<String> images,
         Long startPrice,
         Long bidUnit,
         Integer auctionDuration,

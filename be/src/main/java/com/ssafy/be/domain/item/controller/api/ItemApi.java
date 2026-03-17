@@ -26,18 +26,18 @@ public interface ItemApi {
             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
             schema = @Schema(implementation = ItemRegisterSwaggerRequest.class)
     ))
-    ResponseEntity<ItemRegisterResponse> register(Long userId, ItemRegisterRequest request, List<MultipartFile> images);
+    ResponseEntity<ItemRegisterResponse> register(String userId, ItemRegisterRequest request, List<MultipartFile> images);
 
     @Operation(summary = "내 물품 목록 조회")
-    ResponseEntity<List<ItemSummaryResponse>> getItems(Long userId, ItemStatus status);
+    ResponseEntity<List<ItemSummaryResponse>> getItems(String userId, ItemStatus status);
 
     @Operation(summary = "물품 수정")
     @RequestBody(content = @Content(
             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
             schema = @Schema(implementation = ItemUpdateSwaggerRequest.class)
     ))
-    ResponseEntity<ItemRegisterResponse> updateItem(Long userId, Long itemId, ItemUpdateRequest request, List<MultipartFile> images);
+    ResponseEntity<ItemRegisterResponse> updateItem(String userId, Long itemId, ItemUpdateRequest request, List<MultipartFile> images);
 
     @Operation(summary = "물품 삭제")
-    ResponseEntity<Void> deleteItem(Long userId, Long itemId);
+    ResponseEntity<Void> deleteItem(String userId, Long itemId);
 }

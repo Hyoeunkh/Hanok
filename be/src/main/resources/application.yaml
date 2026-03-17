@@ -22,14 +22,23 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+
+      web:
+        pageable:
+          serialization-mode: via-dto
   #      password: ${REDIS_PASSWORD:}
   #      ssl:
   #        enabled: ${REDIS_SSL_ENABLED:false}
+  jpa:
+    open-in-view: false
 
   jackson:
     time-zone: Asia/Seoul
     serialization:
       write-dates-as-timestamps: false
+
+  flyway:
+    enabled: false
 
 jwt:
   secret: ${JWT_SECRET:}
@@ -59,7 +68,7 @@ portone:
       webhook: ${PORTONE_SECRET_WEBHOOK:} # 추후 운영 서버 도메인으로 웹훅 재등록 필요
 
 livekit:
-  url: ws://localhost:7880
+  url: ws://hanok-livekit:7880
   api-key: ${LIVEKIT_API_KEY:devkey}
   api-secret: ${LIVEKIT_API_SECRET:devsecretkeythatisatleast32characters}
 

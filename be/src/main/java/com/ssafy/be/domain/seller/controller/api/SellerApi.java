@@ -6,6 +6,7 @@ import com.ssafy.be.domain.seller.dto.request.SellerRegisterRequest;
 import com.ssafy.be.domain.seller.dto.response.BiznoVerifyResponse;
 import com.ssafy.be.domain.seller.dto.response.SellerProfileResponse;
 import com.ssafy.be.domain.seller.dto.response.SellerRegisterResponse;
+import com.ssafy.be.domain.seller.dto.response.SellerReputationResponse;
 import com.ssafy.be.global.common.response.ApiResponse;
 import com.ssafy.be.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,7 @@ public interface SellerApi {
             responseCode = "409",
             description = "이미 판매자로 등록된 사용자",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    ResponseEntity<SellerRegisterResponse> register(Long userId, SellerRegisterRequest request);
+    ResponseEntity<SellerRegisterResponse> register(String userId, SellerRegisterRequest request);
 
     @Operation(summary = "판매자 프로필 조회")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
@@ -60,4 +61,11 @@ public interface SellerApi {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/{sellerId}/sold-auctions")
     ResponseEntity<List<EscrowListResponse>> getAllSoldAuctions(@PathVariable Long sellerId);
+
+    @Operation(summary = "판매자 평판 조회", description = "본인 또는 관리자는 상세 정보 포함, 타인은 공개 정보만 반환")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
+    @GetMapping("/{sellerId}/reputation")
+    ResponseEntity<ApiResponse<SellerReputationResponse>> getReputation(
+            @PathVariable Long sellerId,
+            @AuthenticationPrincipal String principal);
 }
