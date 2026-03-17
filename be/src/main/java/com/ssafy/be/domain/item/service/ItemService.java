@@ -99,6 +99,7 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public List<ItemSummaryResponse> getItems(Long userId, ItemStatus status) {
+        //
         Seller seller = sellerRepository.findByUserId(userId)
                 .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
