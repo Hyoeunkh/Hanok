@@ -37,10 +37,21 @@ let mockNoticeItems: MockNoticeItem[] = [
   },
 ];
 
+const mockSellerProfiles: Record<number, Record<string, unknown>> = {};
+
 export const profileHandlers = [
-  http.patch(`${BASE_URL}/v1/sellers/:sellerId/profile`, async ({ request }) => {
+  http.patch(`${BASE_URL}/v1/sellers/:sellerId/profile`, async ({ request, params }) => {
+    const sellerId = Number(params.sellerId);
     const body = (await request.json()) as Record<string, string>;
-    console.log('Mock: seller profile updated', body);
+
+    mockSellerProfiles[sellerId] = {
+      ...mockSellerProfiles[sellerId],
+      ...(body.nickname != null && { nickname: body.nickname }),
+      ...(body.intro != null && { intro: body.intro }),
+      ...(body.instaUrl != null && { instagramUrl: body.instaUrl }),
+      ...(body.youtubeUrl != null && { youtubeUrl: body.youtubeUrl }),
+      ...(body.tiktokUrl != null && { tiktokUrl: body.tiktokUrl }),
+    };
 
     return HttpResponse.json(
       { status: 'SUCCESS', message: 'Seller profile updated successfully.', data: {} },
@@ -157,15 +168,16 @@ export const profileHandlers = [
       );
     }
 
+    const overrides = mockSellerProfiles[sellerId] ?? {};
     return HttpResponse.json(
       {
         sellerId,
-        nickname: 'Seller Mock',
-        intro: 'Curating good items and running regular live auctions.',
+        nickname: (overrides.nickname as string) ?? 'Seller Mock',
+        intro: (overrides.intro as string) ?? 'Curating good items and running regular live auctions.',
         profileImage: LogoImage,
-        instagramUrl: 'https://instagram.com/im_rerak',
-        youtubeUrl: 'https://youtube.com/@im_rerak',
-        tiktokUrl: 'https://tiktok.com/@seller123',
+        instagramUrl: (overrides.instagramUrl as string) ?? 'https://instagram.com/im_rerak',
+        youtubeUrl: (overrides.youtubeUrl as string) ?? 'https://youtube.com/@im_rerak',
+        tiktokUrl: (overrides.tiktokUrl as string) ?? 'https://tiktok.com/@seller123',
         stats: {
           rating: 4.7,
           avgShipDays: 1.8,

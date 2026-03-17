@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useToast } from '@/components/common/Toast';
 import { useGetSellerProfile } from '@/api/hooks/useGetSellerProfile';
@@ -8,7 +8,9 @@ import { usePatchSellerNotice } from '@/api/hooks/usePatchSellerNotice';
 import { useDeleteSellerNotice } from '@/api/hooks/useDeleteSellerNotice';
 import { useGetSellerNoticeDetail } from '@/api/hooks/useGetSellerNoticeDetail';
 import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
+import { useGetMe } from '@/api/hooks/useGetMe';
 import { usePostFollow } from '@/api/hooks/usePostFollow';
+import { useGetFollowedStores } from '@/api/hooks/useGetFollowedStores';
 import { FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
 import ReportModal from '@/components/Profile/ReportModal';
 import { useGetSoldAuctions } from '@/api/hooks/useGetSoldAuctions';
@@ -106,6 +108,7 @@ export default function ProfilePage() {
 
   const { data, isLoading, isError } = useGetSellerProfile(sellerId);
   const { data: mySellerStatus } = useGetSellerStatus();
+  const { data: meData } = useGetMe();
   const { mutate: patchProfile, isPending: isProfilePending } = usePatchSellerProfile(sellerId);
   const { mutate: patchProfileImage } = usePatchProfileImage();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,12 +142,26 @@ export default function ProfilePage() {
   const { data: scheduledStreamsData } = useGetScheduledStreams(0, 50);
 
   const { mutate: postFollow, isPending: isFollowPending } = usePostFollow();
+  const { data: followedData } = useGetFollowedStores();
 
   const { showToast } = useToast();
-  const [isFollowing, setIsFollowing] = useState(false);
 
-  const myUserId = localStorage.getItem('userId');
-  const isMyProfile = myUserId !== null && Number(myUserId) === sellerId;
+  const initialFollowing = useMemo(() => {
+    if (!followedData?.pages) return false;
+    return followedData.pages.some((page) => page.content.some((item) => item.seller.sellerId === sellerId));
+  }, [followedData, sellerId]);
+
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followInitialized, setFollowInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!followInitialized && followedData) {
+      setIsFollowing(initialFollowing);
+      setFollowInitialized(true);
+    }
+  }, [initialFollowing, followedData, followInitialized]);
+
+  const isMyProfile = meData?.sellerId != null && meData.sellerId === sellerId;
   const isOwner = mySellerStatus?.isSeller || true;
 
   const handleFollowToggle = () => {
