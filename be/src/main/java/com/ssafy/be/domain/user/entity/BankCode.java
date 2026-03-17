@@ -1,5 +1,6 @@
 package com.ssafy.be.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.ssafy.be.domain.user.exception.UserErrorCode;
 import com.ssafy.be.global.exception.GlobalException;
 import lombok.Getter;
@@ -77,6 +78,7 @@ public enum BankCode {
     private final String code;
     private final String name;
 
+    @JsonCreator
     public static BankCode fromCode(String code) {
         for (BankCode bank : values()) {
             if (bank.code.equals(code)) {
