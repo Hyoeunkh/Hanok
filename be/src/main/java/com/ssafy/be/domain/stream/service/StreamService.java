@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -101,13 +102,15 @@ public class StreamService {
                                 item.getName(),
                                 item.getDescription(),
                                 item.getTags().stream().map(Tag::getName).toList(),
-                                item.getImage1(),
+                                java.util.stream.Stream.of(item.getImage1(), item.getImage2(), item.getImage3())
+                                        .filter(Objects::nonNull)
+                                        .toList(),
                                 item.getStartPrice(),
                                 item.getBidUnit(),
                                 item.getAuctionDuration(),
                                 item.getItemCondition(),
                                 item.getCategory(),
-                                auction.getAuctionType(),  // 방금 저장한 auction에서 가져오기
+                                auction.getItem().getAuctionType(),  // 방금 저장한 auction에서 가져오기
                                 item.getStatus(),
                                 item.getCreatedAt());
                     })
@@ -170,13 +173,15 @@ public class StreamService {
                             item.getName(),
                             item.getDescription(),
                             item.getTags().stream().map(Tag::getName).toList(),
-                            item.getImage1(),
+                            java.util.stream.Stream.of(item.getImage1(), item.getImage2(), item.getImage3())
+                                    .filter(Objects::nonNull)
+                                    .toList(),
                             item.getStartPrice(),
                             item.getBidUnit(),
                             item.getAuctionDuration(),
                             item.getItemCondition(),
                             item.getCategory(),
-                            auction.getAuctionType(),
+                            auction.getItem().getAuctionType(),
                             item.getStatus(),
                             item.getCreatedAt());
                 })
@@ -249,13 +254,15 @@ public class StreamService {
                             item.getName(),
                             item.getDescription(),
                             item.getTags().stream().map(Tag::getName).toList(),
-                            item.getImage1(),
+                            java.util.stream.Stream.of(item.getImage1(), item.getImage2(), item.getImage3())
+                                    .filter(Objects::nonNull)
+                                    .toList(),
                             item.getStartPrice(),
                             item.getBidUnit(),
                             item.getAuctionDuration(),
                             item.getItemCondition(),
                             item.getCategory(),
-                            auction.getAuctionType(),
+                            auction.getItem().getAuctionType(),
                             item.getStatus(),
                             item.getCreatedAt());
                 })
@@ -379,10 +386,11 @@ public class StreamService {
     }
 
     @Transactional(readOnly = true)
-    public ScheduledStreamListResponse getScheduledStreamList(int page, int size) {
+    public ScheduledStreamListResponse getScheduledStreamList(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Slice<Stream> slice = streamRepository.findByStatusIn(
+        Slice<Stream> slice = streamRepository.findByStatusInAndSellerUserId(
                 List.of(StreamStatus.LIVE, StreamStatus.SCHEDULED),
+                userId,
                 pageable
         );
 
@@ -458,7 +466,8 @@ public class StreamService {
                 topBidders,
                 accessToken.toJwt(),
                 identity,
-                isFollowing
+                isFollowing,
+                isHost
         );
     }
 

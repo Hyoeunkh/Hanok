@@ -1,6 +1,7 @@
 package com.ssafy.be.domain.auction.dto.response;
 
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
+import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.ItemCondition;
 
 import java.util.List;
@@ -15,8 +16,10 @@ public record ItemSyncResponse(
     public record ItemInfo(
             Long auctionId,
             String itemName,
-            String image,
+            String description,
+            List<String> images,
             Long startPrice,
+            AuctionType auctionType,
             AuctionStatus auctionStatus,
             Long finalPrice,
             ItemCondition itemCondition
