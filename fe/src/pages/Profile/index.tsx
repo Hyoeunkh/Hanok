@@ -529,7 +529,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex flex-col items-end gap-[6px] w-[140px]">
-                      <span className="text-base font-bold text-white">- {formatPrice(sale.amount)}</span>
+                      <span className="text-base font-bold text-white">+ {formatPrice(sale.amount)}</span>
                       <span className="text-[13px] text-[#888]">{ui.label}</span>
                     </div>
                   </div>
