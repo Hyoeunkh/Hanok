@@ -149,7 +149,7 @@ export default function ProfilePage() {
 
   const handleFollowToggle = () => {
     postFollow(
-      { userId: sellerId },
+      { targetSellerId: sellerId },
       {
         onSuccess: (res) => setIsFollowing(res.following),
       },

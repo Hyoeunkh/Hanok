@@ -13,7 +13,7 @@ export default function FollowedStoresSection() {
   const totalStores = data?.totalElements ?? 0;
 
   const handleUnfollow = (sellerId: number) => {
-    unfollow({ userId: sellerId });
+    unfollow({ targetSellerId: sellerId });
   };
 
   return (
@@ -54,11 +54,6 @@ export default function FollowedStoresSection() {
                   <div className="w-14 h-14 rounded-full bg-[#1e1e2d] text-[#d9b36d] text-xl flex items-center justify-center font-bold">
                     {seller.nickname.charAt(0)}
                   </div>
-                )}
-                {seller.isLive && (
-                  <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
-                    LIVE
-                  </span>
                 )}
               </div>
 

@@ -81,32 +81,24 @@ export const profileHandlers = [
     );
   }),
 
-  http.post(`${BASE_URL}/v1/users/:userId/follow`, async ({ params }) => {
-    const userId = Number(params.userId);
-    const wasFollowing = isSellerFollowed(userId);
+  http.post(`${BASE_URL}/v1/follow/:targetSellerId`, async ({ params }) => {
+    const targetSellerId = Number(params.targetSellerId);
+    const wasFollowing = isSellerFollowed(targetSellerId);
 
     if (wasFollowing) {
-      unfollowSeller(userId);
+      unfollowSeller(targetSellerId);
       return HttpResponse.json({
-        status: 'SUCCESS',
-        message: 'Unfollowed successfully.',
-        data: {
-          following: false,
-          followerCount: decrementMockFollowerCount(),
-          followingCount: 11,
-        },
+        following: false,
+        followerCount: decrementMockFollowerCount(),
+        followingCount: 11,
       });
     }
 
-    followSeller(userId);
+    followSeller(targetSellerId);
     return HttpResponse.json({
-      status: 'SUCCESS',
-      message: 'Followed successfully.',
-      data: {
-        following: true,
-        followerCount: incrementMockFollowerCount(),
-        followingCount: 12,
-      },
+      following: true,
+      followerCount: incrementMockFollowerCount(),
+      followingCount: 12,
     });
   }),
 
