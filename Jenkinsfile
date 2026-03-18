@@ -53,12 +53,20 @@ pipeline {
                                     passwordVariable: 'DOCKER_PASS'
                             )]) {
                                 sh '''
-                                    docker login -u $DOCKER_USER -p $DOCKER_PASS
-                                    docker build -t $DOCKER_USER/hanok-backend:prod .
-                                    docker build -t $DOCKER_USER/hanok-backend:${BUILD_NUMBER} .
-                                    docker push $DOCKER_USER/hanok-backend:prod
-                                    docker push $DOCKER_USER/hanok-backend:${BUILD_NUMBER}
-                                '''
+                    docker login -u $DOCKER_USER -p $DOCKER_PASS
+                    
+                    docker build -t $DOCKER_USER/hanok-backend:prod \
+                                 -t $DOCKER_USER/hanok-backend:${BUILD_NUMBER} .
+                    
+                    docker push $DOCKER_USER/hanok-backend:prod
+                    docker push $DOCKER_USER/hanok-backend:${BUILD_NUMBER}
+                    
+                    docker images $DOCKER_USER/hanok-backend --format "{{.Tag}}" | \
+                    grep -v prod | \
+                    sort -rn | \
+                    tail -n +4 | \
+                    xargs -I {} docker rmi $DOCKER_USER/hanok-backend:{} 2>/dev/null || true
+                '''
                             }
                         }
                     }
