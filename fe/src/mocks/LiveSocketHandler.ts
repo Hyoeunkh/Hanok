@@ -815,7 +815,6 @@ const handleAuctionStart = (destination: string, body: string) => {
   };
   const auctionStatisticsState: MockAuctionStatisticsState = {
     itemName,
-    totalPrice: 0,
     bidCount: 0,
     startPrice,
     currentPrice: 0,
@@ -964,7 +963,6 @@ const handleBidPlace = (destination: string, body: string) => {
   if (currentStatisticsState) {
     streamAuctionStatisticsStates.set(streamId, {
       ...currentStatisticsState,
-      totalPrice: currentStatisticsState.totalPrice + bidAmount,
       bidCount: currentStatisticsState.bidCount + 1,
       currentPrice: bidAmount || currentStatisticsState.currentPrice,
       recentBids: [
