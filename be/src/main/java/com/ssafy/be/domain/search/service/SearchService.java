@@ -7,6 +7,7 @@ import com.ssafy.be.domain.search.dto.response.SellerInfo;
 import com.ssafy.be.domain.search.dto.response.StreamSearchResult;
 import com.ssafy.be.domain.search.repository.StreamSearchRepositoryCustom;
 import com.ssafy.be.domain.stream.entity.StreamStatus;
+import com.ssafy.be.domain.stream.service.StreamViewerService; // ✅ import 추가
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import java.util.Map;
 public class SearchService {
 
     private final StreamSearchRepositoryCustom searchRepository;
+    private final StreamViewerService streamViewerService;
 
     public List<StreamSearchResult> search(String keyword) {
         String trimmed = keyword.trim();
@@ -71,7 +73,7 @@ public class SearchService {
                 .thumbnail(row.thumbnail())
                 .status(row.status() != null ? StreamStatus.valueOf(row.status()) : null)
                 .scheduledAt(row.scheduledAt())
-                .viewerCount(row.viewerCount())
+                .viewerCount((int) streamViewerService.getViewerCount(row.streamId()))
                 .category(row.category())
                 .seller(SellerInfo.builder()
                         .sellerId(row.sellerId())
