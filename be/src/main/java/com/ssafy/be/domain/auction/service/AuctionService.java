@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static com.ssafy.be.domain.auction.enums.Comment.*;
 import static com.ssafy.be.domain.auction.enums.Comment.AUCTION_START;
@@ -452,15 +454,30 @@ public class AuctionService {
     }
 
     private ItemSyncResponse.ItemInfo buildItemSyncInfo(Auction auction) {
+        List<String> images = Stream.of(
+                        auction.getItem().getImage1(),
+                        auction.getItem().getImage2(),
+                        auction.getItem().getImage3()
+                )
+                .filter(Objects::nonNull)
+                .toList();
+
+
         return ItemSyncResponse.ItemInfo.builder()
                 .auctionId(auction.getId())
                 .itemName(auction.getItem().getName())
-                .image(auction.getItem().getImage1())
+                .description(auction.getItem().getDescription())
+                .images(images)
                 .startPrice(auction.getItem().getStartPrice())
+                .auctionType(auction.getItem().getAuctionType())
+                .auctionTime(auction.getItem().getAuctionDuration())
+                .bidUnit(auction.getItem().getBidUnit())
                 .auctionStatus(auction.getAuctionStatus())
                 .finalPrice(auction.getAuctionStatus() == AuctionStatus.SOLD ? auction.getFinalPrice() : null)
                 .itemCondition(auction.getItem().getItemCondition())
                 .build();
+
+
     }
 
     private AuctionStatisticsResponse buildAuctionStatisticsResponse(
