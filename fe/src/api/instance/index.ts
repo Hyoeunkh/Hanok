@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import { QueryClient } from '@tanstack/react-query';
 import type { ApiResponse, LoginResponseData } from '@/types';
 
@@ -131,9 +131,9 @@ const initInstance = (): AxiosInstance => {
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`;
         } else {
-          originalRequest.headers = {
+          originalRequest.headers = new AxiosHeaders({
             Authorization: `Bearer ${nextAccessToken}`,
-          };
+          });
         }
 
         return ax(originalRequest);
