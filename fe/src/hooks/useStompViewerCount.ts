@@ -29,11 +29,19 @@ export function useStompViewerCount() {
     void subscribeStream<{ eventType?: string; payload?: unknown }>({
       streamId,
       onBroadcast: (response) => {
+        console.log('[viewer-count] broadcast:', response.eventType, response.payload);
         if (response.eventType !== 'VIEWER_COUNT') {
           return;
         }
 
-        setViewerCount(typeof response.payload === 'number' ? response.payload : 0);
+        const raw = response.payload;
+        const count =
+          typeof raw === 'number'
+            ? raw
+            : typeof raw === 'object' && raw !== null && 'count' in raw && typeof (raw as { count: unknown }).count === 'number'
+              ? (raw as { count: number }).count
+              : 0;
+        setViewerCount(count);
       },
     })
       .then((cleanup) => {

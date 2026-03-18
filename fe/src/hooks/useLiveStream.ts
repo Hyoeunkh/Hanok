@@ -253,6 +253,7 @@ export function useLiveStream(
     }
 
     const requestItemSync = async () => {
+      console.log('[stream] requesting ITEM_SYNC for streamId:', streamId);
       await sendStreamMessage(streamId, {
         eventType: 'ITEM_SYNC',
         payload: null,
@@ -271,6 +272,7 @@ export function useLiveStream(
     };
 
     const handleBroadcastEvent = (event: BroadcastStreamEvent) => {
+      console.log('[stream] broadcast event:', event);
       if (isAuctionStartEvent(event) && event.payload?.timer) {
         setStreamState('live');
         setTimer(createSyncedTimer(event.payload.timer));
@@ -480,6 +482,7 @@ export function useLiveStream(
         }
 
         unsubscribeStream = cleanup;
+        console.log('[stream] STOMP subscribed successfully for streamId:', streamId);
         // Mark subscription as ready so the isStreamLive effect can safely call ITEM_SYNC.
         requestItemSyncRef.current = requestItemSync;
         await requestItemSync();
