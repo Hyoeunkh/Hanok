@@ -48,7 +48,7 @@ services:
   # Backend (prod)
   # =============================================
   backend-prod:
-    image: hanok-backend:prod
+    image: kimkangyeon/hanok-backend:prod
     container_name: hanok-backend-prod
     restart: unless-stopped
     ports:
