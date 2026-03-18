@@ -195,6 +195,7 @@
 
 html {
   background-color: var(--color-background);
+  overflow-y: scroll;
 }
 
 @layer base {
