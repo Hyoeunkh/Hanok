@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'hanok-backend'
+        IMAGE_NAME = 'kimkangyeon/hanok-backend'
         CONTAINER_NAME = 'hanok-backend-prod'
         COMPOSE_FILE = 'infra/docker-compose.yaml'
         ENV_FILE = 'infra/.env.prod'
@@ -44,10 +44,22 @@ pipeline {
                     }
                 }
 
-                stage('Docker Build') {
+                stage('Docker Build & Push') {
                     steps {
                         dir('be') {
-                            sh "docker build -t ${IMAGE_NAME}:prod ."
+                            withCredentials([usernamePassword(
+                                    credentialsId: 'dockerhub-credentials',
+                                    usernameVariable: 'DOCKER_USER',
+                                    passwordVariable: 'DOCKER_PASS'
+                            )]) {
+                                sh '''
+                                    docker login -u $DOCKER_USER -p $DOCKER_PASS
+                                    docker build -t $DOCKER_USER/hanok-backend:prod .
+                                    docker build -t $DOCKER_USER/hanok-backend:${BUILD_NUMBER} .
+                                    docker push $DOCKER_USER/hanok-backend:prod
+                                    docker push $DOCKER_USER/hanok-backend:${BUILD_NUMBER}
+                                '''
+                            }
                         }
                     }
                 }
@@ -60,6 +72,7 @@ pipeline {
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-prod
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d prometheus grafana
+    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d livekit
 
     rm -rf /var/www/hanok/*
     cp -r fe/dist/* /var/www/hanok/
