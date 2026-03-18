@@ -9,11 +9,12 @@ const savedMacros: Record<number, { category: string; macros: Macro[] }> = {};
 
 const getDefaultMacros = (category: string): Macro[] => {
   const label = getCategoryLabel(category);
-  const templates = CATEGORY_MACROS[label] ?? CATEGORY_MACROS[category] ?? [
-    { questionType: 'CONDITION', question: '일반적인 상태는?', answer: '' },
-    { questionType: 'DEFECT', question: '하자 여부', answer: '' },
-    { questionType: 'SHIPPING', question: '배송 방법은?', answer: '' },
-  ];
+  const templates = CATEGORY_MACROS[label] ??
+    CATEGORY_MACROS[category] ?? [
+      { questionType: 'CONDITION', answer: '' },
+      { questionType: 'DEFECT', answer: '' },
+      { questionType: 'SHIPPING', answer: '' },
+    ];
 
   return templates.map((template) => ({
     questionType: template.questionType,
