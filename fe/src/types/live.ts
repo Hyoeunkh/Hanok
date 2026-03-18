@@ -101,7 +101,6 @@ export type AuctionStatisticsRecentBid = {
 
 export type AuctionStatisticsPayload = {
   itemName: string;
-  totalPrice: number;
   bidCount: number;
   startPrice: number;
   currentPrice: number;
@@ -331,10 +330,6 @@ export type BroadcastStreamEvent =
         bidRange?: UniqueBidRange;
         timer?: StreamTimerPayload;
       };
-    }
-  | {
-      eventType: 'UNIQUE_AUCTION_INTRODUCE';
-      payload: null;
     }
   | {
       eventType: 'UNIQUE_AUCTION_CALCULATING';

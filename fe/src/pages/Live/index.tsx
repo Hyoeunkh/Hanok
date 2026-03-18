@@ -73,7 +73,6 @@ export default function LivePage() {
   const selectedReadyAuctionItem = selectedAuctionItem?.auctionStatus === 'READY' ? selectedAuctionItem : null;
   const fallbackReadyAuctionItem = readyItems[0] ?? null;
   const introduceAuctionId = selectedReadyAuctionItem?.auctionId ?? fallbackReadyAuctionItem?.auctionId ?? null;
-  const introduceAuctionType = selectedReadyAuctionItem?.auctionType ?? fallbackReadyAuctionItem?.auctionType ?? null;
   const startAuctionId = introducingAuctionItem?.auctionId ?? null;
   const startAuctionType = introducingAuctionItem?.auctionType ?? null;
   const activeBidAuctionId = liveAuctionItem?.auctionId ?? introducingAuctionItem?.auctionId ?? null;
@@ -199,7 +198,6 @@ export default function LivePage() {
             uniqueBidSync={uniqueBidSync}
             activeBidAuctionId={activeBidAuctionId}
             introduceAuctionId={introduceAuctionId}
-            introduceAuctionType={introduceAuctionType}
             startAuctionId={startAuctionId}
             startAuctionType={startAuctionType}
             canIntroduce={canIntroduceAuction}

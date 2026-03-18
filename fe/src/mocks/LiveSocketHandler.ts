@@ -1043,25 +1043,6 @@ const handleAuctionItemIntroduce = (destination: string, body: string) => {
   });
 };
 
-const handleUniqueAuctionItemIntroduce = (destination: string, body: string) => {
-  const streamId = getStreamIdFromDestination(destination);
-  const payload = JSON.parse(body) as {
-    payload?: {
-      auctionId?: number;
-    };
-  };
-  const auctionId = payload.payload?.auctionId;
-
-  if (typeof auctionId === 'number') {
-    introduceAuctionItem(streamId, auctionId);
-  }
-
-  broadcastToDestination(`/broadcast/streams/${streamId}`, {
-    eventType: 'UNIQUE_AUCTION_INTRODUCE',
-    payload: null,
-  });
-};
-
 const handleChatMessage = (destination: string, body: string) => {
   const streamId = getStreamIdFromDestination(destination);
   const payload = JSON.parse(body) as {
@@ -1168,10 +1149,6 @@ const handleSendFrame = (frame: StompFrame) => {
 
     if (body.eventType === 'ITEM_INTRODUCE') {
       handleAuctionItemIntroduce(frame.headers.destination, frame.body);
-    }
-
-    if (body.eventType === 'UNIQUE_AUCTION_INTRODUCE') {
-      handleUniqueAuctionItemIntroduce(frame.headers.destination, frame.body);
     }
 
     if (body.eventType === 'CHAT_MESSAGE') {
