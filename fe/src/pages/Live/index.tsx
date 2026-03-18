@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import { usePostEndStream } from '@/api/hooks/usePostEndStream';
 import { usePostStartStream } from '@/api/hooks/usePostStartStream';
 import { useGetStreamEnter } from '@/api/hooks/useGetStreamEnter';
 import { useLiveKit } from '@/hooks/useLiveKit';
@@ -22,6 +23,7 @@ import LeftPanel from './LeftPanel';
 import LiveHeader from './LiveHeader';
 import RightPanel from './RightPanel';
 import SellerStartModal from './SellerStartModal';
+import StreamEndModal from './StreamEndModal';
 
 export default function LivePage() {
   const navigate = useNavigate();
@@ -34,8 +36,10 @@ export default function LivePage() {
   const { data: streamEnter } = useGetStreamEnter(numericStreamId);
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
   const [showSellerStartModal, setShowSellerStartModal] = useState(false);
+  const [showStreamEndModal, setShowStreamEndModal] = useState(false);
   const autoOpenedStartModalStreamIdRef = useRef<number | null>(null);
   const postStartStream = usePostStartStream();
+  const postEndStream = usePostEndStream();
 
   const activeStreamEnter: StreamEnterResponse | null = streamEnter ?? null;
   const isSeller = activeStreamEnter?.isHost ?? false;
@@ -78,7 +82,7 @@ export default function LivePage() {
 
   const livekitUrl = import.meta.env.VITE_LIVEKIT_URL ?? '';
   const livekitToken = activeStreamEnter?.token ?? '';
-  const { state: livekitState, videoRef, toggleMic, toggleCamera, isMicOn, isCameraOn, viewerCount } = useLiveKit({
+  const { state: livekitState, videoRef, toggleMic, toggleCamera, isMicOn, isCameraOn, viewerCount, disconnect } = useLiveKit({
     serverUrl: isStreamLive ? livekitUrl : '',
     token: isStreamLive ? livekitToken : '',
     isHost: isSeller,
@@ -87,6 +91,9 @@ export default function LivePage() {
   const canStart = liveAuctionItem === null && startAuctionId !== null;
   const canIntroduceAuction = isStreamLive && canIntroduce;
   const canStartAuction = isStreamLive && canStart;
+  const isAuctionInProgress = liveAuctionItem !== null;
+  const hasPendingAuctionItems =
+    itemSync?.items.some((item) => item.auctionStatus === 'READY' || item.auctionStatus === 'INTRODUCING') ?? false;
   const startRequest = useMemo<StreamRequest | null>(
     () =>
       activeStreamEnter
@@ -122,6 +129,29 @@ export default function LivePage() {
       setShowSellerStartModal(false);
     } catch (error) {
       console.error('[stream] failed to start stream', error);
+    }
+  };
+
+  const handleOpenStreamEndModal = () => {
+    if (isAuctionInProgress || postEndStream.isPending) {
+      return;
+    }
+
+    setShowStreamEndModal(true);
+  };
+
+  const handleStreamEndConfirm = async () => {
+    if (!Number.isFinite(numericStreamId) || numericStreamId <= 0) {
+      return;
+    }
+
+    try {
+      await postEndStream.mutateAsync(numericStreamId);
+      disconnect();
+      setShowStreamEndModal(false);
+      markStreamEnded();
+    } catch (error) {
+      console.error('[stream] failed to end stream', error);
     }
   };
 
@@ -167,7 +197,15 @@ export default function LivePage() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-surface p-3">
-      <LiveHeader streamTitle={streamTitle} isLive={isStreamLive} startedAt={liveStartedAt ?? activeStreamEnter?.createdAt ?? null} />
+      <LiveHeader
+        streamTitle={streamTitle}
+        isLive={isStreamLive}
+        startedAt={liveStartedAt ?? activeStreamEnter?.createdAt ?? null}
+        showEndButton={isSeller && isStreamLive}
+        isEndDisabled={isAuctionInProgress}
+        isEnding={postEndStream.isPending}
+        onEndStream={handleOpenStreamEndModal}
+      />
 
       <div className="flex min-h-0 flex-1 gap-3">
         <div className="min-w-0 flex-1 overflow-hidden rounded-2xl">
@@ -226,6 +264,15 @@ export default function LivePage() {
             isPending={postStartStream.isPending}
             onConfirm={() => {
               void handleSellerStartModalConfirm();
+            }}
+          />
+          <StreamEndModal
+            open={showStreamEndModal}
+            isPending={postEndStream.isPending}
+            hasRemainingItems={hasPendingAuctionItems}
+            onClose={() => setShowStreamEndModal(false)}
+            onConfirm={() => {
+              void handleStreamEndConfirm();
             }}
           />
           {winnerInfo && (

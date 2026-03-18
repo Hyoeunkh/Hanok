@@ -270,6 +270,11 @@ export type DeleteStreamResponse = {
   status: 'cancelled';
 };
 
+export type EndStreamResponse = {
+  streamId: number;
+  status: 'ended';
+};
+
 export type ScheduledStream = {
   streamId: number;
   title: string;
