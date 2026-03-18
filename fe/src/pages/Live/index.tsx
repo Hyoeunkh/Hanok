@@ -4,7 +4,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { usePostStartStream } from '@/api/hooks/usePostStartStream';
 import { useGetStreamEnter } from '@/api/hooks/useGetStreamEnter';
-import { useStompViewerCount } from '@/hooks/useStompViewerCount';
 import { useLiveKit } from '@/hooks/useLiveKit';
 import { useLiveStream } from '@/hooks/useLiveStream';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
@@ -33,7 +32,6 @@ export default function LivePage() {
   const shouldAutoOpenStartModal =
     (location.state as { autoOpenStartModal?: boolean } | null)?.autoOpenStartModal === true;
   const { data: streamEnter } = useGetStreamEnter(numericStreamId);
-  const { viewerCount } = useStompViewerCount();
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
   const [showSellerStartModal, setShowSellerStartModal] = useState(false);
   const autoOpenedStartModalStreamIdRef = useRef<number | null>(null);
@@ -80,7 +78,7 @@ export default function LivePage() {
 
   const livekitUrl = import.meta.env.VITE_LIVEKIT_URL ?? '';
   const livekitToken = activeStreamEnter?.token ?? '';
-  const { state: livekitState, videoRef, toggleMic, toggleCamera, isMicOn, isCameraOn } = useLiveKit({
+  const { state: livekitState, videoRef, toggleMic, toggleCamera, isMicOn, isCameraOn, viewerCount } = useLiveKit({
     serverUrl: isStreamLive ? livekitUrl : '',
     token: isStreamLive ? livekitToken : '',
     isHost: isSeller,
