@@ -35,7 +35,7 @@ public class StreamSearchRepositoryCustom {
                 s.category,
                 u.id            AS seller_user_id,
                 u.nickname,
-                u.profile_image_uri
+                u.profile_image
             """;
 
     public List<StreamSearchRow> searchByStreamTitle(String keyword) {
