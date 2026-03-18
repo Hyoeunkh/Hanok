@@ -28,7 +28,7 @@ public class ShippingAddressService {
                 .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
 
         // 기본 배송지로 설정하는 경우 기존 기본 배송지 해제
-        if (request.isDefault()) {
+        if (Boolean.TRUE.equals(request.isDefault())) {
             shippingAddressRepository.findByUserIdAndIsDefaultTrue(userId)
                     .ifPresent(ShippingAddress::unsetDefault);
         }
@@ -60,7 +60,7 @@ public class ShippingAddressService {
                 .orElseThrow(() -> new GlobalException(ShippingAddressErrorCode.ADDRESS_NOT_FOUND));
 
         // 기본 배송지로 변경하는 경우 기존 기본 배송지 해제
-        if (request.isDefault()) {
+        if (Boolean.TRUE.equals(request.isDefault())) {
             shippingAddressRepository.findByUserIdAndIsDefaultTrue(userId)
                     .ifPresent(ShippingAddress::unsetDefault);
         }
