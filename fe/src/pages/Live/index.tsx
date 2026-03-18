@@ -211,10 +211,9 @@ export default function LivePage() {
             isCameraOn={isCameraOn}
           />
 
-          {(activeStreamEnter?.notice || auctionComment) && (
+          {auctionComment && (
             <AuctionCommentToast
-              key={auctionComment?.id ?? 'stream-notice'}
-              notice={activeStreamEnter?.notice ?? null}
+              key={auctionComment.id}
               message={auctionComment?.message ?? null}
             />
           )}

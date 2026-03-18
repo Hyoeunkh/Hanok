@@ -106,6 +106,7 @@ export default function RightPanel({ isSeller, auctionType, auctionStatistics, u
           <ChatPanel
             streamId={streamEnter?.streamId ?? 0}
             category={streamEnter?.category ?? ''}
+            notice={streamEnter?.notice ?? null}
             messages={messages}
             connectionState={connectionState}
             onSendMessage={sendMessage}
