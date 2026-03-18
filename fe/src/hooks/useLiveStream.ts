@@ -58,11 +58,6 @@ const isUniqueAuctionStatsEvent = (
 ): event is Extract<BroadcastStreamEvent, { eventType: 'UNIQUE_AUCTION_STATS' }> =>
   event.eventType === 'UNIQUE_AUCTION_STATS';
 
-const isUniqueAuctionIntroduceEvent = (
-  event: BroadcastStreamEvent,
-): event is Extract<BroadcastStreamEvent, { eventType: 'UNIQUE_AUCTION_INTRODUCE' }> =>
-  event.eventType === 'UNIQUE_AUCTION_INTRODUCE';
-
 const isUniqueAuctionCalculatingEvent = (
   event: BroadcastStreamEvent,
 ): event is Extract<BroadcastStreamEvent, { eventType: 'UNIQUE_AUCTION_CALCULATING' }> =>
@@ -271,6 +266,13 @@ export function useLiveStream(
       });
     };
 
+    const requestBidSync = async () => {
+      await sendStreamMessage(streamId, {
+        eventType: 'BID_SYNC',
+        payload: null,
+      });
+    };
+
     const applyBidSync = (payload?: BidSyncPayload | null) => {
       setBidSync(payload ?? null);
       if (payload?.timer) {
@@ -301,6 +303,7 @@ export function useLiveStream(
               currentPrice: event.payload.item.startPrice,
             },
             timer: event.payload.timer,
+            isHighestBidder: false,
           });
         }
         setWinnerInfo(null);
@@ -342,6 +345,8 @@ export function useLiveStream(
               : prev,
           );
         }
+
+        void requestBidSync();
         return;
       }
 
@@ -372,7 +377,7 @@ export function useLiveStream(
         return;
       }
 
-      if (isAuctionItemIntroduceEvent(event) || isUniqueAuctionIntroduceEvent(event)) {
+      if (isAuctionItemIntroduceEvent(event)) {
         void requestItemSync();
         return;
       }
