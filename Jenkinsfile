@@ -75,7 +75,12 @@ pipeline {
                 stage('Deploy') {
                     steps {
                         sh '''
+set +e
 cp /var/jenkins_home/env/.env.prod infra/.env.prod
+
+# nginx-reload.sh 영구화
+sudo cp infra/nginx-reload.sh /usr/local/bin/nginx-reload.sh
+sudo chmod +x /usr/local/bin/nginx-reload.sh
 
 LIVEKIT_SECRET=$(grep LIVEKIT_API_SECRET infra/.env.prod | cut -d '=' -f2)
 cat > infra/livekit.yaml << LKEOF
@@ -94,16 +99,24 @@ docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d prometheus grafan
 docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d loki promtail
 
 # 현재 active 컨테이너 확인
-ACTIVE=$(grep "server localhost:808" /etc/nginx/sites-enabled/default | grep -v "^[[:space:]]*#" | grep -o "808[01]" | head -1)
+ACTIVE=$(grep "server localhost:808" /etc/nginx/sites-enabled/default | grep -v "down" | grep -o "808[01]" | head -1)
 
 if [ "$ACTIVE" = "8080" ] || [ -z "$ACTIVE" ]; then
     # blue가 active → green에 배포
-    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-green
-    sleep 30
-    GREEN_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://172.26.0.24:8081/actuator/health)
+    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} pull backend-green
+    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps backend-green
+    GREEN_HEALTH="000"
+    for i in $(seq 1 30); do
+        GREEN_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://172.26.0.24:8081/actuator/health)
+        if [ "$GREEN_HEALTH" = "200" ]; then
+            break
+        fi
+        echo "헬스체크 대기 중... ($i/30)"
+        sleep 10
+    done
     if [ "$GREEN_HEALTH" = "200" ]; then
-        sudo sed -i "s|server localhost:8080;  # blue (현재 active)|# server localhost:8080;  # blue (대기)|" /etc/nginx/sites-enabled/default
-        sudo sed -i "s|# server localhost:8081;  # green (대기)|server localhost:8081;  # green (현재 active)|" /etc/nginx/sites-enabled/default
+        sudo sed -i "s|server localhost:8081 down;|server localhost:8081;|" /etc/nginx/sites-enabled/default
+        sudo sed -i "s|server localhost:8080;  # blue|server localhost:8080 down;  # blue|" /etc/nginx/sites-enabled/default    
         sudo /usr/local/bin/nginx-reload.sh
         sleep 3
         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} stop backend-prod
@@ -115,12 +128,20 @@ if [ "$ACTIVE" = "8080" ] || [ -z "$ACTIVE" ]; then
     fi
 else
     # green이 active → blue에 배포
-    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-prod
-    sleep 30
-    BLUE_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://172.26.0.24:8080/actuator/health)
+    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} pull backend-prod
+    docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps backend-prod
+    BLUE_HEALTH="000"
+    for i in $(seq 1 30); do
+        BLUE_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://172.26.0.24:8080/actuator/health)
+        if [ "$BLUE_HEALTH" = "200" ]; then
+            break
+        fi
+        echo "헬스체크 대기 중... ($i/30)"
+        sleep 10
+    done
     if [ "$BLUE_HEALTH" = "200" ]; then
-        sudo sed -i "s|# server localhost:8080;  # blue (대기)|server localhost:8080;  # blue (현재 active)|" /etc/nginx/sites-enabled/default
-        sudo sed -i "s|server localhost:8081;  # green (현재 active)|# server localhost:8081;  # green (대기)|" /etc/nginx/sites-enabled/default
+        sudo sed -i "s|server localhost:8080 down;|server localhost:8080;|" /etc/nginx/sites-enabled/default
+        sudo sed -i "s|server localhost:8081;  # green|server localhost:8081 down;  # green|" /etc/nginx/sites-enabled/default
         sudo /usr/local/bin/nginx-reload.sh
         sleep 3
         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} stop backend-green

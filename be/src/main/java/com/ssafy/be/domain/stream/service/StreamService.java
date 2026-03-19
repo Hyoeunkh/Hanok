@@ -23,9 +23,11 @@ import com.ssafy.be.domain.stream.dto.response.*;
 import com.ssafy.be.domain.stream.entity.Stream;
 import com.ssafy.be.domain.stream.entity.StreamSortType;
 import com.ssafy.be.domain.stream.entity.StreamStatus;
+import com.ssafy.be.domain.stream.entity.StreamViewType;
 import com.ssafy.be.domain.stream.exception.StreamErrorCode;
 import com.ssafy.be.domain.stream.repository.MacroRedisRepository;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
+import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
 import com.ssafy.be.global.exception.GlobalException;
 import com.ssafy.be.global.infra.gcs.GcsClient;
@@ -49,6 +51,8 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @RequiredArgsConstructor
@@ -94,6 +98,9 @@ public class StreamService {
                         Item item = itemRepository
                                 .findByIdAndSellerId(itemId, seller.getId())
                                 .orElseThrow(() -> new GlobalException(ItemErrorCode.ITEM_NOT_FOUND));
+
+                        item.schedule();
+
                         Auction auction = auctionRepository.save(
                                 Auction.builder()
                                         .auctionStatus(AuctionStatus.READY)
@@ -209,6 +216,8 @@ public class StreamService {
             gcsClient.deleteImage(stream.getThumbnail());
         }
 
+        auctionRepository.deleteByStreamId(streamId);
+
         streamRepository.delete(stream);
     }
 
@@ -294,16 +303,40 @@ public class StreamService {
     @Transactional(readOnly = true)
     public Page<StreamListItemResponse> getStreamList(StreamListRequest request) {
         Category category = request.category();
+        boolean isFollowing = request.type() == StreamViewType.FOLLOWING;
+
+        final User loginUser;
+        if (isFollowing) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getName() != null && !authentication.getName().equals("anonymousUser")) {
+                Long loginUserId = Long.parseLong(authentication.getName());
+                loginUser = userRepository.findById(loginUserId).orElse(null);
+            } else {
+                loginUser = null;
+            }
+        } else {
+            loginUser = null;
+        }
 
         if (request.sort() == StreamSortType.VIEWER_COUNT) {
-            // 전체 가져와서 메모리 정렬
-            List<Stream> streams =
+            List<Stream> allStreams =
                     switch (request.status()) {
                         case LIVE -> streamRepository.findAllLiveStreams(category);
                         case SCHEDULED -> streamRepository.findAllScheduledStreams(category);
                         case ENDED -> List.of();
                         case PAUSED -> List.of();
                     };
+
+            List<Stream> streams;
+            if (isFollowing && loginUser != null) {
+                streams = allStreams.stream()
+                        .filter(stream -> followRepository.existsByUserAndSeller(loginUser, stream.getSeller()))
+                        .toList();
+            } else if (isFollowing) {
+                return Page.empty(PageRequest.of(request.page(), request.size()));
+            } else {
+                streams = allStreams;
+            }
 
             List<StreamListItemResponse> sorted =
                     streams.stream()
@@ -323,9 +356,7 @@ public class StreamService {
                                                 sel.getUser().getNickname(),
                                                 sel.getUser().getProfileImage()));
                             })
-                            .sorted(
-                                    Comparator.comparingLong(StreamListItemResponse::viewerCount)
-                                            .reversed())
+                            .sorted(Comparator.comparingLong(StreamListItemResponse::viewerCount).reversed())
                             .toList();
 
             // 수동 페이지네이션
@@ -333,36 +364,81 @@ public class StreamService {
             int end = Math.min(start + request.size(), sorted.size());
             List<StreamListItemResponse> pageContent = sorted.subList(start, end);
 
-            return new PageImpl<>(
-                    pageContent, PageRequest.of(request.page(), request.size()), sorted.size());
+            return new PageImpl<>(pageContent, PageRequest.of(request.page(), request.size()), sorted.size());
         }
 
-        Pageable pageable =
-                PageRequest.of(request.page(), request.size(), Sort.by("createdAt").descending());
-        Page<Stream> streams =
-                switch (request.status()) {
-                    case LIVE -> streamRepository.findLiveStreams(category, pageable);
-                    case SCHEDULED -> streamRepository.findScheduledStreams(category, pageable);
-                    case ENDED -> Page.empty(pageable);
-                    case PAUSED -> Page.empty(pageable);
-                };
+        if (isFollowing) {
+            if (loginUser == null) {
+                return Page.empty(PageRequest.of(request.page(), request.size()));
+            }
 
-        return streams.map(stream -> {
-            Seller sel = stream.getSeller();
-            return new StreamListItemResponse(
-                    stream.getId(),
-                    stream.getTitle(),
-                    stream.getCategory(),
-                    stream.getThumbnail(),
-                    stream.getStatus(),
-                    streamViewerService.getViewerCount(stream.getId()),
-                    (stream.getStatus() == StreamStatus.SCHEDULED) ? stream.getScheduledAt() : null,
-                    stream.getStartedAt(),
-                    new StreamSellerResponse(
-                            sel.getId(),
-                            sel.getUser().getNickname(),
-                            sel.getUser().getProfileImage()));
-        });
+            List<Stream> allStreams =
+                    switch (request.status()) {
+                        case LIVE -> streamRepository.findAllLiveStreams(category);
+                        case SCHEDULED -> streamRepository.findAllScheduledStreams(category);
+                        case ENDED -> List.of();
+                        case PAUSED -> List.of();
+                    };
+
+            List<Stream> filtered = allStreams.stream()
+                    .filter(stream -> followRepository.existsByUserAndSeller(loginUser, stream.getSeller()))
+                    .sorted(Comparator.comparing(Stream::getCreatedAt).reversed())
+                    .toList();
+
+            List<StreamListItemResponse> mapped =
+                    filtered.stream()
+                            .map(stream -> {
+                                Seller sel = stream.getSeller();
+                                return new StreamListItemResponse(
+                                        stream.getId(),
+                                        stream.getTitle(),
+                                        stream.getCategory(),
+                                        stream.getThumbnail(),
+                                        stream.getStatus(),
+                                        streamViewerService.getViewerCount(stream.getId()),
+                                        (stream.getStatus() == StreamStatus.SCHEDULED) ? stream.getScheduledAt() : null,
+                                        stream.getStartedAt(),
+                                        new StreamSellerResponse(
+                                                sel.getId(),
+                                                sel.getUser().getNickname(),
+                                                sel.getUser().getProfileImage()));
+                            })
+                            .toList();
+
+            int start = request.page() * request.size();
+            int end = Math.min(start + request.size(), mapped.size());
+            List<StreamListItemResponse> pageContent = mapped.subList(start, end);
+
+            return new PageImpl<>(pageContent, PageRequest.of(request.page(), request.size()), mapped.size());
+
+        } else {
+            Pageable pageable =
+                    PageRequest.of(request.page(), request.size(), Sort.by("createdAt").descending());
+            Page<Stream> streams =
+                    switch (request.status()) {
+                        case LIVE -> streamRepository.findLiveStreams(category, pageable);
+                        case SCHEDULED -> streamRepository.findScheduledStreams(category, pageable);
+                        case ENDED -> Page.empty(pageable);
+                        case PAUSED -> Page.empty(pageable);
+                    };
+
+            return streams.map(stream -> {
+                Seller sel = stream.getSeller();
+                return new StreamListItemResponse(
+                        stream.getId(),
+                        stream.getTitle(),
+                        stream.getCategory(),
+                        stream.getThumbnail(),
+                        stream.getStatus(),
+                        streamViewerService.getViewerCount(stream.getId()),
+                        (stream.getStatus() == StreamStatus.SCHEDULED) ? stream.getScheduledAt() : null,
+                        stream.getStartedAt(),
+                        new StreamSellerResponse(
+                                sel.getId(),
+                                sel.getUser().getNickname(),
+                                sel.getUser().getProfileImage()));
+            });
+        }
     }
 
     @Transactional(readOnly = true)
