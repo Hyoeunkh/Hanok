@@ -27,6 +27,7 @@ import com.ssafy.be.domain.stream.entity.StreamViewType;
 import com.ssafy.be.domain.stream.exception.StreamErrorCode;
 import com.ssafy.be.domain.stream.repository.MacroRedisRepository;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
+import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
 import com.ssafy.be.global.exception.GlobalException;
 import com.ssafy.be.global.infra.gcs.GcsClient;
@@ -314,6 +315,7 @@ public class StreamService {
                 loginUser = userRepository.findById(loginUserId).orElse(null);
             }
         }
+        final User finalLoginUser = loginUser;
 
         if (request.sort() == StreamSortType.VIEWER_COUNT) {
             // 전체 가져와서 메모리 정렬
@@ -325,9 +327,9 @@ public class StreamService {
                         case PAUSED -> List.of();
                     };
 
-            if (isFollowing && loginUser != null) {
+            if (isFollowing && finalLoginUser != null) {
                 streams = streams.stream()
-                        .filter(stream -> followRepository.existsByUserAndSeller(loginUser, stream.getSeller()))
+                        .filter(stream -> followRepository.existsByUserAndSeller(finalLoginUser, stream.getSeller()))
                         .toList();
             } else if (isFollowing) {
                 return Page.empty(PageRequest.of(request.page(), request.size()));
@@ -366,7 +368,7 @@ public class StreamService {
         }
 
         if (isFollowing) {
-            if (loginUser == null) {
+            if (finalLoginUser == null) {
                 return Page.empty(PageRequest.of(request.page(), request.size()));
             }
 
@@ -380,7 +382,7 @@ public class StreamService {
                     };
 
             streams = streams.stream()
-                    .filter(stream -> followRepository.existsByUserAndSeller(loginUser, stream.getSeller()))
+                    .filter(stream -> followRepository.existsByUserAndSeller(finalLoginUser, stream.getSeller()))
                     .sorted(Comparator.comparing(Stream::getCreatedAt).reversed())
                     .toList();
 
