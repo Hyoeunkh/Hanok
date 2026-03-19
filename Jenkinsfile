@@ -104,6 +104,7 @@ if [ "$ACTIVE" = "8080" ] || [ -z "$ACTIVE" ]; then
         sudo sed -i "s|server localhost:8080;  # blue (현재 active)|# server localhost:8080;  # blue (대기)|" /etc/nginx/sites-enabled/default
         sudo sed -i "s|# server localhost:8081;  # green (대기)|server localhost:8081;  # green (현재 active)|" /etc/nginx/sites-enabled/default
         sudo /usr/local/bin/nginx-reload.sh
+        sleep 3
         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} stop backend-prod
         echo "배포 완료 - green 활성화"
     else
@@ -120,6 +121,7 @@ else
         sudo sed -i "s|# server localhost:8080;  # blue (대기)|server localhost:8080;  # blue (현재 active)|" /etc/nginx/sites-enabled/default
         sudo sed -i "s|server localhost:8081;  # green (현재 active)|# server localhost:8081;  # green (대기)|" /etc/nginx/sites-enabled/default
         sudo /usr/local/bin/nginx-reload.sh
+        sleep 3
         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} stop backend-green
         echo "배포 완료 - blue 활성화"
     else
