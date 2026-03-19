@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
 import { useGetEscrowsBuyer } from '@/api/hooks/useGetEscrowsBuyer';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
-import type { EscrowState } from '@/types';
+import { ESCROW_STATUS_OPTIONS, getEscrowStateUI, type EscrowStatusFilter } from '@/utils/getEscrowStateUI';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -20,42 +20,7 @@ const formatDate = (iso: string) => {
 
 const formatPrice = (price: number) => `${price.toLocaleString('ko-KR')}원`;
 
-const getEscrowStateUI = (state: EscrowState) => {
-  switch (state) {
-    case 'INVOICE_SUBMITTED':
-      return {
-        label: '배송중',
-        badgeClass: 'self-start badge badge-ember-outline',
-      };
-    case 'COMPLETED':
-      return {
-        label: '배송완료',
-        badgeClass: 'self-start badge badge-primary-outline',
-      };
-    case 'CANCELLED':
-      return {
-        label: '취소됨',
-        badgeClass: 'self-start badge badge-neutral',
-      };
-    case 'DEPOSITED':
-    default:
-      return {
-        label: '결제완료',
-        badgeClass: 'self-start badge badge-gold-outline',
-      };
-  }
-};
-
-type StatusFilter = EscrowState | 'ALL';
 type SortOption = 'LATEST' | 'AMOUNT';
-
-const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
-  { value: 'ALL', label: '전체' },
-  { value: 'DEPOSITED', label: '결제완료' },
-  { value: 'INVOICE_SUBMITTED', label: '배송중' },
-  { value: 'COMPLETED', label: '배송완료' },
-  { value: 'CANCELLED', label: '취소됨' },
-];
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'LATEST', label: '최신순' },
@@ -67,7 +32,7 @@ export default function OrderHistorySection() {
   const items = escrowsResponse?.data || [];
 
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<EscrowStatusFilter>('ALL');
   const [sortBy, setSortBy] = useState<SortOption>('LATEST');
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -118,7 +83,7 @@ export default function OrderHistorySection() {
 
         <div className="flex items-center justify-between">
           <div className="relative inline-flex items-center rounded-xl bg-warm/6 p-1">
-            {STATUS_OPTIONS.map((option) => {
+            {ESCROW_STATUS_OPTIONS.map((option) => {
               const isSelected = statusFilter === option.value;
               return (
                 <button

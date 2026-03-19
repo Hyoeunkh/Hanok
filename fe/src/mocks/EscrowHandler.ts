@@ -16,7 +16,7 @@ const mockBuyerEscrows = [
     image: 'https://picsum.photos/seed/shoes/140/140',
     itemName: 'Vintage Sneakers',
     amount: 75000,
-    escrowStatus: 'INVOICE_SUBMITTED',
+    escrowStatus: 'SHIPPED',
     createdAt: '2026-03-01T23:00:00Z',
   },
   {
@@ -43,7 +43,7 @@ const mockSellerEscrows = [
     image: 'https://picsum.photos/seed/card/140/140',
     itemName: 'Pokemon Card Charizard',
     amount: 180000,
-    escrowStatus: 'INVOICE_SUBMITTED',
+    escrowStatus: 'SHIPPED',
     createdAt: '2026-03-10T14:10:00Z',
   },
   {

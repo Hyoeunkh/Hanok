@@ -1,4 +1,4 @@
-export type EscrowState = 'DEPOSITED' | 'INVOICE_SUBMITTED' | 'COMPLETED' | 'CANCELLED';
+export type EscrowState = 'DEPOSITED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
 
 export type EscrowItem = {
   escrowId?: string | number;
