@@ -598,6 +598,60 @@ const createUniqueBidSyncPayload = (streamId: string, nowMs: number) => {
   };
 };
 
+const ensureSeededBidAuctionState = (streamId: string) => {
+  const itemSyncPayload = streamItemSyncStates.get(streamId) ?? getInitialItemSyncPayload(streamId);
+  const activeBidItem = itemSyncPayload?.items.find(
+    (item) => item.auctionType !== 'UNIQUE_TOP' && item.auctionStatus === 'LIVE',
+  );
+
+  if (!activeBidItem) {
+    return;
+  }
+
+  let initializedTimer = false;
+
+  if (!streamTimerStates.has(streamId)) {
+    streamTimerStates.set(streamId, {
+      durationSeconds: activeBidItem.auctionTime ?? AUCTION_DURATION_SECONDS,
+      startedAtMs: Date.now(),
+      finalPrice: activeBidItem.startPrice + (activeBidItem.bidUnit ?? 1000),
+    });
+    initializedTimer = true;
+  }
+
+  if (!streamBidSyncStates.has(streamId)) {
+    streamBidSyncStates.set(streamId, {
+      bidUnit: activeBidItem.bidUnit ?? 1000,
+      highestBidderUserId: mockLoginUsers.find((user) => user.userId !== getCurrentMockUser()?.userId)?.userId ?? null,
+    });
+  }
+
+  if (!streamAuctionStatisticsStates.has(streamId)) {
+    const timerState = streamTimerStates.get(streamId);
+
+    if (timerState) {
+      streamAuctionStatisticsStates.set(streamId, {
+        itemName: activeBidItem.itemName,
+        bidCount: 1,
+        startPrice: activeBidItem.startPrice,
+        currentPrice: timerState.finalPrice,
+        recentBids: [
+          {
+            userId: mockLoginUsers.find((user) => user.userId !== getCurrentMockUser()?.userId)?.userId ?? 9999,
+            nickname: mockLoginUsers.find((user) => user.userId !== getCurrentMockUser()?.userId)?.nickname ?? '테스트유저',
+            amount: timerState.finalPrice,
+            placedAt: createTimestamp(Date.now() - 1000),
+          },
+        ],
+      });
+    }
+  }
+
+  if (initializedTimer) {
+    scheduleWinnerAnnouncement(streamId);
+  }
+};
+
 const sendPrivateUniqueBidSync = (streamId: string) => {
   broadcastToDestination(`/user/private/streams/${streamId}`, {
     eventType: 'UNIQUE_BID_SYNC',
@@ -678,6 +732,7 @@ const sendItemSyncToClient = (
   destination: string,
 ) => {
   const streamId = getStreamIdFromDestination(destination);
+  ensureSeededBidAuctionState(streamId);
   ensureSeededUniqueAuctionState(streamId);
   const itemSyncPayload = streamItemSyncStates.get(streamId) ?? getInitialItemSyncPayload(streamId);
 
@@ -1049,6 +1104,7 @@ const handleBidPlace = (destination: string, body: string) => {
 
 const handleBidSync = (destination: string) => {
   const streamId = getStreamIdFromDestination(destination);
+  ensureSeededBidAuctionState(streamId);
   sendPrivateBidSync(streamId);
 };
 
@@ -1060,6 +1116,7 @@ const handleUniqueBidSync = (destination: string) => {
 
 const handleItemSync = (destination: string) => {
   const streamId = getStreamIdFromDestination(destination);
+  ensureSeededBidAuctionState(streamId);
   ensureSeededUniqueAuctionState(streamId);
   sendPrivateItemSync(streamId);
 };
