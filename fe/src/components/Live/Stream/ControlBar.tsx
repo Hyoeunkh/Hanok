@@ -27,6 +27,7 @@ interface Props {
   isCameraOn?: boolean;
   isRemoteAudioMuted?: boolean;
   onToggleMute?: () => void;
+  onToggleChat?: () => void;
 }
 
 export default function ControlBar({
@@ -49,6 +50,7 @@ export default function ControlBar({
   isCameraOn,
   isRemoteAudioMuted,
   onToggleMute,
+  onToggleChat,
 }: Props) {
   return isSeller ? (
     <SellerControlBar
@@ -73,6 +75,7 @@ export default function ControlBar({
       activeAuctionId={activeBidAuctionId}
       isRemoteAudioMuted={isRemoteAudioMuted}
       onToggleMute={onToggleMute}
+      onToggleChat={onToggleChat}
     />
   );
 }
