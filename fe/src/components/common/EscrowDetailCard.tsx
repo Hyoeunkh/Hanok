@@ -6,7 +6,7 @@ import type { EscrowDetailResponse } from '@/types';
 import DeliveryTracker from '@/components/common/DeliveryTracker';
 
 type EscrowDetailCardProps = {
-  detail: EscrowDetailResponse['data'];
+  detail: EscrowDetailResponse;
   onClose?: () => void;
   footer?: ReactNode;
   className?: string;
@@ -16,7 +16,10 @@ type EscrowDetailCardProps = {
 
 const formatPrice = (price: number) => `${price.toLocaleString('ko-KR')}원`;
 const formatDate = (dateStr: string) =>
-  dateStr.replace(/T/, ' ').replace(/:\d{2}(\.\d+)?Z?$/, '').replace(/Z$/, '');
+  dateStr
+    .replace(/T/, ' ')
+    .replace(/:\d{2}(\.\d+)?Z?$/, '')
+    .replace(/Z$/, '');
 
 export default function EscrowDetailCard({
   detail,
@@ -44,24 +47,26 @@ export default function EscrowDetailCard({
 
       <div className="flex gap-5 mb-8">
         <div className="w-[120px] h-[120px] bg-neutral-800 rounded-2xl overflow-hidden shrink-0">
-          {detail.winningInfo.imageUrl ? (
+          {detail.winningInfo.image ? (
             <img
-              src={detail.winningInfo.imageUrl}
+              src={detail.winningInfo.image}
               alt={detail.winningInfo.itemName}
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm">
-              이미지 준비중
-            </div>
+            <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm">이미지 준비중</div>
           )}
         </div>
         <div className="flex flex-col justify-center flex-1">
-          <p className="text-xl font-bold mb-2 break-keep leading-[1.3] text-neutral-100">{detail.winningInfo.itemName}</p>
+          <p className="text-xl font-bold mb-2 break-keep leading-[1.3] text-neutral-100">
+            {detail.winningInfo.itemName}
+          </p>
           <p className="text-neutral-500 text-[13px] mb-4">{formatDate(detail.winningInfo.wonAt)}</p>
           <div className="grid grid-cols-[60px_1fr] gap-[8px_12px] text-sm">
             <span className="text-neutral-400">낙찰가</span>
-            <span className="text-right font-medium text-neutral-100">{formatPrice(detail.winningInfo.finalPrice)}</span>
+            <span className="text-right font-medium text-neutral-100">
+              {formatPrice(detail.winningInfo.finalPrice)}
+            </span>
             <span className="text-neutral-400">{counterpartyLabel}</span>
             <span className="text-right text-neutral-100">
               {detail.winningInfo.sellerName}({detail.winningInfo.sellerId})
