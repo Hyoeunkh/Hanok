@@ -91,6 +91,7 @@ LKEOF
 docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis
 docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d livekit
 docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d prometheus grafana
+docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d loki promtail
 
 # 현재 active 컨테이너 확인
 ACTIVE=$(grep "server localhost:808" /etc/nginx/sites-enabled/default | grep -v "^[[:space:]]*#" | grep -o "808[01]" | head -1)
