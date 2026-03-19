@@ -103,7 +103,7 @@ ACTIVE=$(grep "server localhost:808" /etc/nginx/sites-enabled/default | grep -v 
 if [ "$ACTIVE" = "8080" ] || [ -z "$ACTIVE" ]; then
     # blue가 active → green에 배포
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-green
-    sleep 30
+    sleep 60
     GREEN_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://172.26.0.24:8081/actuator/health)
     if [ "$GREEN_HEALTH" = "200" ]; then
         sudo sed -i "s|server localhost:8080;  # blue (현재 active)|# server localhost:8080;  # blue (대기)|" /etc/nginx/sites-enabled/default
@@ -120,7 +120,7 @@ if [ "$ACTIVE" = "8080" ] || [ -z "$ACTIVE" ]; then
 else
     # green이 active → blue에 배포
     docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps --force-recreate backend-prod
-    sleep 30
+    sleep 60
     BLUE_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://172.26.0.24:8080/actuator/health)
     if [ "$BLUE_HEALTH" = "200" ]; then
         sudo sed -i "s|# server localhost:8080;  # blue (대기)|server localhost:8080;  # blue (현재 active)|" /etc/nginx/sites-enabled/default
