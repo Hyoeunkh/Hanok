@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -239,6 +240,7 @@ public class AuctionService {
                 .orElseThrow(() -> new StompException(ShippingAddressErrorCode.DEFAULT_SHIPPING_ADDRESS_NOT_FOUND));
 
         auction.sold(topBid.amount());
+        auction.getItem().sold(LocalDateTime.now());
 
         // 에스크로 시작
         escrowService.startEscrow(topBid, auction, shippingAddress);
