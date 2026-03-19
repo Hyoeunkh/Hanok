@@ -6,9 +6,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d          # Nginx 설정 파일 폴더
-      - /var/www/hanok:/var/www/hanok             # 프론트엔드 빌드 파일
-      - /etc/letsencrypt:/etc/letsencrypt         # SSL 인증서 (HTTPS 용)
+      - /var/lib/docker/volumes/jenkins-stack_jenkins_home/_data/workspace/hanok/infra/nginx/conf.d:/etc/nginx/conf.d
+      - /var/www/hanok:/var/www/hanok
+      - /etc/letsencrypt:/etc/letsencrypt
     restart: always
     networks:
       - hanok-network # 백엔드와 같은 네트워크 사용
