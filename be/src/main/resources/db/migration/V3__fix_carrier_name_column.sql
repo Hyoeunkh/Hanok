@@ -1,1 +1,1 @@
-ALTER TABLE escrow CHANGE carrierName carrier_name VARCHAR(255) NULL;
+ALTER TABLE escrow CHANGE courier_name carrier_name VARCHAR(255) NULL;
