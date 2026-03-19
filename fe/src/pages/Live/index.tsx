@@ -88,6 +88,7 @@ export default function LivePage() {
   const {
     state: livekitState,
     videoRef,
+    bgVideoRef,
     toggleMic,
     toggleCamera,
     toggleRemoteAudio,
@@ -235,11 +236,18 @@ export default function LivePage() {
           <StreamOverlay viewerCount={viewerCount} isSeller={isSeller} />
           {isSeller && <SellerGuideOverlay />}
           <video
+            ref={bgVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`absolute inset-0 h-full w-full object-cover -scale-x-100 blur-2xl brightness-50 saturate-120 ${livekitState === 'connected' ? '' : 'hidden'}`}
+          />
+          <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={`h-full w-full object-contain -scale-x-100 ${livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`relative h-full w-full object-contain -scale-x-100 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
           {livekitState !== 'connected' && <StreamPlaceholder />}
           <ControlBar
