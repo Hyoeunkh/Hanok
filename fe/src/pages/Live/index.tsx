@@ -234,7 +234,7 @@ export default function LivePage() {
             autoPlay
             playsInline
             muted
-            className={`h-full w-full object-contain ${livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`h-full w-full object-contain -scale-x-100 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
           {livekitState !== 'connected' && <StreamPlaceholder />}
           <ControlBar
