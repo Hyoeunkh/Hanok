@@ -159,6 +159,35 @@ services:
       - hanok-network
 
   # =============================================
+  # Loki (로그 수집 서버)
+  # =============================================
+  loki:
+    image: grafana/loki:latest
+    container_name: hanok-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    networks:
+      - hanok-network
+
+  # =============================================
+  # Promtail (로그 수집 에이전트)
+  # =============================================
+  promtail:
+    image: grafana/promtail:latest
+    container_name: hanok-promtail
+    restart: unless-stopped
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes/jenkins-stack_jenkins_home/_data/workspace/hanok/infra/promtail.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - hanok-network
+
+  # =============================================
   # InfluxDB (k6 결과 저장)
   # =============================================
   influxdb:
@@ -183,6 +212,7 @@ volumes:
   prometheus-data:
   grafana-data:
   influxdb-data:
+  loki-data:
 
 # =============================================
 # Network
@@ -190,3 +220,5 @@ volumes:
 networks:
   hanok-network:
     driver: bridge
+
+
