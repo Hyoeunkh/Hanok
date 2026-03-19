@@ -83,6 +83,11 @@ const isStreamFailedEvent = (
 ): event is Extract<BroadcastStreamEvent, { eventType: 'STREAM_FAILED' }> =>
   event.eventType === 'STREAM_FAILED' || ('event' in event && event.event === 'stream:failed');
 
+const isSystemStreamEndEvent = (
+  event: BroadcastStreamEvent,
+): event is Extract<BroadcastStreamEvent, { eventType: 'SYSTEM_STREAM_END' }> =>
+  event.eventType === 'SYSTEM_STREAM_END';
+
 const isLegacyUniqueAuctionEndEvent = (event: {
   eventType: string;
   payload?: unknown;
@@ -118,10 +123,24 @@ const isUniqueAlreadyBidError = (payload?: StompErrorPayload) => payload?.code =
 // Helper
 // ---------------------------------------------------------------------------
 
-const createSyncedTimer = (timer: StreamTimerPayload): SyncedAuctionTimer => ({
-  ...timer,
-  receivedAtMs: Date.now(),
-});
+const TIMER_SNAPSHOT_TOLERANCE_MS = 1000;
+
+const createSyncedTimer = (timer: StreamTimerPayload): SyncedAuctionTimer => {
+  const serverNowMs = Date.parse(timer.serverNow);
+  const serverStartedAtMs = Date.parse(timer.serverStartedAt);
+  const isRemainingSnapshot =
+    !Number.isNaN(serverNowMs) &&
+    !Number.isNaN(serverStartedAtMs) &&
+    serverNowMs - serverStartedAtMs > timer.durationSeconds * 1000 + TIMER_SNAPSHOT_TOLERANCE_MS;
+
+  return {
+    ...timer,
+    // Some BID_SYNC payloads send "remaining duration" with the original auction start time.
+    // Re-anchor those snapshots to serverNow so the local countdown does not jump straight to ended.
+    serverStartedAt: isRemainingSnapshot ? timer.serverNow : timer.serverStartedAt,
+    receivedAtMs: Date.now(),
+  };
+};
 
 // ---------------------------------------------------------------------------
 // Hook return type
@@ -366,6 +385,15 @@ export function useLiveStream(
         return;
       }
 
+      if (isSystemStreamEndEvent(event)) {
+        setStreamState('ended');
+        setLiveStateOverride(false);
+        setTimer(null);
+        setBidSync(null);
+        setUniqueBidSync(null);
+        return;
+      }
+
       if (isAuctionCommentEvent(event) && event.payload?.message) {
         setAuctionComment({
           id: Date.now(),
@@ -394,6 +422,7 @@ export function useLiveStream(
       }
 
       if (isBidEndEvent(event)) {
+        setBidSync(null);
         void requestItemSync();
         return;
       }

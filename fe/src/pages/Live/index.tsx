@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { usePostEndStream } from '@/api/hooks/usePostEndStream';
@@ -40,6 +41,8 @@ export default function LivePage() {
   const autoOpenedStartModalStreamIdRef = useRef<number | null>(null);
   const postStartStream = usePostStartStream();
   const postEndStream = usePostEndStream();
+  const [isChatOpen, setIsChatOpen] = useState(true);
+  const handleToggleChat = useCallback(() => setIsChatOpen((prev) => !prev), []);
 
   const activeStreamEnter: StreamEnterResponse | null = streamEnter ?? null;
   const isSeller = activeStreamEnter?.isHost ?? false;
@@ -85,10 +88,13 @@ export default function LivePage() {
   const {
     state: livekitState,
     videoRef,
+    bgVideoRef,
     toggleMic,
     toggleCamera,
+    toggleRemoteAudio,
     isMicOn,
     isCameraOn,
+    isRemoteAudioMuted,
     viewerCount,
     disconnect,
   } = useLiveKit({
@@ -230,11 +236,18 @@ export default function LivePage() {
           <StreamOverlay viewerCount={viewerCount} isSeller={isSeller} />
           {isSeller && <SellerGuideOverlay />}
           <video
+            ref={bgVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`absolute inset-0 h-full w-full object-cover -scale-x-100 blur-2xl brightness-50 saturate-120 ${livekitState === 'connected' ? '' : 'hidden'}`}
+          />
+          <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={`h-full w-full object-contain ${livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`relative h-full w-full object-contain -scale-x-100 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
           {livekitState !== 'connected' && <StreamPlaceholder />}
           <ControlBar
@@ -255,6 +268,9 @@ export default function LivePage() {
             toggleCamera={toggleCamera}
             isMicOn={isMicOn}
             isCameraOn={isCameraOn}
+            isRemoteAudioMuted={isRemoteAudioMuted}
+            onToggleMute={toggleRemoteAudio}
+            onToggleChat={handleToggleChat}
           />
 
           {auctionComment && <AuctionCommentToast key={auctionComment.id} message={auctionComment?.message ?? null} />}
@@ -308,15 +324,26 @@ export default function LivePage() {
             />
           )}
         </div>
-        <div className="min-w-0 flex-1 overflow-hidden rounded-2xl">
-          <RightPanel
-            isSeller={isSeller}
-            auctionType={activeAuctionType}
-            auctionStatistics={auctionStatistics}
-            uniqueBidSync={uniqueBidSync}
-            streamEnter={activeStreamEnter}
-          />
-        </div>
+        <AnimatePresence initial={false}>
+          {isChatOpen && (
+            <motion.div
+              key="right-panel"
+              className="min-w-0 overflow-hidden rounded-2xl"
+              initial={{ flex: 0, opacity: 0 }}
+              animate={{ flex: 1, opacity: 1 }}
+              exit={{ flex: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            >
+              <RightPanel
+                isSeller={isSeller}
+                auctionType={activeAuctionType}
+                auctionStatistics={auctionStatistics}
+                uniqueBidSync={uniqueBidSync}
+                streamEnter={activeStreamEnter}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

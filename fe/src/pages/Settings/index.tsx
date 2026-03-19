@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { FaStore } from 'react-icons/fa';
 import { FiCamera } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useGetMe } from '@/api/hooks/useGetMe';
 import { useGetNotification } from '@/api/hooks/useGetNotification';
@@ -16,12 +16,17 @@ import FollowedStoresSection from '@/components/Settings/FollowedStoresSection';
 import OrderHistorySection from '@/components/Settings/OrderHistorySection';
 import PaymentSection from '@/components/Settings/PaymentSection';
 import ShippingSection from '@/components/Settings/ShippingSection';
+import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
 
 type SettingsTab = 'account' | 'stores' | 'shipping' | 'payment' | 'order';
+const SETTINGS_TABS: SettingsTab[] = ['account', 'stores', 'shipping', 'payment', 'order'];
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<SettingsTab>('account');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const initialTab = SETTINGS_TABS.includes(tabParam as SettingsTab) ? (tabParam as SettingsTab) : 'order';
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
 
   const { data: meData, isLoading: isMeLoading } = useGetMe();
   const { isLoading: isNotiLoading } = useGetNotification();
@@ -43,8 +48,8 @@ export default function SettingsPage() {
       onSuccess: () => {
         showToast({ message: '프로필 이미지가 변경되었습니다.' });
       },
-      onError: () => {
-        showToast({ message: '프로필 이미지 변경에 실패했습니다.' });
+      onError: (error) => {
+        showToast({ message: getUploadErrorMessage(error, '프로필 이미지 변경에 실패했습니다.') });
       },
     });
   };
@@ -105,11 +110,7 @@ export default function SettingsPage() {
             <h1 className="m-0 text-3xl font-bold tracking-tight text-white">{user?.nickname}</h1>
             <div className="flex items-center gap-3">
               <span className="text-lg text-neutral-400">({user?.email?.split('@')[0]})</span>
-              <button
-                onClick={handleLogout}
-                disabled={isLogoutPending}
-                className="btn btn-primary-outline"
-              >
+              <button onClick={handleLogout} disabled={isLogoutPending} className="btn btn-primary-outline">
                 {isLogoutPending ? '로그아웃 중...' : '로그아웃'}
               </button>
             </div>
@@ -146,16 +147,20 @@ export default function SettingsPage() {
         <SideBar
           items={settingsSidebarItems}
           activeItemId={activeTab}
-          onItemClick={(item) => setActiveTab(item.id as SettingsTab)}
+          onItemClick={(item) => {
+            const nextTab = item.id as SettingsTab;
+            setActiveTab(nextTab);
+            setSearchParams({ tab: nextTab });
+          }}
           className="static shrink-0 !w-[240px] border-r-0 !bg-transparent !py-0"
         />
 
         <div className="w-full flex flex-1 flex-col gap-6">
-          {activeTab === 'account' && <AccountSection />}
+          {activeTab === 'order' && <OrderHistorySection />}
           {activeTab === 'stores' && <FollowedStoresSection />}
           {activeTab === 'shipping' && <ShippingSection />}
           {activeTab === 'payment' && <PaymentSection />}
-          {activeTab === 'order' && <OrderHistorySection />}
+          {activeTab === 'account' && <AccountSection />}
         </div>
       </div>
     </div>

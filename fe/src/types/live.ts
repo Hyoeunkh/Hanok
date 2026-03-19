@@ -187,8 +187,8 @@ export type StreamState = 'live' | 'disconnected' | 'ended';
 
 export type ChatMessageType =
   | { id: number; type: 'chat'; nickname: string; message: string }
-  | { id: number; type: 'macro_request'; nickname: string; command: string }
-  | { id: number; type: 'macro_response'; label: string; message: string }
+  | { id: number; type: 'macro_request'; nickname: string; question: string; createdAt?: string }
+  | { id: number; type: 'macro_response'; sender: string; question: string; answer: string; createdAt?: string }
   | { id: number; type: 'system'; message: string };
 
 export type LiveStreamItemStatus = 'READY' | 'INTRODUCING' | 'LIVE' | 'SOLD' | 'UNSOLD';
@@ -356,6 +356,10 @@ export type BroadcastStreamEvent =
     }
   | {
       eventType: 'AUCTION_END';
+      payload: null;
+    }
+  | {
+      eventType: 'SYSTEM_STREAM_END';
       payload: null;
     }
   | {
