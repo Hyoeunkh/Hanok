@@ -87,8 +87,10 @@ export default function LivePage() {
     videoRef,
     toggleMic,
     toggleCamera,
+    toggleRemoteAudio,
     isMicOn,
     isCameraOn,
+    isRemoteAudioMuted,
     viewerCount,
     disconnect,
   } = useLiveKit({
@@ -255,6 +257,8 @@ export default function LivePage() {
             toggleCamera={toggleCamera}
             isMicOn={isMicOn}
             isCameraOn={isCameraOn}
+            isRemoteAudioMuted={isRemoteAudioMuted}
+            onToggleMute={toggleRemoteAudio}
           />
 
           {auctionComment && <AuctionCommentToast key={auctionComment.id} message={auctionComment?.message ?? null} />}

@@ -27,9 +27,11 @@ interface Props {
   bidSync: BidSyncPayload | null;
   uniqueBidSync: UniqueBidSyncPayload | null;
   activeAuctionId: number | null;
+  isRemoteAudioMuted?: boolean;
+  onToggleMute?: () => void;
 }
 
-export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, activeAuctionId }: Props) {
+export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, activeAuctionId, isRemoteAudioMuted, onToggleMute }: Props) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -38,7 +40,6 @@ export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, a
   const { data: wallet } = useGetWallet(isLoggedIn);
   const [guideOpen, setGuideOpen] = useState(false);
   const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
-  const [muted, setMuted] = useState(false);
   const [tab, setTab] = useState<BidTab>('quick');
   const [customUnit, setCustomUnit] = useState(1000);
   const [bidAmount, setBidAmount] = useState(1000);
@@ -496,9 +497,9 @@ export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, a
             <button
               type="button"
               className="flex h-10 w-10 items-center justify-center rounded-xl text-neutral-400 transition hover:bg-warm/10 hover:text-neutral-200"
-              onClick={() => setMuted((prev) => !prev)}
+              onClick={onToggleMute}
             >
-              {muted ? <LuVolumeOff size={18} /> : <LuVolume2 size={18} />}
+              {isRemoteAudioMuted ? <LuVolumeOff size={18} /> : <LuVolume2 size={18} />}
             </button>
             <button
               type="button"
