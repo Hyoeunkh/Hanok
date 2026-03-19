@@ -130,7 +130,7 @@ else
         # blue를 down에서 활성으로
         sudo sed -i "s|server localhost:8080 down;|server localhost:8080;|" /etc/nginx/sites-enabled/default
         # green을 down으로
-        sudo sed -i "s|server localhost:8081;|server localhost:8081 down;|" /etc/nginx/sites-enabled/default
+        sudo sed -i "s|server localhost:8081;  # green|server localhost:8081 down;  # green|" /etc/nginx/sites-enabled/default
         sudo /usr/local/bin/nginx-reload.sh
         sleep 3
         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} stop backend-green
