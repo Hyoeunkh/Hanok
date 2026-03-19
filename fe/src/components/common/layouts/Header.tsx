@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { User, Bell, Home, CircleDollarSign } from 'lucide-react';
+import { User, Bell, Home } from 'lucide-react';
+import { GrMoney } from 'react-icons/gr';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -110,7 +111,7 @@ export default function Header() {
         {isLoggedIn ? (
           <>
             <HeaderIcon onClick={() => navigate('/wallet')} ariaLabel="Go to wallet" tooltip="가상머니">
-              <CircleDollarSign size={20} />
+              <GrMoney size={20} />
             </HeaderIcon>
             <div className="relative">
               <HeaderIcon
