@@ -17,9 +17,9 @@ export const postTrackingInfo = async ({
 export const usePostTrackingInfo = () => {
   return useMutation({
     mutationFn: postTrackingInfo,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['escrowsSeller'] });
-      queryClient.invalidateQueries({ queryKey: ['escrowDetail'] });
+      queryClient.invalidateQueries({ queryKey: ['escrowDetail', variables.escrowId] });
     },
   });
 };

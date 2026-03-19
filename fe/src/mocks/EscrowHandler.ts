@@ -190,6 +190,24 @@ export const escrowHandlers = [
     HttpResponse.json({ success: true }, { status: 200 }),
   ),
 
+  http.post(`${BASE_URL}/v1/escrows/:escrowId/complete`, async ({ params }) => {
+    const escrowId = Number(params.escrowId);
+
+    mockBuyerEscrows.forEach((item) => {
+      if (item.escrowId === escrowId) {
+        item.escrowStatus = 'COMPLETED';
+      }
+    });
+
+    mockSellerEscrows.forEach((item) => {
+      if (item.escrowId === escrowId) {
+        item.escrowStatus = 'COMPLETED';
+      }
+    });
+
+    return HttpResponse.json({ success: true }, { status: 200 });
+  }),
+
   http.post(`${BASE_URL}/v1/escrows/:escrowId/cancel`, async () =>
     HttpResponse.json({ success: true }, { status: 200 }),
   ),
