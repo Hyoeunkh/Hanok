@@ -56,11 +56,6 @@ public class ItemService {
             tagRepository.saveAll(tags);
         }
 
-        auctionRepository.save(Auction.builder()
-                .auctionStatus(AuctionStatus.READY)
-                .item(saved)
-                .build());
-
         if (images != null && !images.isEmpty()) {
             try {
                 String image1 = getImage(images, 0, seller.getId(), saved.getId());
