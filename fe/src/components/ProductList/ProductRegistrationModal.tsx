@@ -78,10 +78,6 @@ interface ProductRegistrationModalProps {
 
 const inputClass =
   'w-full h-12 bg-background border border-neutral-800 rounded-lg text-neutral-100 text-sm px-4 outline-none focus:border-primary transition-colors';
-const selectArrowStyle = {
-  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a89a8c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-};
-const selectClass = `${inputClass} pr-10 cursor-pointer appearance-none bg-no-repeat bg-[position:right_14px_center]`;
 const labelClass = 'block text-neutral-100 text-sm font-semibold mb-2';
 const helperClass = 'mt-2 text-[12px] text-neutral-500';
 const MIN_START_PRICE = 1000;
@@ -89,7 +85,7 @@ const START_PRICE_STEP = 1000;
 const MIN_BID_UNIT = 100;
 const BID_UNIT_STEP = 100;
 
-const toDigitsOnly = (value: string) => value.replace(/\D/g, '');
+const toDigitsOnly = (value: string) => value.replace(/[^\d]/g, '');
 const formatKoreanNumberInput = (value: string) => {
   const digits = toDigitsOnly(value).replace(/^0+(?=\d)/, '');
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -233,7 +229,8 @@ export default function ProductRegistrationModal({
   };
 
   const handleShippingFeeChange = (value: string) => {
-    setShippingFee(toDigitsOnly(value));
+    const digits = toDigitsOnly(value);
+    setShippingFee(digits);
     setError('');
   };
 
@@ -266,6 +263,36 @@ export default function ProductRegistrationModal({
 
     if (!category) {
       setError('카테고리를 선택해주세요.');
+      return;
+    }
+
+    if (!itemCondition) {
+      setError('물품 상태를 선택해주세요.');
+      return;
+    }
+
+    if (!startPrice) {
+      setError('시작가를 입력해주세요.');
+      return;
+    }
+
+    if (!shippingFee) {
+      setError('배송비를 입력해주세요.');
+      return;
+    }
+
+    if (!auctionDuration) {
+      setError('경매시간을 선택해주세요.');
+      return;
+    }
+
+    if (!auctionType) {
+      setError('경매방식을 선택해주세요.');
+      return;
+    }
+
+    if (!description) {
+      setError('상품 설명을 입력해주세요.');
       return;
     }
 
@@ -486,6 +513,7 @@ export default function ProductRegistrationModal({
               onChange={(e) => handleStartPriceChange(e.target.value)}
               onBlur={handleStartPriceBlur}
             />
+
           </div>
 
           <div className="flex-1">
@@ -497,6 +525,7 @@ export default function ProductRegistrationModal({
               value={formatKoreanNumberInput(shippingFee)}
               onChange={(e) => handleShippingFeeChange(e.target.value)}
             />
+
           </div>
         </div>
 
@@ -515,6 +544,7 @@ export default function ProductRegistrationModal({
             onBlur={handleBidUnitBlur}
             disabled={isBidUnitDisabled}
           />
+
           <p className={helperClass}>
             {isBidUnitDisabled
               ? '입찰단가는 시작가가 5,000P 이상일 때부터 설정할 수 있습니다.'
