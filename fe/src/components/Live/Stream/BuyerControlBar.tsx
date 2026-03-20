@@ -220,7 +220,9 @@ export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, a
           break;
         case 'Enter':
           event.preventDefault();
-          handleBidPlace();
+          if (!isBidDisabled) {
+            handleBidPlace();
+          }
           break;
         case 'ArrowUp':
           event.preventDefault();
@@ -252,7 +254,7 @@ export default function BuyerControlBar({ auctionType, bidSync, uniqueBidSync, a
         }
       }
     },
-    [activeCustomUnit, handleBidPlace, handleDecrease, handleIncrease, isUniqueAuction],
+    [activeCustomUnit, handleBidPlace, handleDecrease, handleIncrease, isBidDisabled, isUniqueAuction],
   );
 
   const handleKeyUp = useCallback((event: KeyboardEvent) => {
