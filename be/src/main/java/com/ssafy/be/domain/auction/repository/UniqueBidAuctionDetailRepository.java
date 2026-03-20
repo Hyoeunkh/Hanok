@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UniqueBidAuctionDetailRepository extends JpaRepository<UniqueBidAuctionDetail, Long> {
-    Optional<UniqueBidAuctionDetail> findByAuctionId(Long auctionId);
+    Optional<UniqueBidAuctionDetail> findByAuction_Id(Long auctionId);
 }
