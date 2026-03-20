@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
 
 import { usePatchItem } from '@/api/hooks/usePatchItem';
@@ -7,6 +7,67 @@ import Button from '@/components/common/Button';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
 import type { ItemAuctionType, Product } from '@/types';
 import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder = '선택',
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selectedLabel = options.find((o) => o.value === value)?.label;
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full h-12 bg-background border border-neutral-800 rounded-lg text-sm px-4 text-left flex items-center justify-between hover:border-primary transition-colors"
+      >
+        <span className={selectedLabel ? 'text-neutral-100' : 'text-neutral-500'}>
+          {selectedLabel || placeholder}
+        </span>
+        <span className={`text-gold text-sm transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] bg-neutral-900 border border-neutral-700 rounded-xl overflow-hidden shadow-lg max-h-[240px] overflow-y-auto custom-scrollbar">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-4 py-2.5 text-[14px] transition-colors ${
+                value === opt.value
+                  ? 'bg-gold/15 text-gold-light font-semibold'
+                  : 'text-neutral-300 hover:bg-warm/8 hover:text-neutral-100'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface ProductRegistrationModalProps {
   isOpen: boolean;
@@ -17,10 +78,6 @@ interface ProductRegistrationModalProps {
 
 const inputClass =
   'w-full h-12 bg-background border border-neutral-800 rounded-lg text-neutral-100 text-sm px-4 outline-none focus:border-primary transition-colors';
-const selectArrowStyle = {
-  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a89a8c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-};
-const selectClass = `${inputClass} pr-10 cursor-pointer appearance-none bg-no-repeat bg-[position:right_14px_center]`;
 const labelClass = 'block text-neutral-100 text-sm font-semibold mb-2';
 const helperClass = 'mt-2 text-[12px] text-neutral-500';
 const MIN_START_PRICE = 1000;
@@ -28,7 +85,7 @@ const START_PRICE_STEP = 1000;
 const MIN_BID_UNIT = 100;
 const BID_UNIT_STEP = 100;
 
-const toDigitsOnly = (value: string) => value.replace(/\D/g, '');
+const toDigitsOnly = (value: string) => value.replace(/[^\d]/g, '');
 const formatKoreanNumberInput = (value: string) => {
   const digits = toDigitsOnly(value).replace(/^0+(?=\d)/, '');
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -154,6 +211,7 @@ export default function ProductRegistrationModal({
 
     setImages((prev) => [...prev, ...newFiles]);
     setError('');
+    e.target.value = '';
   };
 
   const removeNewImage = (index: number) => {
@@ -183,7 +241,8 @@ export default function ProductRegistrationModal({
   };
 
   const handleShippingFeeChange = (value: string) => {
-    setShippingFee(toDigitsOnly(value));
+    const digits = toDigitsOnly(value);
+    setShippingFee(digits);
     setError('');
   };
 
@@ -235,10 +294,36 @@ export default function ProductRegistrationModal({
       return;
     }
 
-    if (!initialData && !auctionType) {
+    if (!itemCondition) {
+      setError('물품 상태를 선택해주세요.');
+      return;
+    }
+
+    if (!startPrice) {
+      setError('시작가를 입력해주세요.');
+      return;
+    }
+
+    if (!shippingFee) {
+      setError('배송비를 입력해주세요.');
+      return;
+    }
+
+    if (!auctionDuration) {
+      setError('경매시간을 선택해주세요.');
+      return;
+    }
+
+    if (!auctionType) {
       setError('경매방식을 선택해주세요.');
       return;
     }
+
+    if (!description) {
+      setError('상품 설명을 입력해주세요.');
+      return;
+    }
+  }
 
     const parsedTags = hashtags
       .split(/\s+/)
@@ -439,83 +524,58 @@ export default function ProductRegistrationModal({
         <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>카테고리</label>
-            <select
-              className={selectClass}
+            <CustomSelect
               value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
-                setError('');
-              }}
-              style={selectArrowStyle}
-            >
-              <option value="" disabled hidden>
-                선택
-              </option>
-              {MAIN_CATEGORY_ITEMS.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => { setCategory(v); setError(''); }}
+              placeholder="선택"
+              options={MAIN_CATEGORY_ITEMS.filter((item) => item.id !== 'ALL').map((item) => ({ value: item.id, label: item.label }))}
+            />
           </div>
 
           <div className="flex-1">
             <label className={labelClass}>물품 상태</label>
-            <select
-              className={selectClass}
+            <CustomSelect
               value={itemCondition}
-              onChange={(e) => setItemCondition(e.target.value)}
-              style={selectArrowStyle}
-            >
-              <option value="" disabled hidden>
-                선택
-              </option>
-              <option value="BRAND_NEW">미개봉</option>
-              <option value="OPEN_BOX">개봉된 새상품</option>
-              <option value="REFURBISHED">리퍼비시</option>
-              <option value="USED">중고</option>
-            </select>
+              onChange={setItemCondition}
+              placeholder="선택"
+              options={[
+                { value: 'BRAND_NEW', label: '미개봉' },
+                { value: 'OPEN_BOX', label: '개봉된 새상품' },
+                { value: 'REFURBISHED', label: '리퍼비시' },
+                { value: 'USED', label: '중고' },
+              ]}
+            />
           </div>
         </div>
 
 
-        <div className="flex gap-4 mb-5">
+                <div className="flex gap-4 mb-5">
           <div className="flex-1">
             <label className={labelClass}>경매시간</label>
-            <select
-              className={selectClass}
+            <CustomSelect
               value={auctionDuration}
-              onChange={(e) => setAuctionDuration(e.target.value)}
-              style={selectArrowStyle}
-            >
-              <option value="" disabled hidden>
-                경매시간을 선택하세요
-              </option>
-              <option value="10">10초</option>
-              <option value="30">30초</option>
-              <option value="60">1분</option>
-            </select>
+              onChange={setAuctionDuration}
+              placeholder="경매시간을 선택하세요"
+              options={[
+                { value: '10', label: '10초' },
+                { value: '30', label: '30초' },
+                { value: '60', label: '1분' },
+              ]}
+            />
           </div>
 
           <div className="flex-1">
             <label className={labelClass}>경매방식</label>
-            <select
-              className={selectClass}
+            <CustomSelect
               value={auctionType}
-              onChange={(e) => {
-                setAuctionType(e.target.value as ItemAuctionType | '');
-                setError('');
-                setUniquePriceError('');
-              }}
-              style={selectArrowStyle}
-            >
-              <option value="" disabled hidden>
-                경매방식을 선택하세요
-              </option>
-              <option value="BOTTOM_UP">상향식</option>
-              <option value="UNIQUE_TOP">유일최고가</option>
-            </select>
-          </div>
+              onChange={(v) => setAuctionType(v as ItemAuctionType | '')}
+              placeholder="경매방식을 선택하세요"
+              options={[
+                { value: 'BOTTOM_UP', label: '상향식' },
+                { value: 'UNIQUE_TOP', label: '유일최고가' },
+              ]}
+            />
+        </div>
         </div>
 
         {showBottomUpPricing && (
@@ -531,6 +591,7 @@ export default function ProductRegistrationModal({
               onChange={(e) => handleStartPriceChange(e.target.value)}
               onBlur={handleStartPriceBlur}
             />
+
           </div>
 
           <div className="flex-1">
@@ -542,6 +603,7 @@ export default function ProductRegistrationModal({
               value={formatKoreanNumberInput(shippingFee)}
               onChange={(e) => handleShippingFeeChange(e.target.value)}
             />
+
           </div>
         </div>
 
@@ -560,6 +622,7 @@ export default function ProductRegistrationModal({
             onBlur={handleBidUnitBlur}
             disabled={isBidUnitDisabled}
           />
+
           <p className={helperClass}>
             {isBidUnitDisabled
               ? '입찰단가는 시작가가 5,000P 이상일 때부터 설정할 수 있습니다.'
