@@ -85,8 +85,6 @@ export default function Header() {
             className="h-12 w-auto object-contain brightness-0 invert sepia saturate-50 hue-rotate-[350deg]"
           />
         </button>
-
-        <div className="h-7 w-px shrink-0 bg-warm/6" />
       </div>
 
       <div className="flex min-w-0 flex-1 justify-start pl-2">
