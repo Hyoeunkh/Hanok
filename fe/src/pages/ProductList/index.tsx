@@ -55,7 +55,7 @@ export default function ProductListPage() {
   const tabs = [
     { id: 'ALL', label: '전체' },
     { id: 'READY', label: `대기(${countByStatus.READY})` },
-    { id: 'PENDING', label: `경매중(${countByStatus.PENDING})` },
+    { id: 'PENDING', label: `거래중(${countByStatus.PENDING})` },
     { id: 'SOLD', label: `판매 완료(${countByStatus.SOLD})` },
   ] as const;
 

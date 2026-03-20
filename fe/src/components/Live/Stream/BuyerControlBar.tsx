@@ -9,6 +9,7 @@ import { useGetAddresses } from '@/api/hooks/useGetAddresses';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
 import BidAccessModal from '@/components/Live/Auction/Buyer/BidAccessModal';
 import KeyboardGuide from '@/components/Live/Auction/Buyer/KeyboardGuide';
+import AddressFormModal from '@/components/Settings/AddressFormModal';
 import { useToast } from '@/components/common/Toast';
 import type { BidSyncPayload, LiveAuctionType, UniqueBidSyncPayload } from '@/types';
 import { sendStreamMessage } from '@/websocket/stompClient';
@@ -21,7 +22,6 @@ const CUSTOM_UNIT_OPTIONS = [
 ];
 
 type BidTab = 'quick' | 'custom';
-type BidAccessModalType = 'login' | 'shipping' | null;
 type AuctionEndPhase = 'ended' | 'waiting' | null;
 
 interface Props {
@@ -58,7 +58,8 @@ export default function BuyerControlBar({
   const [freeInput, setFreeInput] = useState('');
   const [uniqueInputError, setUniqueInputError] = useState('');
   const [panelOpacity, setPanelOpacity] = useState(90);
-  const [bidAccessModal, setBidAccessModal] = useState<BidAccessModalType>(null);
+  const [isBidAccessModalOpen, setIsBidAccessModalOpen] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [auctionEndPhase, setAuctionEndPhase] = useState<AuctionEndPhase>(null);
   const hadActiveAuctionRef = useRef(false);
   const suppressNextUniqueBidAttemptRef = useRef(false);
@@ -137,7 +138,7 @@ export default function BuyerControlBar({
     }
 
     if (!isLoggedIn) {
-      setBidAccessModal('login');
+      setIsBidAccessModalOpen(true);
       return;
     }
 
@@ -147,7 +148,7 @@ export default function BuyerControlBar({
     }
 
     if (!hasRegisteredShippingAddress) {
-      setBidAccessModal('shipping');
+      setIsAddressModalOpen(true);
       return;
     }
 
@@ -217,13 +218,8 @@ export default function BuyerControlBar({
   ]);
 
   const handleBidAccessAction = () => {
-    if (bidAccessModal === 'login') {
-      navigate('/login');
-    } else if (bidAccessModal === 'shipping') {
-      navigate('/settings?tab=shipping');
-    }
-
-    setBidAccessModal(null);
+    navigate('/login');
+    setIsBidAccessModalOpen(false);
   };
 
   const handleDecrease = useCallback(() => {
@@ -652,10 +648,16 @@ export default function BuyerControlBar({
       </div>
 
       <BidAccessModal
-        isOpen={bidAccessModal !== null}
-        variant={bidAccessModal}
-        onClose={() => setBidAccessModal(null)}
+        isOpen={isBidAccessModalOpen}
+        onClose={() => setIsBidAccessModalOpen(false)}
         onAction={handleBidAccessAction}
+      />
+      <AddressFormModal
+        isOpen={isAddressModalOpen}
+        mode="add"
+        defaultOnCreate
+        description="배송지가 등록되어 있어야 경매에 참여할 수 있습니다."
+        onClose={() => setIsAddressModalOpen(false)}
       />
     </>
   );
