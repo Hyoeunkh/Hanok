@@ -2,11 +2,9 @@ package com.ssafy.be.domain.stream.service;
 
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
-import com.ssafy.be.domain.auction.entity.UniqueBidAuctionDetail;
 import com.ssafy.be.domain.auction.model.Bid;
 import com.ssafy.be.domain.auction.repository.AuctionBidRepository;
 import com.ssafy.be.domain.auction.repository.AuctionRepository;
-import com.ssafy.be.domain.auction.repository.UniqueBidAuctionDetailRepository;
 import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.item.dto.response.ItemSummaryResponse;
 import com.ssafy.be.domain.item.entity.AuctionType;
