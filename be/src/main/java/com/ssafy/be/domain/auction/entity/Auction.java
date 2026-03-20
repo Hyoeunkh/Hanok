@@ -35,9 +35,9 @@ public class Auction {
     @JoinColumn(name = "item_id")
     private Item item;
 
-//    // --- 양방향 매핑 추가 (삭제 시 자식 Detail도 함께 삭제되도록 설정) ---
-//    @OneToOne(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    private UniqueBidAuctionDetail uniqueBidAuctionDetail;
+    // --- 양방향 매핑 추가 (삭제 시 자식 Detail도 함께 삭제되도록 설정) ---
+    @OneToOne(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private UniqueBidAuctionDetail uniqueBidAuctionDetail;
 
     @Builder
     private Auction(AuctionStatus auctionStatus,
