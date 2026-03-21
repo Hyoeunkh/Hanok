@@ -254,8 +254,10 @@ public class SellerService {
         LocalDateTime startOfMonth = YearMonth.now().atDay(1).atStartOfDay();
         List<Object[]> dailyStats = escrowRepository.findDailySalesBySellerId(sellerId, startOfMonth);
         List<SellerReportResponse.DailySalesDto> dailySales = dailyStats.stream()
-                .map(row -> new SellerReportResponse.DailySalesDto((String) row[0], ((Number) row[1]).longValue()))
-                .toList();
+                .map(row -> new SellerReportResponse.DailySalesDto(
+                        (String) row[0],
+                        row[1] != null ? ((Number) row[1]).longValue() : 0L
+                )).toList();
 
         // 3. 인기 랭킹 Top 3
         List<Object[]> topItems = itemRepository.findTopHotItemsBySellerId(sellerId);
@@ -285,9 +287,9 @@ public class SellerService {
         List<Object[]> catStats = escrowRepository.findCategoryStatsBySellerId(sellerId);
         List<SellerReportResponse.CategoryStatsDto> categoryStatsDtos = catStats.stream()
                 .map(row -> new SellerReportResponse.CategoryStatsDto(
-                        row[0] != null ? row[0].toString() : "기타", // category
-                        ((Number) row[1]).longValue(),               // salesCount
-                        ((Number) row[2]).longValue()                // salesAmount
+                        row[0] != null ? row[0].toString() : "기타",
+                        row[1] != null ? ((Number) row[1]).longValue() : 0L,
+                        row[2] != null ? ((Number) row[2]).longValue() : 0L
                 )).toList();
 
         // 7. 평판 상세 (Seller 엔티티에서 바로 가져옴)
