@@ -100,13 +100,18 @@ export default function LiveRegisterTutorial({
       }
 
       const rect = target.getBoundingClientRect();
-      const width = Math.min(320, window.innerWidth - 32);
-      const height = 208;
-      const gap = activeStep.id === 'inventory' ? 18 : 34;
+      const isActionStep = activeStep.id === 'introduce' || activeStep.id === 'start';
+      const width = Math.min(isActionStep ? 380 : 320, window.innerWidth - 32);
+      const height = isActionStep ? 236 : 208;
+      const gap = activeStep.id === 'inventory' ? 18 : 14;
+      const topOffset = activeStep.id === 'introduce' ? 18 : 0;
       const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
       let left = activeStep.placement === 'right' ? rect.right + gap : rect.left + rect.width / 2 - width / 2;
-      let top = activeStep.placement === 'right' ? rect.top + rect.height / 2 - height / 2 : rect.top - height - gap;
+      let top =
+        activeStep.placement === 'right'
+          ? rect.top + rect.height / 2 - height / 2
+          : rect.top - height + topOffset;
 
       if (activeStep.placement === 'right' && left + width > window.innerWidth - 16) {
         left = rect.left - width - gap;
@@ -152,19 +157,19 @@ export default function LiveRegisterTutorial({
           >
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold-light/70">판매자 튜토리얼</p>
-                <h3 className="mt-2 text-lg font-black text-neutral-100">{activeStep.title}</h3>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-gold-light/70">판매자 튜토리얼</p>
+                <h3 className="mt-2 text-xl font-black text-neutral-100">{activeStep.title}</h3>
               </div>
               <button
                 type="button"
                 onClick={closeTutorial}
-                className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-bold text-neutral-400 transition hover:border-white/20 hover:text-white"
+                className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-bold text-neutral-400 transition hover:border-white/20 hover:text-white"
               >
                 SKIP
               </button>
             </div>
 
-            <p className="text-sm leading-6 whitespace-pre-line text-neutral-300">{activeStep.description}</p>
+            <p className="text-base leading-7 whitespace-pre-line text-neutral-300">{activeStep.description}</p>
 
             <div className="mt-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -181,7 +186,7 @@ export default function LiveRegisterTutorial({
               <button
                 type="button"
                 onClick={nextStep}
-                className="rounded-full bg-gold px-4 py-2 text-sm font-black text-background transition hover:bg-gold-light"
+                className="rounded-full bg-gold px-4 py-2.5 text-base font-black text-background transition hover:bg-gold-light"
               >
                 {stepIndex === steps.length - 1 ? '튜토리얼 닫기' : '다음'}
               </button>

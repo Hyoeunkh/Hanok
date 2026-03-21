@@ -454,9 +454,9 @@ export default function LiveRegisterPage() {
                   <FaArrowLeft size={16} />
                 </button>
                 <div className="flex items-center gap-2">
-                  <FaCircle className="text-accent text-sm" />
-                  <h1 className="text-sm font-bold text-neutral-100">{pageTitle}</h1>
-                  <span className="text-xs font-bold text-gold">[{categoryLabel}]</span>
+                  <FaCircle className="text-accent text-base" />
+                  <h1 className="text-lg font-bold text-neutral-100">{pageTitle}</h1>
+                  <span className="text-sm font-bold text-gold">[{categoryLabel}]</span>
                 </div>
               </div>
 
@@ -465,12 +465,12 @@ export default function LiveRegisterPage() {
                   type="button"
                   onClick={handleSchedule}
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-transparent px-3 py-1.5 text-[11px] font-bold text-neutral-300 transition-colors hover:border-neutral-600 hover:bg-neutral-900 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-transparent px-3 py-2 text-[13px] font-bold text-neutral-300 transition-colors hover:border-neutral-600 hover:bg-neutral-900 disabled:opacity-50"
                 >
                   <FaCalendarAlt size={12} />
                   {scheduleButtonLabel}
                   {scheduledAt && (
-                    <span className="ml-1 text-[10px] font-bold text-gold">
+                    <span className="ml-1 text-xs font-bold text-gold">
                       {new Date(scheduledAt).toLocaleDateString('ko-KR', {
                         month: 'long',
                         day: 'numeric',
@@ -484,7 +484,7 @@ export default function LiveRegisterPage() {
                   type="button"
                   onClick={handleEnter}
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 rounded-lg border border-accent/35 bg-accent/12 px-3 py-1.5 text-[11px] font-bold text-accent-light transition-colors hover:bg-accent/18 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg border border-accent/35 bg-accent/12 px-3 py-2 text-[13px] font-bold text-accent-light transition-colors hover:bg-accent/18 disabled:opacity-50"
                 >
                   <MdLiveTv size={14} />
                   {sellerEntryButtonLabel || liveButtonLabel}
@@ -495,8 +495,8 @@ export default function LiveRegisterPage() {
             <div className="flex gap-3 flex-1 min-h-0">
               <aside className="min-w-0 flex-1 flex flex-col rounded-2xl bg-background px-4 py-6 overflow-hidden">
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="text-xs font-bold text-neutral-400">경매 물품 목록</span>
-                  <span className="text-[11px] font-bold text-neutral-600">{tutorialVisibleItems.length}</span>
+                  <span className="text-sm font-bold text-neutral-400">경매 물품 목록</span>
+                  <span className="text-[13px] font-bold text-neutral-600">{tutorialVisibleItems.length}</span>
                 </div>
 
                 <div className="flex flex-col gap-2 overflow-y-auto pr-2">
@@ -526,30 +526,30 @@ export default function LiveRegisterPage() {
                           }
                         />
                         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-                          <span className="truncate text-xs font-bold leading-snug text-neutral-100">{item.name}</span>
+                          <span className="truncate text-sm font-bold leading-snug text-neutral-100">{item.name}</span>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-black text-gold">
+                            <span className="text-[13px] font-black text-gold">
                               {item.startPrice.toLocaleString()}원
                             </span>
-                            <span className="rounded-full bg-gold/10 px-1.5 py-0.5 text-[9px] font-extrabold text-gold-light">
+                            <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[11px] font-extrabold text-gold-light">
                               {conditionLabel}
                             </span>
                             {isExampleItem && (
-                              <span className="rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 text-[9px] font-extrabold text-accent-light">
+                              <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-extrabold text-accent-light">
                                 예시
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="flex shrink-0 flex-col items-end justify-center">
-                          <span className="rounded-full border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 text-[9px] font-extrabold text-neutral-500">
+                          <span className="rounded-full border border-neutral-700 bg-neutral-900 px-2 py-0.5 text-[11px] font-extrabold text-neutral-500">
                             대기
                           </span>
                           {!isExampleItem && (
                             <button
                               type="button"
                               onClick={() => toggleItem(item)}
-                              className="mt-1.5 bg-transparent border-none cursor-pointer text-accent text-[10px] hover:text-accent-light"
+                              className="mt-1.5 bg-transparent border-none cursor-pointer text-accent text-xs hover:text-accent-light"
                             >
                               <FaTimes size={10} />
                             </button>
@@ -563,7 +563,7 @@ export default function LiveRegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowInventoryModal(true)}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-800 bg-transparent px-4 py-2.5 text-xs font-bold text-neutral-600 transition-all hover:border-neutral-700 hover:bg-neutral-900 hover:text-neutral-300"
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-800 bg-transparent px-4 py-3 text-sm font-bold text-neutral-600 transition-all hover:border-neutral-700 hover:bg-neutral-900 hover:text-neutral-300"
                 >
                   인벤토리에서 물품 선택
                 </button>
@@ -582,22 +582,22 @@ export default function LiveRegisterPage() {
                   {!isCameraOn && (
                     <div className="flex flex-col items-center gap-3 text-white/20">
                       <MdLiveTv size={60} />
-                      <span className="text-sm">카메라가 꺼져 있습니다</span>
+                      <span className="text-base">카메라가 꺼져 있습니다</span>
                     </div>
                   )}
                 </div>
-                <div className="absolute bottom-8 right-4 flex items-center gap-2 rounded-2xl bg-surface/80 px-2.5 py-2">
+                <div className="absolute top-8 right-4 flex items-center gap-2 rounded-2xl bg-surface/80 px-2.5 py-2">
                   <button
                     type="button"
                     onClick={reopenTutorial}
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-neutral-400 transition-all hover:text-neutral-200"
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-bold text-neutral-400 transition-all hover:text-neutral-200"
                   >
                     튜토리얼
                   </button>
                   <button
                     type="button"
                     onClick={isCameraOn ? stopCamera : startCamera}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all ${
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-bold transition-all ${
                       isCameraOn ? 'text-neutral-400 hover:text-neutral-200' : 'text-accent hover:text-accent-light'
                     }`}
                   >
@@ -606,8 +606,8 @@ export default function LiveRegisterPage() {
                   </button>
                 </div>
 
-                <div className="pointer-events-none absolute bottom-9 flex h-[100px] items-stretch justify-center left-4 right-4">
-                  <div className="pointer-events-none flex max-w-[360px] flex-1 flex-col items-center gap-2 px-4">
+                <div className="pointer-events-none absolute bottom-9 flex h-[120px] items-stretch justify-center left-4 right-4">
+                  <div className="pointer-events-auto flex max-w-[500px] flex-1 flex-col items-center gap-2 px-4">
                     <SellerActionButtons
                       onIntroduce={handlePreviewIntroduce}
                       onStart={handlePreviewStart}
@@ -615,8 +615,8 @@ export default function LiveRegisterPage() {
                       canStart
                       introduceButtonRef={introduceButtonRef}
                       startButtonRef={startButtonRef}
-                      introduceButtonClassName={getTargetClassName('introduce')}
-                      startButtonClassName={getTargetClassName('start')}
+                      introduceButtonClassName={`${getTargetClassName('introduce')} text-base py-3 [&_span]:text-xs`}
+                      startButtonClassName={`${getTargetClassName('start')} text-base py-3 [&_span]:text-xs`}
                     />
                   </div>
                 </div>
@@ -624,14 +624,12 @@ export default function LiveRegisterPage() {
 
               <aside className="min-w-0 flex-1 flex flex-col rounded-2xl bg-background overflow-hidden">
                 <div className="px-3 py-2 border-b border-neutral-800">
-                  <span className="text-xs font-bold text-neutral-100">방송 기본 설정</span>
+                  <span className="text-sm font-bold text-neutral-100">방송 기본 설정</span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
-                      썸네일 업로드
-                    </label>
+                    <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">썸네일 업로드</label>
                     <button
                       type="button"
                       onClick={() => thumbnailInputRef.current?.click()}
@@ -642,7 +640,7 @@ export default function LiveRegisterPage() {
                       ) : (
                         <>
                           <FaCamera size={18} className="text-neutral-600" />
-                          <span className="text-[11px] font-bold text-neutral-600">이미지 첨부(10MB 이하)</span>
+                          <span className="text-[13px] font-bold text-neutral-600">이미지 첨부(10MB 이하)</span>
                         </>
                       )}
                     </button>
@@ -656,18 +654,18 @@ export default function LiveRegisterPage() {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">방송 제목</label>
+                    <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">방송 제목</label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="제목을 입력하세요."
-                      className="w-full rounded-lg border border-neutral-800 bg-transparent px-3 py-2 text-xs text-neutral-100 outline-none placeholder:text-neutral-700 transition-colors focus:border-gold/40"
+                      className="w-full rounded-lg border border-neutral-800 bg-transparent px-3 py-2.5 text-sm text-neutral-100 outline-none placeholder:text-neutral-700 transition-colors focus:border-gold/40"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                    <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">
                       상단 고정 공지사항 (선택)
                     </label>
                     <input
@@ -675,13 +673,13 @@ export default function LiveRegisterPage() {
                       value={notice}
                       onChange={(e) => setNotice(e.target.value)}
                       placeholder="공지사항을 입력하세요."
-                      className="w-full rounded-lg border border-neutral-800 bg-transparent px-3 py-2 text-xs text-neutral-100 outline-none placeholder:text-neutral-700 transition-colors focus:border-gold/40"
+                      className="w-full rounded-lg border border-neutral-800 bg-transparent px-3 py-2.5 text-sm text-neutral-100 outline-none placeholder:text-neutral-700 transition-colors focus:border-gold/40"
                     />
                   </div>
 
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                      <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">
                         카테고리 매크로
                       </label>
                     </div>
@@ -693,7 +691,7 @@ export default function LiveRegisterPage() {
                           <div key={macro.questionType} className="flex items-center gap-2">
                             <button
                               type="button"
-                              className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold whitespace-nowrap transition-colors ${
+                              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-extrabold whitespace-nowrap transition-colors ${
                                 macroAnswers[macro.questionType]
                                   ? 'border border-gold/40 bg-gold/10 text-gold'
                                   : 'border border-neutral-800 bg-transparent text-neutral-600'
@@ -716,13 +714,13 @@ export default function LiveRegisterPage() {
                                 }));
                               }}
                               placeholder="응답을 입력해주세요."
-                              className="min-w-0 flex-1 rounded-lg border border-neutral-800 bg-transparent px-2 py-1.5 text-[11px] text-neutral-100 outline-none placeholder:text-neutral-700 transition-colors focus:border-gold/40"
+                              className="min-w-0 flex-1 rounded-lg border border-neutral-800 bg-transparent px-3 py-2 text-sm text-neutral-100 outline-none placeholder:text-neutral-700 transition-colors focus:border-gold/40"
                             />
                           </div>
                         );
                       })}
                       {!macroFields.length && (
-                        <p className="text-xs font-bold text-neutral-600">해당 카테고리의 매크로가 없습니다.</p>
+                        <p className="text-sm font-bold text-neutral-600">해당 카테고리의 매크로가 없습니다.</p>
                       )}
                     </div>
                   </div>
