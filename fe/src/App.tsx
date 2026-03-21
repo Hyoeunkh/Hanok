@@ -15,12 +15,19 @@ import SellerOnlyRoute from '@/components/common/layouts/SellerOnlyRoute';
 import LiveRegisterPage from './components/LiveCreate/LiveRegisterPage';
 import SearchPage from './pages/Search';
 import SellerReportPage from './pages/SellerReport';
+import AdminPage from './pages/Admin';
+import AdminOnlyRoute from '@/components/common/layouts/AdminOnlyRoute';
 
 function App() {
   return (
     <Routes>
       {/* 풀스크린 (Header/Footer 없음) */}
       <Route path="live/:id" element={<LivePage />} />
+
+      {/* 관리자 전용 (Header/Footer 없음) */}
+      <Route element={<AdminOnlyRoute />}>
+        <Route path="admin" element={<AdminPage />} />
+      </Route>
 
       <Route path="/" element={<MainLayout />}>
         <Route index element={<MainPage />} />

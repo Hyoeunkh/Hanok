@@ -8,6 +8,7 @@ export type MockLoginUser = {
   balance: number;
   depositedBalance: number;
   isSeller: boolean;
+  isAdmin?: boolean;
   accessToken: string;
   refreshToken: string;
 };
@@ -51,6 +52,20 @@ export const mockLoginUsers: MockLoginUser[] = [
     isSeller: false,
     accessToken: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIzIiwiZW1haWwiOiJ0ZXN0dXNlckBleGFtcGxlLmNvbSJ9.',
     refreshToken: 'mock-refresh-token-test-user',
+  },
+  {
+    userId: 99,
+    email: 'admin105@hanok.com',
+    phone: '010-9999-9999',
+    password: 'hanok105!@#$',
+    nickname: '관리자',
+    profileImage: null,
+    balance: 0,
+    depositedBalance: 0,
+    isSeller: false,
+    isAdmin: true,
+    accessToken: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiI5OSIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20ifQ.',
+    refreshToken: 'mock-refresh-token-admin',
   },
 ];
 

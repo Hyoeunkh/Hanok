@@ -123,7 +123,7 @@ export default function SellerReportPage() {
             <span>이번 달: <span className="text-white font-semibold">{formatPrice(report.trendGraph.currentMonthTotal)}</span></span>
             <span>지난 달: <span className="text-neutral-300">{formatPrice(report.trendGraph.lastMonthTotal)}</span></span>
           </div>
-          <div style={{ width: '100%', height: 260, overflow: 'hidden' }}>
+          <div className="w-full h-[260px] overflow-hidden">
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={report.trendGraph.dailySales}>
                 <defs>
@@ -270,7 +270,7 @@ export default function SellerReportPage() {
         <div className="bg-surface-elevated rounded-2xl border border-neutral-800 p-6">
           <h3 className="text-lg font-semibold text-warm m-0 mb-4">카테고리별 매출</h3>
           {categoryChartData.length > 0 ? (
-            <div style={{ width: '100%', height: 220, overflow: 'hidden' }}>
+            <div className="w-full h-[220px] overflow-hidden">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={categoryChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" />

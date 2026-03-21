@@ -11,6 +11,7 @@ import { macroHandlers } from './MacroHandler';
 import { LiveCreateHandlers } from './LiveCreateHandler';
 import { notificationHandlers } from './NotificationHandler';
 import { reportHandlers } from './ReportHandler';
+import { adminHandlers } from './AdminHandler';
 
 export const handlers = [
   ...authHandlers,
@@ -26,4 +27,5 @@ export const handlers = [
   ...macroHandlers,
   ...notificationHandlers,
   ...reportHandlers,
+  ...adminHandlers,
 ];

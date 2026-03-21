@@ -117,6 +117,7 @@ export const settingsHandlers = [
 
   http.get(`${BASE_URL}/v1/users/me`, () => {
     const currentUser = getCurrentMockUser();
+    console.log('[Mock] /v1/users/me currentUser:', currentUser?.email, 'isAdmin:', currentUser?.isAdmin);
     const data = currentUser
       ? {
           email: currentUser.email,
@@ -129,8 +130,9 @@ export const settingsHandlers = [
           accountName: mockMeData.accountName,
           accountNum: mockMeData.accountNum,
           sellerId: currentUser.isSeller ? currentUser.userId : null,
+          isAdmin: currentUser.isAdmin ?? false,
         }
-      : mockMeData;
+      : { ...mockMeData, isAdmin: false };
 
     return HttpResponse.json(
       {
