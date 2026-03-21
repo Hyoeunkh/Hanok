@@ -101,7 +101,7 @@ export default function LiveCreatePage() {
         <div className="flex-1 flex flex-col gap-1.5">
           <p className="text-neutral-500 text-sm">{formatScheduledAt(stream.scheduledAt)}</p>
           <p className="text-neutral-100 text-base font-semibold">{stream.title}</p>
-          <p className="text-neutral-500 text-sm">방송 카테고리 : {getCategoryLabel(stream.category)}</p>
+          <p className="text-neutral-500 text-sm">{getCategoryLabel(stream.category)}</p>
         </div>
 
         <div className="flex items-center gap-4 shrink-0 pr-2">

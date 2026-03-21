@@ -169,11 +169,7 @@ const getInitialFormState = (initialData?: Product | null) => {
   };
 };
 
-function ProductRegistrationModalContent({
-  onClose,
-  onSuccess,
-  initialData,
-}: ProductRegistrationModalContentProps) {
+function ProductRegistrationModalContent({ onClose, onSuccess, initialData }: ProductRegistrationModalContentProps) {
   const initialForm = useMemo(() => getInitialFormState(initialData), [initialData]);
   const { mutateAsync: createItem, isPending: isCreating } = usePostItem();
   const { mutateAsync: updateItem, isPending: isUpdating } = usePatchItem();
@@ -592,7 +588,7 @@ function ProductRegistrationModalContent({
               <label className={labelClass}>상품명 ({name.length}/20)</label>
               <input
                 className={inputClass}
-                placeholder="상품명을 입력해주세요. 최대 20자"
+                placeholder="상품명을 입력해주세요"
                 value={name}
                 onChange={(event) => {
                   setName(event.target.value);
@@ -835,11 +831,6 @@ export default function ProductRegistrationModal({
   const modalKey = initialData ? `edit-${initialData.itemId}` : 'create';
 
   return (
-    <ProductRegistrationModalContent
-      key={modalKey}
-      onClose={onClose}
-      onSuccess={onSuccess}
-      initialData={initialData}
-    />
+    <ProductRegistrationModalContent key={modalKey} onClose={onClose} onSuccess={onSuccess} initialData={initialData} />
   );
 }

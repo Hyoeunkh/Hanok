@@ -61,7 +61,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
   };
 
   return (
-    <div className="flex bg-surface rounded-2xl p-6 gap-6 mb-4 border border-neutral-800 hover:bg-surface-elevated transition-colors">
+    <div className="flex bg-surface-elevated rounded-2xl p-6 gap-6 mb-4 border border-neutral-800 hover:bg-surface transition-colors items-center justify-center">
       <div className="relative w-[160px] h-[160px] rounded-xl overflow-hidden shrink-0 bg-white group">
         <div
           className={`absolute top-3 left-3 ${currentStatus.bg} text-white px-3 py-1 rounded-full text-xs font-semibold z-10`}
@@ -125,14 +125,15 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
                 </button>
               </div>
             )}
-            <span className="text-neutral-400 text-xs">
-              {MAIN_CATEGORY_ITEMS.find((c) => c.id === product.category)?.label || product.category}
-            </span>
           </div>
         </div>
-
-        <h3 className="text-neutral-100 text-lg font-bold m-0 mb-1.5">{product.name}</h3>
-        <p className="text-neutral-500 text-sm m-0 mb-6 leading-relaxed">{product.description}</p>
+        <div className="flex justify-between">
+          <h3 className="text-neutral-100 text-lg font-bold m-0">{product.name}</h3>
+          <span className="text-gold-dark text-xs">
+            {MAIN_CATEGORY_ITEMS.find((c) => c.id === product.category)?.label || product.category}
+          </span>
+        </div>
+        <p className="text-neutral-500 text-sm m-0 mb-4 leading-relaxed">{product.description}</p>
 
         <div className="grid grid-cols-5 border border-neutral-700 rounded-xl bg-neutral-800 mt-auto overflow-hidden">
           <MetricBox label="시작가격" value={formatKoreanPrice(product.startPrice)} />
@@ -148,7 +149,9 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
 
 function MetricBox({ label, value, isLast = false }: { label: string; value: string; isLast?: boolean }) {
   return (
-    <div className={`px-4 py-3 flex flex-col justify-center overflow-hidden ${isLast ? '' : 'border-r border-neutral-700'}`}>
+    <div
+      className={`px-4 py-3 flex flex-col justify-center overflow-hidden ${isLast ? '' : 'border-r border-neutral-700'}`}
+    >
       <div className="text-neutral-400 text-xs mb-1">{label}</div>
       <div className="text-neutral-100 text-[15px] font-semibold break-all">{value}</div>
     </div>
