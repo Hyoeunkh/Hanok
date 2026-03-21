@@ -33,8 +33,7 @@ public class UniqueBidAuctionDetail {
     }
 
     public void validateSetting() {
-        long unit = auction.getItem().getBidUnit();
-        long slots = (maxPrice - minPrice) / unit + 1;
+        long slots = maxPrice - minPrice + 1;
         double spread = (double) (maxPrice - minPrice) / minPrice;
 
         if (spread < 0.3) throw new IllegalArgumentException("최고가-최소가 차이가 30% 미만입니다.");
@@ -42,8 +41,7 @@ public class UniqueBidAuctionDetail {
     }
 
     public boolean isValidBidAmount(Long amount) {
-        if (amount < minPrice || amount > maxPrice) return false;
-        return (amount - minPrice) % auction.getItem().getBidUnit() == 0;
+        return amount >= minPrice && amount <= maxPrice;
     }
 
     public Long getAuctionId() {
@@ -59,7 +57,7 @@ public class UniqueBidAuctionDetail {
     }
 
     public int getDuration() {
-        return auction.getItem().getAuctionDuration();
+        return auction.getAuctionDuration();
     }
 
 }
