@@ -13,3 +13,4 @@ export * from './settings';
 export * from './stompChat';
 export * from './notification';
 export * from './delivery';
+export * from './report';

@@ -14,6 +14,7 @@ import MainLayout from '@/components/common/layouts/MainLayout';
 import SellerOnlyRoute from '@/components/common/layouts/SellerOnlyRoute';
 import LiveRegisterPage from './components/LiveCreate/LiveRegisterPage';
 import SearchPage from './pages/Search';
+import SellerReportPage from './pages/SellerReport';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="lives" element={<LiveCreatePage />} />
           <Route path="live/register" element={<LiveRegisterPage />} />
           <Route path="products" element={<ProductListPage />} />
+          <Route path="seller/report" element={<SellerReportPage />} />
         </Route>
       </Route>
     </Routes>
