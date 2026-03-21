@@ -8,7 +8,6 @@ export type MockLoginUser = {
   balance: number;
   depositedBalance: number;
   isSeller: boolean;
-  isAdmin?: boolean;
   accessToken: string;
   refreshToken: string;
 };
@@ -63,7 +62,6 @@ export const mockLoginUsers: MockLoginUser[] = [
     balance: 0,
     depositedBalance: 0,
     isSeller: false,
-    isAdmin: true,
     accessToken: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiI5OSIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20ifQ.',
     refreshToken: 'mock-refresh-token-admin',
   },

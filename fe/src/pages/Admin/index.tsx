@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetWithdraws } from '@/api/hooks/useGetWithdraws';
 import { usePostWithdrawComplete } from '@/api/hooks/usePostWithdrawComplete';
-import { useLogout } from '@/api/hooks/usePostLogout';
+import { clearAdminRouteAuthenticated } from '@/constants/adminAccess';
 import { useToast } from '@/hooks/useToast';
 import Logo from '@/assets/Logo.png';
 import type { WithdrawStatus, WithdrawItem } from '@/types';
@@ -39,19 +39,17 @@ export default function AdminPage() {
   const statusFilter = activeTab === 'ALL' ? undefined : activeTab;
   const { data: withdraws = [], isLoading } = useGetWithdraws(statusFilter);
   const { mutate: completeWithdraw, isPending } = usePostWithdrawComplete();
-  const { mutate: logoutMutate } = useLogout();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
   const handleLogout = () => {
-    logoutMutate(undefined, {
-      onSuccess: () => navigate('/login'),
-    });
+    clearAdminRouteAuthenticated();
+    navigate('/admin', { replace: true });
   };
 
   const handleComplete = () => {
     if (!confirmTarget) return;
-    completeWithdraw(confirmTarget.withdrawId, {
+    completeWithdraw(confirmTarget.id, {
       onSuccess: () => {
         showToast({ message: '출금 완료 처리되었습니다.' });
         setConfirmTarget(null);
@@ -81,90 +79,89 @@ export default function AdminPage() {
       </header>
 
       <div className="w-350 mx-auto py-10 px-4">
-      <div className="mb-8">
-        <h2 className="text-[24px] font-semibold text-warm leading-tight m-0 mb-2">관리자 페이지</h2>
-        <p className="text-body-md text-neutral-500 m-0">출금 요청을 관리합니다</p>
-      </div>
-
-      <div className="bg-surface-elevated rounded-2xl border border-neutral-800 flex flex-col">
-        {/* Tabs */}
-        <div className="flex border-b border-neutral-800 pt-4 px-6">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`bg-transparent border-none px-6 py-3 text-sm cursor-pointer relative ${
-                  isActive ? 'text-neutral-100 font-bold' : 'text-neutral-500 font-normal'
-                }`}
-              >
-                {tab.label}
-                {isActive && <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-neutral-100" />}
-              </button>
-            );
-          })}
+        <div className="mb-8">
+          <h2 className="text-[24px] font-semibold text-warm leading-tight m-0 mb-2">관리자 페이지</h2>
+          <p className="text-body-md text-neutral-500 m-0">출금 요청을 관리합니다</p>
         </div>
 
-        {/* Table Header */}
-        <div className="grid grid-cols-[60px_1fr_1fr_150px_120px_100px_120px] gap-4 px-6 py-3 border-b border-neutral-800 text-neutral-500 text-xs font-semibold">
-          <span>ID</span>
-          <span>요청자</span>
-          <span>계좌 정보</span>
-          <span>금액</span>
-          <span>상태</span>
-          <span>요청일시</span>
-          <span />
-        </div>
+        <div className="bg-surface-elevated rounded-2xl border border-neutral-800 flex flex-col">
+          {/* Tabs */}
+          <div className="flex border-b border-neutral-800 pt-4 px-6">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`bg-transparent border-none px-6 py-3 text-sm cursor-pointer relative ${
+                    isActive ? 'text-neutral-100 font-bold' : 'text-neutral-500 font-normal'
+                  }`}
+                >
+                  {tab.label}
+                  {isActive && <div className="absolute -bottom-px left-0 right-0 h-0.5 bg-neutral-100" />}
+                </button>
+              );
+            })}
+          </div>
 
-        {/* List */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin w-8 h-8 border-2 border-gold-light border-t-transparent rounded-full" />
+          {/* Table Header */}
+          <div className="grid grid-cols-[80px_100px_1.4fr_140px_110px_160px_140px] gap-4 px-6 py-3 border-b border-neutral-800 text-neutral-500 text-xs font-semibold">
+            <span>ID</span>
+            <span>회원 ID</span>
+            <span>계좌 정보</span>
+            <span>금액</span>
+            <span>상태</span>
+            <span>요청일시</span>
+            <span />
           </div>
-        ) : withdraws.length === 0 ? (
-          <div className="flex items-center justify-center py-20 text-neutral-500 text-sm">
-            출금 요청이 없습니다.
-          </div>
-        ) : (
-          <div className="flex flex-col">
-            {withdraws.map((item) => (
-              <div
-                key={item.withdrawId}
-                className="grid grid-cols-[60px_1fr_1fr_150px_120px_100px_120px] gap-4 px-6 py-4 border-b border-neutral-800/50 items-center hover:bg-white/[0.02] transition-colors"
-              >
-                <span className="text-neutral-400 text-sm">{item.withdrawId}</span>
-                <div className="flex flex-col">
-                  <span className="text-white text-sm">{item.nickname}</span>
-                  <span className="text-neutral-500 text-xs">ID: {item.userId}</span>
+
+          {/* List */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="animate-spin w-8 h-8 border-2 border-gold-light border-t-transparent rounded-full" />
+            </div>
+          ) : withdraws.length === 0 ? (
+            <div className="flex items-center justify-center py-20 text-neutral-500 text-sm">
+              출금 요청이 없습니다.
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {withdraws.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-[80px_100px_1.4fr_140px_110px_160px_140px] gap-4 px-6 py-4 border-b border-neutral-800/50 items-center hover:bg-white/[0.02] transition-colors"
+                >
+                  <span className="text-neutral-400 text-sm">{item.id}</span>
+                  <span className="text-white text-sm">{item.userId}</span>
+                  <div className="flex flex-col">
+                    <span className="text-neutral-300 text-sm">{item.accountName}</span>
+                    <span className="text-neutral-500 text-xs">
+                      {item.bankCode} {item.accountNum}
+                    </span>
+                  </div>
+                  <span className="text-white font-semibold text-sm">{formatPrice(item.amount)}</span>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full w-fit ${STATUS_STYLE[item.status]}`}>
+                    {STATUS_LABEL[item.status]}
+                  </span>
+                  <span className="text-neutral-500 text-xs">{formatDate(item.requestedAt)}</span>
+                  <div>
+                    {item.status === 'PENDING' ? (
+                      <button
+                        onClick={() => setConfirmTarget(item)}
+                        disabled={isPending}
+                        className="btn-primary-outline rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        승인
+                      </button>
+                    ) : item.processedAt ? (
+                      <span className="text-neutral-600 text-xs">{formatDate(item.processedAt)}</span>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-neutral-300 text-sm">{item.accountName}</span>
-                  <span className="text-neutral-500 text-xs">{item.bankCode} {item.accountNum}</span>
-                </div>
-                <span className="text-white font-semibold text-sm">{formatPrice(item.amount)}</span>
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full w-fit ${STATUS_STYLE[item.status]}`}>
-                  {STATUS_LABEL[item.status]}
-                </span>
-                <span className="text-neutral-500 text-xs">{formatDate(item.requestedAt)}</span>
-                <div>
-                  {item.status === 'PENDING' ? (
-                    <button
-                      onClick={() => setConfirmTarget(item)}
-                      disabled={isPending}
-                      className="btn-primary-outline rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      승인
-                    </button>
-                  ) : item.completedAt ? (
-                    <span className="text-neutral-600 text-xs">{formatDate(item.completedAt)}</span>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Confirm Modal */}
@@ -173,7 +170,10 @@ export default function AdminPage() {
           <div className="bg-surface-elevated border border-neutral-800 rounded-2xl p-6 w-full max-w-[400px] mx-4">
             <h3 className="text-lg font-semibold text-warm m-0 mb-3">출금 완료 처리</h3>
             <p className="text-sm text-neutral-300 m-0 mb-1">
-              <span className="text-white font-semibold">{confirmTarget.nickname}</span>님의 출금 요청을 완료 처리하시겠습니까?
+              회원 ID <span className="text-white font-semibold">{confirmTarget.userId}</span>의 출금 요청을 완료 처리하시겠습니까?
+            </p>
+            <p className="text-sm text-neutral-400 m-0 mb-6">
+              예금주: <span className="text-white font-semibold">{confirmTarget.accountName}</span>
             </p>
             <p className="text-sm text-neutral-400 m-0 mb-6">
               금액: <span className="text-gold-light font-semibold">{formatPrice(confirmTarget.amount)}</span>

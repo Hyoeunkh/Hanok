@@ -1,16 +1,13 @@
 export type WithdrawStatus = 'PENDING' | 'COMPLETED' | 'REJECTED';
 
 export type WithdrawItem = {
-  withdrawId: number;
+  id: number;
   userId: number;
-  nickname: string;
-  amount: number;
+  accountName: string;
   bankCode: string;
   accountNum: string;
-  accountName: string;
+  amount: number;
   status: WithdrawStatus;
   requestedAt: string;
-  completedAt: string | null;
+  processedAt: string | null;
 };
-
-export type GetWithdrawsResponse = WithdrawItem[];

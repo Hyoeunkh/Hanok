@@ -3,78 +3,61 @@ import { http, HttpResponse } from 'msw';
 import { BASE_URL } from '@/api/instance';
 
 type MockWithdraw = {
-  withdrawId: number;
+  id: number;
   userId: number;
-  nickname: string;
-  amount: number;
+  accountName: string;
   bankCode: string;
   accountNum: string;
-  accountName: string;
+  amount: number;
   status: 'PENDING' | 'COMPLETED' | 'REJECTED';
   requestedAt: string;
-  completedAt: string | null;
+  processedAt: string | null;
 };
 
 const mockWithdraws: MockWithdraw[] = [
   {
-    withdrawId: 1,
-    userId: 1,
-    nickname: '구매자테스트',
+    id: 101,
+    userId: 12,
+    accountName: '김철수',
     amount: 50000,
-    bankCode: '088',
-    accountNum: '110-123-456789',
-    accountName: '홍길동',
-    status: 'PENDING',
-    requestedAt: '2026-03-20T10:30:00Z',
-    completedAt: null,
-  },
-  {
-    withdrawId: 2,
-    userId: 2,
-    nickname: '판매자테스트',
-    amount: 150000,
     bankCode: '004',
     accountNum: '123-456-789012',
-    accountName: '김철수',
     status: 'PENDING',
-    requestedAt: '2026-03-19T14:20:00Z',
-    completedAt: null,
+    requestedAt: '2026-03-21T14:30:00',
+    processedAt: null,
   },
   {
-    withdrawId: 3,
-    userId: 3,
-    nickname: '테스트유저',
-    amount: 30000,
-    bankCode: '011',
-    accountNum: '987-654-321098',
+    id: 102,
+    userId: 15,
     accountName: '이영희',
+    amount: 120000,
+    bankCode: '088',
+    accountNum: '987654321000',
     status: 'COMPLETED',
-    requestedAt: '2026-03-18T09:00:00Z',
-    completedAt: '2026-03-18T15:30:00Z',
+    requestedAt: '2026-03-20T09:15:00',
+    processedAt: '2026-03-20T10:05:00',
   },
   {
-    withdrawId: 4,
-    userId: 1,
-    nickname: '구매자테스트',
+    id: 103,
+    userId: 21,
+    accountName: '박민수',
     amount: 200000,
     bankCode: '088',
-    accountNum: '110-123-456789',
-    accountName: '홍길동',
+    accountNum: '110123456789',
     status: 'REJECTED',
-    requestedAt: '2026-03-17T11:45:00Z',
-    completedAt: null,
+    requestedAt: '2026-03-19T11:45:00',
+    processedAt: '2026-03-19T13:10:00',
   },
   {
-    withdrawId: 5,
-    userId: 2,
-    nickname: '판매자테스트',
+    id: 104,
+    userId: 28,
+    accountName: '최유진',
     amount: 80000,
     bankCode: '004',
-    accountNum: '123-456-789012',
-    accountName: '김철수',
+    accountNum: '222-333-444555',
     status: 'PENDING',
-    requestedAt: '2026-03-21T08:10:00Z',
-    completedAt: null,
+    requestedAt: '2026-03-21T08:10:00',
+    processedAt: null,
   },
 ];
 
@@ -96,7 +79,7 @@ export const adminHandlers = [
 
   http.post(`${BASE_URL}/v1/admin/withdraws/:withdrawId/complete`, ({ params }) => {
     const withdrawId = Number(params.withdrawId);
-    const withdraw = mockWithdraws.find((w) => w.withdrawId === withdrawId);
+    const withdraw = mockWithdraws.find((w) => w.id === withdrawId);
 
     if (!withdraw) {
       return HttpResponse.json(
@@ -106,7 +89,7 @@ export const adminHandlers = [
     }
 
     withdraw.status = 'COMPLETED';
-    withdraw.completedAt = new Date().toISOString();
+    withdraw.processedAt = new Date().toISOString();
 
     return HttpResponse.json({
       status: 'SUCCESS',

@@ -48,11 +48,7 @@ export default function LoginPage() {
       queryClient.clear();
       const me = await getMe();
       queryClient.setQueryData(['me'], me);
-      if (me.isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch {
       setError('이메일 또는 비밀번호가 올바르지 않습니다.');
     } finally {

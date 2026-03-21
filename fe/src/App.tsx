@@ -11,12 +11,12 @@ import LoginPage from './pages/Login';
 import WalletPage from './pages/Wallet';
 import SettingsPage from './pages/Settings';
 import MainLayout from '@/components/common/layouts/MainLayout';
-import SellerOnlyRoute from '@/components/common/layouts/SellerOnlyRoute';
+import SellerOnlyRoute from '@/routes/SellerOnlyRoute';
 import LiveRegisterPage from './components/LiveCreate/LiveRegisterPage';
 import SearchPage from './pages/Search';
 import SellerReportPage from './pages/SellerReport';
 import AdminPage from './pages/Admin';
-import AdminOnlyRoute from '@/components/common/layouts/AdminOnlyRoute';
+import AdminOnlyRoute from '@/routes/AdminOnlyRoute';
 
 function App() {
   return (

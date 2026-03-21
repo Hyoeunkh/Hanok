@@ -9,7 +9,6 @@ export type GetMeResponse = {
   accountName: string;
   accountNum: string;
   sellerId: number | null;
-  isAdmin?: boolean;
 };
 
 export type PatchMeSettingsPayload = {

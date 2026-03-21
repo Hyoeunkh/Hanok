@@ -7,7 +7,9 @@ export const postWithdrawCompletePath = (withdrawId: number) =>
   `/v1/admin/withdraws/${withdrawId}/complete`;
 
 export const postWithdrawComplete = async (withdrawId: number) => {
-  const response = await getFetchInstance().post<ApiResponse<unknown>>(postWithdrawCompletePath(withdrawId));
+  const response = await getFetchInstance().post<ApiResponse<unknown>>(
+    postWithdrawCompletePath(withdrawId),
+  );
   return response.data;
 };
 
