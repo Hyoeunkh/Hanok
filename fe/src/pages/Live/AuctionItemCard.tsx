@@ -1,26 +1,8 @@
 import { useState } from 'react';
 
-import type { AuctionItem, ItemCondition, ItemStatus } from './LeftPanel';
-
-const STATUS_BADGE: Record<ItemStatus, { label: string; className: string }> = {
-  READY: { label: '대기', className: 'badge-neutral' },
-  INTRODUCING: { label: '설명중', className: 'badge-primary-outline' },
-  LIVE: { label: '경매중', className: 'badge-gold-outline' },
-  SOLD: { label: '낙찰', className: 'badge-ember-outline' },
-  UNSOLD: { label: '유찰', className: 'badge-accent-outline' },
-};
-
-const CONDITION_BADGE: Record<ItemCondition, { label: string; className: string }> = {
-  BRAND_NEW: { label: '미개봉', className: 'text-gold-light' },
-  OPEN_BOX: { label: '개봉품', className: 'text-gold' },
-  REFURBISHED: { label: '리퍼', className: 'text-gold-dark' },
-  USED: { label: '중고', className: 'text-gold-muted' },
-};
-
-const AUCTION_TYPE_LABEL: Record<AuctionItem['auctionType'], string> = {
-  BOTTOM_UP: '상향식',
-  UNIQUE_TOP: '유일최고가',
-};
+import { AUCTION_STATUS_BADGES, AUCTION_TYPE_LABELS } from '@/constants/auction';
+import { ITEM_CONDITION_BADGE } from '@/constants/itemCondition';
+import type { AuctionItem, ItemStatus } from './LeftPanel';
 
 const PRICE_CLASS: Record<ItemStatus, string> = {
   READY: 'text-neutral-500',
@@ -76,7 +58,7 @@ function ItemDetailAccordion({ item }: { item: AuctionItem }) {
           )}
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold text-neutral-600">경매 방식</span>
-            <span className="text-[11px] font-extrabold text-gold-dark">{AUCTION_TYPE_LABEL[item.auctionType]}</span>
+            <span className="text-[11px] font-extrabold text-gold-dark">{AUCTION_TYPE_LABELS[item.auctionType]}</span>
           </div>
         </div>
       )}
@@ -107,8 +89,8 @@ interface ActiveCardProps {
 
 export function ActiveItemCard({ item, isSelected, isSeller, onSelect }: ActiveCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const statusBadge = STATUS_BADGE[item.status];
-  const conditionBadge = CONDITION_BADGE[item.condition];
+  const statusBadge = AUCTION_STATUS_BADGES[item.status];
+  const conditionBadge = ITEM_CONDITION_BADGE[item.condition];
   const isExpanded = isSeller ? isSelected : expanded;
   const borderClass = isSelected
     ? 'border-gold/55 shadow-[0_0_12px_rgba(205,145,80,0.15)]'
@@ -195,7 +177,7 @@ interface DoneCardProps {
 
 export function DoneItemCard({ item }: DoneCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const statusBadge = STATUS_BADGE[item.status];
+  const statusBadge = AUCTION_STATUS_BADGES[item.status];
 
   return (
     <div

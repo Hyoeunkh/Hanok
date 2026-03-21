@@ -6,6 +6,8 @@ import { usePatchItem } from '@/api/hooks/usePatchItem';
 import { usePostItem } from '@/api/hooks/usePostItem';
 import Button from '@/components/common/Button';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
+import { AUCTION_TYPE_SELECT_OPTIONS, DURATION_SELECT_OPTIONS } from '@/constants/auction';
+import { ITEM_CONDITION_OPTIONS } from '@/constants/itemCondition';
 import type { ItemAuctionType, Product } from '@/types';
 import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
 
@@ -21,24 +23,6 @@ type CustomSelectProps = {
   placeholder?: string;
   disabled?: boolean;
 };
-
-const CONDITION_OPTIONS: SelectOption[] = [
-  { value: 'BRAND_NEW', label: '미개봉' },
-  { value: 'OPEN_BOX', label: '개봉된 새상품' },
-  { value: 'REFURBISHED', label: '리퍼비시' },
-  { value: 'USED', label: '중고' },
-];
-
-const DURATION_OPTIONS: SelectOption[] = [
-  { value: '10', label: '10초' },
-  { value: '30', label: '30초' },
-  { value: '60', label: '1분' },
-];
-
-const AUCTION_TYPE_OPTIONS: SelectOption[] = [
-  { value: 'BOTTOM_UP', label: '상향식' },
-  { value: 'UNIQUE_TOP', label: '유일최고가' },
-];
 
 const inputClass =
   'w-full h-12 bg-background border border-neutral-800 rounded-lg text-neutral-100 text-sm px-4 outline-none focus:border-primary transition-colors';
@@ -644,7 +628,7 @@ function ProductRegistrationModalContent({
                 setError('');
               }}
               placeholder="선택"
-              options={CONDITION_OPTIONS}
+              options={ITEM_CONDITION_OPTIONS}
             />
           </div>
 
@@ -658,7 +642,7 @@ function ProductRegistrationModalContent({
                   setError('');
                 }}
                 placeholder="시간 선택"
-                options={DURATION_OPTIONS}
+                options={DURATION_SELECT_OPTIONS}
               />
             </div>
 
@@ -672,7 +656,7 @@ function ProductRegistrationModalContent({
                   setUniquePriceError('');
                 }}
                 placeholder="방식 선택"
-                options={AUCTION_TYPE_OPTIONS}
+                options={AUCTION_TYPE_SELECT_OPTIONS}
                 disabled={isEditMode}
               />
             </div>

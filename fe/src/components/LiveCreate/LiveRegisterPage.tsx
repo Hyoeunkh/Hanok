@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaCalendarAlt, FaCamera, FaCircle, FaTimes, FaVideo, FaVideoSlash } from 'react-icons/fa';
 import { MdLiveTv } from 'react-icons/md';
 import { CATEGORY_MACROS } from '@/constants/macro';
+import { getItemConditionLabel } from '@/constants/itemCondition';
 import { useGetItemsByCategory } from '@/api/hooks/useGetItems';
 import { useGetStream } from '@/api/hooks/useGetStream';
 import { useGetStreamMacros } from '@/api/hooks/useGetStreamMacros';
@@ -476,10 +477,7 @@ export default function LiveRegisterPage() {
 
           <div className="flex flex-col gap-2 overflow-y-auto pr-2">
             {selectedItems.map((item) => {
-              const conditionLabel =
-                { BRAND_NEW: '미개봉', OPEN_BOX: '개봉된 새상품', REFURBISHED: '리퍼비시', USED: '중고' }[
-                  item.itemCondition
-                ] ?? item.itemCondition;
+              const conditionLabel = getItemConditionLabel(item.itemCondition);
 
               return (
                 <div key={item.itemId} className="flex gap-3 rounded-2xl border border-neutral-800 bg-white/[0.02] p-3">

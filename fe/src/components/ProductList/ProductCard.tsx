@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { FaImage, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import type { Product } from '@/types';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
+import { getAuctionTypeLabel } from '@/constants/auction';
+import { getItemConditionLabel } from '@/constants/itemCondition';
 
 const formatKoreanPrice = (num: number): string => {
   if (!Number.isFinite(num) || num < 0) return '0 원';
@@ -26,13 +28,6 @@ const formatKoreanPrice = (num: number): string => {
 
   if (remaining > 0) parts.push(remaining.toLocaleString('ko-KR'));
   return (parts.length > 0 ? parts.join(' ') : '0') + ' 원';
-};
-
-const conditionLabels: Record<string, string> = {
-  BRAND_NEW: '미개봉',
-  OPEN_BOX: '개봉된 새상품',
-  REFURBISHED: '리퍼비시',
-  USED: '중고',
 };
 
 const statusClassMap: Record<string, { label: string; bg: string }> = {
@@ -143,8 +138,8 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
           <MetricBox label="시작가격" value={formatKoreanPrice(product.startPrice)} />
           <MetricBox label="최소 입찰단위" value={formatKoreanPrice(product.bidUnit)} />
           <MetricBox label="경매 시간" value={`${product.auctionDuration} 초`} />
-          <MetricBox label="물품 상태" value={conditionLabels[product.itemCondition] || product.itemCondition} />
-          <MetricBox label="경매 방식" value={product.auctionType === 'UNIQUE_TOP' ? '유일최고가' : '상향식'} isLast />
+          <MetricBox label="물품 상태" value={getItemConditionLabel(product.itemCondition)} />
+          <MetricBox label="경매 방식" value={getAuctionTypeLabel(product.auctionType)} isLast />
         </div>
       </div>
     </div>

@@ -1,20 +1,13 @@
 import { useEffect } from 'react';
 
-import type { AuctionItem, ItemStatus } from './LeftPanel';
+import { AUCTION_STATUS_BADGES } from '@/constants/auction';
+import type { AuctionItem } from './LeftPanel';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   items: AuctionItem[];
 }
-
-const STATUS_BADGE: Record<ItemStatus, { label: string; className: string }> = {
-  READY: { label: '대기', className: 'badge-neutral' },
-  INTRODUCING: { label: '설명중', className: 'badge-primary-outline' },
-  LIVE: { label: '경매중', className: 'badge-gold-outline' },
-  SOLD: { label: '낙찰', className: 'badge-ember-outline' },
-  UNSOLD: { label: '유찰', className: 'badge-accent-outline' },
-};
 
 const STAT_COLORS = ['text-neutral-400', 'text-gold', 'text-ember'] as const;
 
@@ -133,7 +126,7 @@ export default function AuctionReportModal({ open, onClose, items }: Props) {
             </div>
 
             {items.map((item, index) => {
-              const statusBadge = STATUS_BADGE[item.status];
+              const statusBadge = AUCTION_STATUS_BADGES[item.status];
               const isDone = item.status === 'SOLD' || item.status === 'UNSOLD';
 
               return (
