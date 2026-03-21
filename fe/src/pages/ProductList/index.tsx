@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import type { Product } from '@/types';
-import { useToast } from '@/components/common/Toast';
 import ProductCard from '@/components/ProductList/ProductCard';
 import ProductRegistrationModal from '@/components/ProductList/ProductRegistrationModal';
 import { useDeleteItem } from '@/api/hooks/useDeleteItem';
 import { useGetItems } from '@/api/hooks/useGetItems';
 import SideBar from '@/components/common/layouts/SideBar';
 import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
+import { useToast } from '@/hooks/useToast';
 
 export default function ProductListPage() {
   const [activeMenu, setActiveMenu] = useState('inventory');

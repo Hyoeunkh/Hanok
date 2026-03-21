@@ -10,13 +10,13 @@ import { usePatchProfileImage } from '@/api/hooks/usePatchProfileImage';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
 import SideBar from '@/components/common/layouts/SideBar';
 import { settingsSidebarItems } from '@/components/common/layouts/settingsSidebarItems';
-import { useToast } from '@/components/common/Toast';
 import AccountSection from '@/components/Settings/AccountSection';
 import FollowedStoresSection from '@/components/Settings/FollowedStoresSection';
 import OrderHistorySection from '@/components/Settings/OrderHistorySection';
 import PaymentSection from '@/components/Settings/PaymentSection';
 import ShippingSection from '@/components/Settings/ShippingSection';
 import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
+import { useToast } from '@/hooks/useToast';
 
 type SettingsTab = 'account' | 'stores' | 'shipping' | 'payment' | 'order';
 const SETTINGS_TABS: SettingsTab[] = ['account', 'stores', 'shipping', 'payment', 'order'];
@@ -109,11 +109,7 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
               <h1 className="m-0 text-3xl font-bold tracking-tight text-white">{user?.nickname}</h1>
-              <button
-                onClick={handleLogout}
-                disabled={isLogoutPending}
-                className="btn btn-primary-outline"
-              >
+              <button onClick={handleLogout} disabled={isLogoutPending} className="btn btn-primary-outline">
                 {isLogoutPending ? '로그아웃 중...' : '로그아웃'}
               </button>
             </div>

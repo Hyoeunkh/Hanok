@@ -10,9 +10,9 @@ import { useGetWallet } from '@/api/hooks/useGetWallet';
 import BidAccessModal from '@/components/Live/Auction/Buyer/BidAccessModal';
 import KeyboardGuide from '@/components/Live/Auction/Buyer/KeyboardGuide';
 import AddressFormModal from '@/components/Settings/AddressFormModal';
-import { useToast } from '@/components/common/Toast';
 import type { BidSyncPayload, LiveAuctionType, UniqueBidSyncPayload } from '@/types';
 import { sendStreamMessage } from '@/websocket/stompClient';
+import { useToast } from '@/hooks/useToast';
 
 const CUSTOM_UNIT_OPTIONS = [
   { label: '1천원', value: 1000 },
@@ -185,7 +185,6 @@ export default function BuyerControlBar({
       if (!applyUniqueBidCorrection(uniqueInputAmount)) {
         return;
       }
-
     }
 
     void sendStreamMessage(streamId, {

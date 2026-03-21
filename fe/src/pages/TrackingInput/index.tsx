@@ -7,7 +7,6 @@ import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
 import { useGetEscrowsSeller } from '@/api/hooks/useGetEscrowsSeller';
 import { usePostTrackingInfo } from '@/api/hooks/usePostTrackingInfo';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
-import { useToast } from '@/components/common/Toast';
 import SideBar from '@/components/common/layouts/SideBar';
 import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 import { CARRIERS } from '@/pages/SellerOnboarding/constants';
@@ -18,6 +17,7 @@ import {
   isPendingEscrowState,
   isTrackingSubmittedEscrowState,
 } from '@/utils/getEscrowStateUI';
+import { useToast } from '@/hooks/useToast';
 
 function CompletedItemRow({
   item,
@@ -340,7 +340,9 @@ export default function TrackingInput() {
                           disabled={!selectedItemId}
                           className="w-full h-[48px] bg-transparent border border-neutral-700 rounded-lg px-3 text-left cursor-pointer flex items-center justify-between hover:border-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span className={`whitespace-nowrap ${carrier ? 'text-neutral-100 text-sm' : 'text-neutral-500 text-sm'}`}>
+                          <span
+                            className={`whitespace-nowrap ${carrier ? 'text-neutral-100 text-sm' : 'text-neutral-500 text-sm'}`}
+                          >
                             {carrier ? carrierName : '택배사'}
                           </span>
                           <span

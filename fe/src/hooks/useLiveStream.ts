@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useToast } from '@/components/common/Toast';
 import type {
   AuctionStatisticsPayload,
   BidSyncPayload,
@@ -18,6 +17,7 @@ import type {
   UniqueBidSyncPayload,
 } from '@/types';
 import { sendStreamMessage, subscribeStream } from '@/websocket/stompClient';
+import { useToast } from './useToast';
 
 // ---------------------------------------------------------------------------
 // Private type guards
@@ -172,10 +172,7 @@ export type UseLiveStreamReturn = {
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useLiveStream(
-  streamId: string | undefined,
-  isLiveFromServer: boolean,
-): UseLiveStreamReturn {
+export function useLiveStream(streamId: string | undefined, isLiveFromServer: boolean): UseLiveStreamReturn {
   const { showToast } = useToast();
 
   const [liveStateOverride, setLiveStateOverride] = useState<boolean | null>(null);

@@ -7,12 +7,12 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import { useGetUnreadCount } from '@/api/hooks/useGetUnreadCount';
-import { useToast } from '@/components/common/Toast/useToast';
 import { useSSE } from '@/hooks/useSSE';
 import Logo from '@/assets/Logo.png';
 import Button from '../Button';
 import NotificationPanel from '../NotificationPanel';
 import SearchBar from '../SearchBar';
+import { useToast } from '@/hooks/useToast';
 
 export default function Header() {
   const location = useLocation();

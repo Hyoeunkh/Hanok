@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { IconType } from 'react-icons';
 import { FiArrowDown, FiArrowUp, FiChevronLeft, FiCreditCard, FiInfo, FiZap } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/common/Toast';
 
 import { useGetTradeReports } from '@/api/hooks/useGetTradeReports';
 import { useGetAccount } from '@/api/hooks/useGetAccount';
@@ -18,6 +17,7 @@ import { MIN_WALLET_CHARGE_AMOUNT } from '@/constants/wallet';
 import type { TradeReportItem } from '@/types';
 import { requestPointChargePayment } from '@/utils/requestPointChargePayment';
 import coins from '@/assets/coins.png';
+import { useToast } from '@/hooks/useToast';
 
 type WalletType = 'charge' | 'withdraw' | 'settlement';
 

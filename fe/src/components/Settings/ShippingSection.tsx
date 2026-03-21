@@ -6,6 +6,7 @@ import { useGetAddresses } from '@/api/hooks/useGetAddresses';
 import { usePatchAddress } from '@/api/hooks/usePatchAddress';
 import type { Address, AddressModalMode } from '@/types';
 
+import AddressCard from './AddressCard';
 import AddressFormModal from './AddressFormModal';
 
 export default function ShippingSection() {
@@ -82,48 +83,14 @@ export default function ShippingSection() {
           {[...addresses]
             .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
             .map((address) => (
-              <div key={address.id} className="flex flex-col gap-2 rounded-2xl bg-surface-elevated p-6">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="text-[16px] font-bold text-white">{address.addressName}</span>
-                  {address.isDefault ? <span className="badge badge-gold">기본 배송지</span> : null}
-                </div>
-
-                <p className="m-0 text-[15px] text-neutral-200">
-                  {address.recipientName}&nbsp;&nbsp;({address.postalCode})
-                </p>
-                <p className="m-0 text-[15px] text-neutral-200">
-                  {address.address}
-                  {address.addressDetail ? ` ${address.addressDetail}` : ''}
-                </p>
-                <p className="m-0 text-[15px] text-neutral-200">{address.phone}</p>
-
-                <div className="mt-3 flex items-center justify-end gap-2">
-                  {!address.isDefault ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSetDefault(address)}
-                      className="btn btn-primary-outline !px-3 !py-1.5 !text-[12px]"
-                    >
-                      기본 배송지로 설정
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(address)}
-                    className="btn btn-primary-outline !px-3 !py-1.5 !text-[12px]"
-                  >
-                    수정
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(address.id)}
-                    disabled={address.isDefault && addresses.length > 1}
-                    className="btn btn-accent-outline !px-3 !py-1.5 !text-[12px] disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    삭제
-                  </button>
-                </div>
-              </div>
+              <AddressCard
+                key={address.id}
+                address={address}
+                isDeleteDisabled={address.isDefault && addresses.length > 1}
+                onSetDefault={handleSetDefault}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
             ))}
         </div>
       )}

@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { FaBroadcastTower, FaPlus } from 'react-icons/fa';
 import { MdLiveTv } from 'react-icons/md';
-import { useToast } from '@/components/common/Toast';
 import { useDeleteStream } from '@/api/hooks/useDeleteStream';
 import { useGetScheduledStreams } from '@/api/hooks/useGetScheduledStreams';
 import { usePostStartStream } from '@/api/hooks/usePostStartStream';
@@ -10,6 +9,7 @@ import { getCategoryLabel } from '@/constants/category';
 import SideBar from '@/components/common/layouts/SideBar';
 import { sellerSidebarItems } from '@/components/common/layouts/sellerSidebarItems';
 import CategorySelectModal from '@/components/LiveCreate/CategorySelectModal';
+import { useToast } from '@/hooks/useToast';
 
 const formatScheduledAt = (isoString: string | null): string => {
   if (!isoString) return '방송 중';

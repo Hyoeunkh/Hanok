@@ -1,12 +1,12 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { FiBell, FiAlertTriangle, FiX } from 'react-icons/fi';
 import { useState } from 'react';
-import { useToast } from '@/components/common/Toast';
 import { useGetMe } from '@/api/hooks/useGetMe';
 import { useGetNotification } from '@/api/hooks/useGetNotification';
 import { usePatchNotification } from '@/api/hooks/usePatchNotification';
 import { useDeleteWithdraw } from '@/api/hooks/useDeleteWithdraw';
 import { usePatchPassword } from '@/api/hooks/usePatchPassword';
+import { useToast } from '@/hooks/useToast';
 
 export default function AccountSection() {
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);

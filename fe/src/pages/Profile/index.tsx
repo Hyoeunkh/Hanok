@@ -1,6 +1,5 @@
 import { useState, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useToast } from '@/components/common/Toast';
 import { useGetSellerProfile } from '@/api/hooks/useGetSellerProfile';
 import { useGetSellerNotice } from '@/api/hooks/useGetSellerNotice';
 import { usePostSellerNotice } from '@/api/hooks/usePostSellerNotice';
@@ -22,6 +21,7 @@ import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
 import { FiBell, FiCalendar, FiClock, FiGift, FiEdit2, FiX, FiCamera, FiTv, FiChevronDown } from 'react-icons/fi';
 import { useGetScheduledStreams } from '@/api/hooks/useGetScheduledStreams';
 import React from 'react';
+import { useToast } from '@/hooks/useToast';
 
 const SOCIAL_PREFIX = {
   instagram: 'https://www.instagram.com/',
@@ -421,8 +421,18 @@ export default function ProfilePage() {
                 <div className="relative flex flex-col items-center gap-2 py-5 px-8 bg-surface-elevated group">
                   <span className="text-subtitle-sm text-neutral-500 flex items-center gap-1">
                     평점
-                    <svg className="w-3.5 h-3.5 text-neutral-600 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-3.5 h-3.5 text-neutral-600 cursor-help"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </span>
                   <span className="text-price-lg text-white">{data.stats.rating ?? '-'}</span>

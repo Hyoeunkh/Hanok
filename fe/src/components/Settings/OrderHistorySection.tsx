@@ -7,8 +7,8 @@ import { usePostCompleteEscrow } from '@/api/hooks/usePostCompleteEscrow';
 import { useGetEscrowDetail } from '@/api/hooks/useGetEscrowDetail';
 import { useGetEscrowsBuyer } from '@/api/hooks/useGetEscrowsBuyer';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
-import { useToast } from '@/components/common/Toast';
 import { ESCROW_STATUS_OPTIONS, getEscrowStateUI, type EscrowStatusFilter } from '@/utils/getEscrowStateUI';
+import { useToast } from '@/hooks/useToast';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);

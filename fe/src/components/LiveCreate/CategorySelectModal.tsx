@@ -1,6 +1,6 @@
+import { CATEGORIES } from '@/constants/category';
 import { useState, useRef, useEffect } from 'react';
 import { FiX, FiChevronDown } from 'react-icons/fi';
-import { CATEGORIES } from './categories';
 
 type Props = {
   onConfirm: (categoryId: string) => void;
