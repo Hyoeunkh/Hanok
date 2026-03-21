@@ -14,12 +14,22 @@ public record ItemSummaryResponse(
         String description,
         List<String> tags,
         List<String> images,
-        Long startPrice,
-        Long bidUnit,
+        AuctionType auctionType,
         Integer auctionDuration,
+        BottomUpAuctionInfo bottomUp,
+        UniqueTopAuctionInfo uniqueTop,
         ItemCondition itemCondition,
         Category category,
-        AuctionType auctionType,
         ItemStatus status,
         LocalDateTime createdAt
-) {}
+) {
+        public record BottomUpAuctionInfo(
+                Long startPrice,
+                Long bidUnit
+        ) {}
+
+        public record UniqueTopAuctionInfo(
+                Long minPrice,
+                Long maxPrice
+        ) {}
+}

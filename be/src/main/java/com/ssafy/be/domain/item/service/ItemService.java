@@ -7,6 +7,7 @@ import com.ssafy.be.domain.item.dto.request.ItemRegisterRequest;
 import com.ssafy.be.domain.item.dto.request.ItemUpdateRequest;
 import com.ssafy.be.domain.item.dto.response.ItemRegisterResponse;
 import com.ssafy.be.domain.item.dto.response.ItemSummaryResponse;
+import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.item.entity.ItemStatus;
 import com.ssafy.be.domain.item.entity.Tag;
@@ -111,12 +112,14 @@ public class ItemService {
                         Stream.of(i.getImage1(), i.getImage2(), i.getImage3())  // 변경
                                 .filter(Objects::nonNull)
                                 .toList(),
-                        i.getStartPrice(),
-                        i.getBidUnit(),
+                        i.getAuctionType(),
                         i.getAuctionDuration(),
+                        i.getAuctionType() == AuctionType.BOTTOM_UP
+                                ? new ItemSummaryResponse.BottomUpAuctionInfo(i.getStartPrice(), i.getBidUnit())
+                                : null,
+                        null,
                         i.getItemCondition(),
                         i.getCategory(),
-                        i.getAuctionType(),
                         i.getStatus(),
                         i.getCreatedAt()
                 ))

@@ -29,6 +29,8 @@ public class Auction {
     @Enumerated(EnumType.STRING)
     private AuctionStatus auctionStatus;
 
+    private Integer auctionDuration;
+
     private Long finalPrice;
 
     private String startedAt;
@@ -49,19 +51,24 @@ public class Auction {
     private BottomUpAuctionDetail bottomUpAuctionDetail;
 
     @Builder
-    private Auction(
-            AuctionType auctionType,
-            AuctionStatus auctionStatus,
-            Long finalPrice,
-            String startedAt,
-            Stream stream,
-            Item item) {
+    private Auction(AuctionType auctionType,
+                    AuctionStatus auctionStatus,
+                    Integer auctionDuration,
+                    Long finalPrice,
+                    String startedAt,
+                    Stream stream,
+                    Item item,
+                    UniqueBidAuctionDetail uniqueBidAuctionDetail,
+                    BottomUpAuctionDetail bottomUpAuctionDetail) {
         this.auctionType = auctionType;
         this.auctionStatus = auctionStatus;
+        this.auctionDuration = auctionDuration;
         this.finalPrice = finalPrice;
         this.startedAt = startedAt;
         this.stream = stream;
         this.item = item;
+        this.uniqueBidAuctionDetail = uniqueBidAuctionDetail;
+        this.bottomUpAuctionDetail = bottomUpAuctionDetail;
     }
 
     public void startAuction(String startedAt) {

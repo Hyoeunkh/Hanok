@@ -135,6 +135,7 @@ public class StreamService {
         Auction auction = auctionRepository.save(
                 Auction.builder()
                         .auctionType(request.auctionType())
+                        .auctionDuration(request.auctionDuration())
                         .auctionStatus(AuctionStatus.READY)
                         .stream(stream)
                         .item(item)
@@ -203,13 +204,6 @@ public class StreamService {
     }
 
     private ItemSummaryResponse buildItemSummaryResponse(Item item, Auction auction) {
-        Long startPrice = auction.getBottomUpAuctionDetail() != null
-                ? auction.getBottomUpAuctionDetail().getStartPrice()
-                : item.getStartPrice();
-        Long bidUnit = auction.getBottomUpAuctionDetail() != null
-                ? auction.getBottomUpAuctionDetail().getBidUnit()
-                : item.getBidUnit();
-
         return new ItemSummaryResponse(
                 item.getId(),
                 item.getName(),
@@ -218,12 +212,22 @@ public class StreamService {
                 java.util.stream.Stream.of(item.getImage1(), item.getImage2(), item.getImage3())
                         .filter(Objects::nonNull)
                         .toList(),
-                startPrice,
-                bidUnit,
-                item.getAuctionDuration(),
+                auction.getAuctionType(),
+                auction.getAuctionDuration(),
+                auction.getBottomUpAuctionDetail() == null
+                        ? null
+                        : new ItemSummaryResponse.BottomUpAuctionInfo(
+                                auction.getBottomUpAuctionDetail().getStartPrice(),
+                                auction.getBottomUpAuctionDetail().getBidUnit()
+                        ),
+                auction.getUniqueBidAuctionDetail() == null
+                        ? null
+                        : new ItemSummaryResponse.UniqueTopAuctionInfo(
+                                auction.getUniqueBidAuctionDetail().getMinPrice(),
+                                auction.getUniqueBidAuctionDetail().getMaxPrice()
+                        ),
                 item.getItemCondition(),
                 item.getCategory(),
-                auction.getAuctionType(),
                 item.getStatus(),
                 item.getCreatedAt());
     }

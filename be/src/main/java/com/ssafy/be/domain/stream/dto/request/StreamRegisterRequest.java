@@ -21,6 +21,7 @@ public record StreamRegisterRequest(
     public record AuctionItemRequest(
             @NotNull Long itemId,
             @NotNull AuctionType auctionType,
+            @NotNull @Min(1) Integer auctionDuration,
             @Valid BottomUpAuctionDetailRequest bottomUp,
             @Valid UniqueBidAuctionDetailRequest uniqueTop
     ) {}
