@@ -15,7 +15,3 @@ export const CARD_BORDER_CLASS: Record<ItemStatus, string> = {
   SOLD: 'border-white/6',
   UNSOLD: 'border-white/6',
 };
-
-export function formatPrice(value: number) {
-  return `${value.toLocaleString('ko-KR')}원`;
-}
