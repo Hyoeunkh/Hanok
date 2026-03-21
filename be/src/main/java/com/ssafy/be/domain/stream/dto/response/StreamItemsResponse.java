@@ -30,7 +30,9 @@ public record StreamItemsResponse(List<StreamItemResponse> items) {
                     auction.getId(),
                     item.getName(),
                     images,
-                    item.getStartPrice(),
+                    auction.getBottomUpAuctionDetail() != null
+                            ? auction.getBottomUpAuctionDetail().getStartPrice()
+                            : item.getStartPrice(),
                     auction.getAuctionStatus(),
                     auction.getFinalPrice(),
                     item.getItemCondition()

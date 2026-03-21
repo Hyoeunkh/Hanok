@@ -2,9 +2,12 @@ package com.ssafy.be.domain.bottomupauction.service;
 
 import com.ssafy.be.domain.auction.dto.response.AuctionCommentResponse;
 import com.ssafy.be.domain.auction.dto.response.BidWinnerResponse;
+import com.ssafy.be.domain.auction.dto.response.ItemSyncResponse;
 import com.ssafy.be.domain.auction.entity.Auction;
+import com.ssafy.be.domain.auction.entity.AuctionStatus;
 import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.auction.repository.AuctionTimerRepository;
+import com.ssafy.be.domain.bottomupauction.entity.BottomUpAuctionDetail;
 import com.ssafy.be.domain.bottomupauction.dto.request.AuctionStartRequest;
 import com.ssafy.be.domain.bottomupauction.dto.request.BidPlaceRequest;
 import com.ssafy.be.domain.bottomupauction.dto.response.AuctionStartResponse;
@@ -15,6 +18,7 @@ import com.ssafy.be.domain.bottomupauction.exception.AuctionErrorCode;
 import com.ssafy.be.domain.bottomupauction.model.Bid;
 import com.ssafy.be.domain.bottomupauction.repository.AuctionBidRepository;
 import com.ssafy.be.domain.escrow.service.EscrowService;
+import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
@@ -37,6 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static com.ssafy.be.domain.auction.entity.AuctionStatus.LIVE;
 import static com.ssafy.be.domain.auction.enums.Comment.AUCTION_START;
@@ -71,32 +77,35 @@ public class BottomUpAuctionService {
         // 2. 모든 클라이언트의 시각을 서버 시각으로 동기화하기 위해 현재 시각 필요
         String serverNow = TimeUtils.nowAsString();
 
-        // 3. 경매 시작
+        // 3. 설명중인 경매인지 검증
         Auction auction = auctionRepository.findById(request.auctionId())
                 .orElseThrow(() -> new StompException(AuctionErrorCode.AUCTION_NOT_FOUND));
 
+        validateIntroducingAuction(auction);
+
+        // 4. 경매 시작
         auction.startAuction(serverNow);
 
-        // 4. 레디스에 경매 타이머 정보 저장 - TTL로 타이머 관리(MVP)
-        Item auctionItem = auction.getItem();
+        // 5. 레디스에 경매 타이머 정보 저장 - TTL로 타이머 관리(MVP)
+        Item auctionItem = auction.getItem(); // TODO: Item에서 경매 데이터 지운 뒤 수정 필요
+        BottomUpAuctionDetail detail = auction.getBottomUpAuctionDetail();
+
         auctionTimerRepository.save(auction.getId(), auctionItem.getAuctionDuration());
 
-        // 5. 응답
-        // 5-1. AUCTION_START로 입찰 시작 브로드캐스트
-        AuctionStartResponse auctionStartResponse = buildAuctionStartResponse(
-                buildItemDto(auctionItem),
-                buildTimerDto(auctionItem, serverNow)
-        );
-
+        // 6. 응답
+        // 6-1. AUCTION_START로 입찰 시작 브로드캐스트
         StreamPublishTask auctionStartPublishTask = buildStreamPublishTask(
                 BROADCAST,
                 streamId,
                 null,
                 StreamEventType.AUCTION_START,
-                auctionStartResponse
+                buildAuctionStartResponse(
+                        buildItemDto(auctionItem, detail),
+                        buildTimerDto(auctionItem, serverNow)
+                )
         );
 
-        // 5-2. AUCTION_COMMENT로 경매 중계 메시지 브로드캐스트
+        // 6-2. AUCTION_COMMENT로 경매 중계 메시지 브로드캐스트
         StreamPublishTask auctionCommentPublishTask = buildStreamPublishTask(
                 BROADCAST,
                 streamId,
@@ -112,6 +121,8 @@ public class BottomUpAuctionService {
     public List<StreamPublishTask> placeBid(BidPlaceRequest request, Long streamId, Long userId) {
         Auction auction = auctionRepository.findById(request.auctionId())
                 .orElseThrow(() -> new StompException(AuctionErrorCode.AUCTION_NOT_FOUND));
+
+        BottomUpAuctionDetail detail = auction.getBottomUpAuctionDetail();
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new StompException(UserErrorCode.USER_NOT_FOUND));
@@ -133,16 +144,15 @@ public class BottomUpAuctionService {
 
         // 6. 응답
         // 6-1. BID_PLACE로 입찰 정보 브로드캐스트
-        BidPlaceResponse bidPlaceResponse = buildBidPlaceResponse(
-                bidInfoDto,
-                isSniping ? buildSnipingTimerDto(TimeUtils.nowAsString()) : null
-        );
         StreamPublishTask bidPlacePublishTask = buildStreamPublishTask(
                 BROADCAST,
                 streamId,
                 null,
                 BID_PLACED,
-                bidPlaceResponse
+                buildBidPlaceResponse(
+                        bidInfoDto,
+                        isSniping ? buildSnipingTimerDto(TimeUtils.nowAsString()) : null
+                )
         );
 
         // 6-2. AUCTION_STATISTICS로 실시간 통계 정보 브로드캐스트
@@ -157,8 +167,8 @@ public class BottomUpAuctionService {
                 auction.getItem().getName(),
                 bids.stream().mapToLong(Bid::amount).sum(),
                 bids.size(),
-                auction.getItem().getStartPrice(),
-                bids.isEmpty() ? auction.getItem().getStartPrice() : bids.getFirst().amount(),
+                detail.getStartPrice(),
+                bids.isEmpty() ? detail.getStartPrice() : bids.getFirst().amount(),
                 recentBids
         );
 
@@ -260,9 +270,11 @@ public class BottomUpAuctionService {
         Auction auction = auctionRepository.findByStreamIdAndAuctionStatus(streamId, LIVE)
                 .orElseThrow(() -> new StompException(AuctionErrorCode.LIVE_AUCTION_NOT_FOUND));
 
+        BottomUpAuctionDetail detail = auction.getBottomUpAuctionDetail();
+
         // 2. 현재 최고가 조회 (없으면 시작가 사용)
         Bid topBid = auctionBidRepository.findTopBid(auction.getId()).orElse(null);
-        Long currentPrice = topBid == null ? auction.getItem().getStartPrice() : topBid.amount();
+        Long currentPrice = topBid == null ? detail.getStartPrice() : topBid.amount();
 
         // 3. 타이머 정보 조회
         String serverNow = TimeUtils.nowAsString();
@@ -271,9 +283,26 @@ public class BottomUpAuctionService {
         // 4. 응답 생성
         return buildBidSyncResponse(
                 topBid != null && topBid.userId().equals(userId), // 현재 요청 userId가 최고 입찰자인지 여부
-                buildBidSyncItemInfo(auction.getItem().getBidUnit(), currentPrice),
+                buildBidSyncItemInfo(detail.getBidUnit(), currentPrice),
                 buildBidSyncTimerInfo((int) remainingSeconds, serverNow, auction.getStartedAt())
         );
+    }
+
+    @Transactional(readOnly = true)
+    public ItemSyncResponse syncItem(Long streamId) {
+        // 1. 해당 스트림의 모든 경매 아이템 조회
+        List<Auction> auctions = auctionRepository.findByStreamId(streamId);
+
+        // 2. 상향식 경매만 응답 생성
+        List<ItemSyncResponse.ItemInfo> items = auctions.stream()
+                .filter(auction -> auction.getAuctionType() == AuctionType.BOTTOM_UP)
+                .filter(auction -> auction.getBottomUpAuctionDetail() != null)
+                .map(this::buildItemSyncInfo)
+                .toList();
+
+        return ItemSyncResponse.builder()
+                .items(items)
+                .build();
     }
 
     private boolean preventSniping(Long auctionId) {
@@ -292,6 +321,12 @@ public class BottomUpAuctionService {
 
         if (!isStreamHost) {
             throw new StompException(AuctionErrorCode.AUCTION_UNAUTHORIZED);
+        }
+    }
+
+    private void validateIntroducingAuction(Auction auction) {
+        if (!auction.isIntroducing()) {
+            throw new StompException(AuctionErrorCode.AUCTION_NOT_INTRODUCING);
         }
     }
 
@@ -344,13 +379,13 @@ public class BottomUpAuctionService {
                 .build();
     }
 
-    private AuctionStartResponse.AuctionStartItemDto buildItemDto(Item auctionItem) {
+    private AuctionStartResponse.AuctionStartItemDto buildItemDto(Item auctionItem, BottomUpAuctionDetail detail) {
         return AuctionStartResponse.AuctionStartItemDto.builder()
                 .name(auctionItem.getName())
                 .image(auctionItem.getImage1())
                 .condition(auctionItem.getItemCondition())
-                .bidUnit(auctionItem.getBidUnit())
-                .startPrice(auctionItem.getStartPrice())
+                .bidUnit(detail.getBidUnit())
+                .startPrice(detail.getStartPrice())
                 .build();
     }
 
@@ -440,5 +475,29 @@ public class BottomUpAuctionService {
                 bid.amount(),
                 bid.bidAt()
         );
+    }
+
+    private ItemSyncResponse.ItemInfo buildItemSyncInfo(Auction auction) {
+        List<String> images = Stream.of(
+                        auction.getItem().getImage1(),
+                        auction.getItem().getImage2(),
+                        auction.getItem().getImage3()
+                )
+                .filter(Objects::nonNull)
+                .toList();
+
+        return ItemSyncResponse.ItemInfo.builder()
+                .auctionId(auction.getId())
+                .itemName(auction.getItem().getName())
+                .description(auction.getItem().getDescription())
+                .images(images)
+                .startPrice(auction.getBottomUpAuctionDetail().getStartPrice())
+                .auctionType(auction.getAuctionType())
+                .auctionTime(auction.getItem().getAuctionDuration())
+                .bidUnit(auction.getBottomUpAuctionDetail().getBidUnit())
+                .auctionStatus(auction.getAuctionStatus())
+                .finalPrice(auction.getAuctionStatus() == AuctionStatus.SOLD ? auction.getFinalPrice() : null)
+                .itemCondition(auction.getItem().getItemCondition())
+                .build();
     }
 }

@@ -1,6 +1,7 @@
 package com.ssafy.be.domain.bottomupauction.service;
 
 import com.ssafy.be.domain.auction.entity.Auction;
+import com.ssafy.be.domain.bottomupauction.entity.BottomUpAuctionDetail;
 import com.ssafy.be.domain.bottomupauction.dto.request.BidPlaceRequest;
 import com.ssafy.be.domain.bottomupauction.dto.response.BidPlaceResponse;
 import com.ssafy.be.domain.bottomupauction.exception.AuctionErrorCode;
@@ -67,7 +68,9 @@ public class AuctionBidService {
     }
 
     private static void validateMoreThanStartPrice(BidPlaceRequest request, Auction auction) {
-        if (auction.isBelowStartPrice(request.amount())) {
+        BottomUpAuctionDetail detail = auction.getBottomUpAuctionDetail();
+
+        if (detail.isBelowStartPrice(request.amount())) {
             throw new StompException(AuctionErrorCode.AUCTION_BID_BELOW_START_PRICE);
         }
     }

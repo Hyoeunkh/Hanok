@@ -2,6 +2,7 @@ package com.ssafy.be.support.util;
 
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
+import com.ssafy.be.domain.bottomupauction.entity.BottomUpAuctionDetail;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.shippingaddress.entity.ShippingAddress;
@@ -66,6 +67,14 @@ public class TestFixture {
                 .auctionStatus(status)
                 .stream(stream)
                 .item(item)
+                .build();
+    }
+
+    public static BottomUpAuctionDetail createBottomUpAuctionDetail(Auction auction, Item item) {
+        return BottomUpAuctionDetail.builder()
+                .auction(auction)
+                .startPrice(item.getStartPrice())
+                .bidUnit(item.getBidUnit())
                 .build();
     }
 

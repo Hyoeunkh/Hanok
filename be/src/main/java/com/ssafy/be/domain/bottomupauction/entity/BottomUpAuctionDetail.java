@@ -35,4 +35,8 @@ public class BottomUpAuctionDetail {
         this.bidUnit = bidUnit;
         this.auction = auction;
     }
+
+    public boolean isBelowStartPrice(Long amount) {
+        return startPrice > amount;
+    }
 }

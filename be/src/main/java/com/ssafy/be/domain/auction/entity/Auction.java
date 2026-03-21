@@ -117,12 +117,4 @@ public class Auction {
         Long sellerId = stream.getSeller().getUser().getId();
         return Objects.equals(sellerId, userId);
     }
-
-    // TODO: BottomUpAuctionDetail로 옮기기
-    public boolean isBelowStartPrice(Long amount) {
-        Long startPrice = bottomUpAuctionDetail != null
-                ? bottomUpAuctionDetail.getStartPrice()
-                : item.getStartPrice();
-        return startPrice > amount;
-    }
 }
