@@ -19,7 +19,7 @@ export default function AuctionPanel({ isSeller, auctionType, auctionStatistics,
     return (
       <div className="bid-feed-scroll flex h-full flex-col gap-4 overflow-y-auto p-4">
         <div className="rounded-2xl bg-neutral-900 p-5">
-          <div className="text-caption font-bold uppercase tracking-tigher text-neutral-500">유일 최고가 경매</div>
+          <div className="text-caption font-bold uppercase tracking-tighter text-neutral-500">유일 최고가 경매</div>
           <div className="mt-2 text-3xl font-black text-ember">
             <span className="tabular-nums font-black">{uniqueBidSync?.participantCount ?? 0}</span>
             <span className="ml-2 text-sm font-bold text-neutral-500">명 참여</span>

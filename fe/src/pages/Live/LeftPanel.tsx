@@ -67,7 +67,7 @@ export default function LeftPanel({
 
   return (
     <>
-      <div className="flex h-full w-full flex-col rounded-2xl bg-background px-4 py-6">
+      <div className="flex h-full w-full flex-col bg-background px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-xs font-bold text-neutral-400">경매 물품 목록</span>
           <span className="text-[11px] font-bold text-neutral-600">{totalCount}</span>
