@@ -5,24 +5,11 @@ import { FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
 import { usePatchItem } from '@/api/hooks/usePatchItem';
 import { usePostItem } from '@/api/hooks/usePostItem';
 import Button from '@/components/common/Button';
+import CustomSelect from '@/components/common/CustomSelect';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
 import { ITEM_CONDITION_OPTIONS } from '@/constants/itemCondition';
 import type { Product } from '@/types';
 import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
-
-type SelectOption = {
-  value: string;
-  label: string;
-  description?: string;
-};
-
-type CustomSelectProps = {
-  value: string;
-  onChange: (value: string) => void;
-  options: SelectOption[];
-  placeholder?: string;
-  disabled?: boolean;
-};
 
 const inputClass =
   'w-full h-12 bg-background border border-neutral-800 rounded-lg text-neutral-100 text-sm px-4 outline-none focus:border-primary transition-colors';
@@ -36,83 +23,6 @@ const parseHashtags = (value: string) =>
     .split(/\s+/)
     .map((tag) => tag.replace(/^#/, '').trim())
     .filter((tag) => tag.length > 0);
-
-function CustomSelect({ value, onChange, options, placeholder = '선택', disabled = false }: CustomSelectProps) {
-  const [open, setOpen] = useState(false);
-  const [hoveredOptionValue, setHoveredOptionValue] = useState<string | null>(null);
-  const ref = useRef<HTMLDivElement>(null);
-  const selectedLabel = options.find((option) => option.value === value)?.label;
-  const hoveredOption = options.find((option) => option.value === hoveredOptionValue) ?? null;
-
-  useEffect(() => {
-    if (!open || disabled) {
-      return;
-    }
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [disabled, open]);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => {
-          if (!disabled) {
-            setOpen((prev) => !prev);
-          }
-        }}
-        disabled={disabled}
-        className={`w-full h-12 bg-background border border-neutral-800 rounded-lg text-sm px-4 text-left flex items-center justify-between transition-colors ${
-          disabled ? 'cursor-not-allowed opacity-60' : 'hover:border-primary'
-        }`}
-      >
-        <span className={selectedLabel ? 'text-neutral-100' : 'text-neutral-500'}>{selectedLabel || placeholder}</span>
-        <span className={`text-gold text-sm transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
-      </button>
-
-      {open && !disabled ? (
-        <div className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] bg-neutral-900 border border-neutral-700 rounded-xl overflow-hidden shadow-lg">
-          <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
-            {options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onMouseEnter={() => setHoveredOptionValue(option.value)}
-                onMouseLeave={() => setHoveredOptionValue((prev) => (prev === option.value ? null : prev))}
-                onClick={() => {
-                  onChange(option.value);
-                  setOpen(false);
-                  setHoveredOptionValue(null);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-[14px] transition-colors ${
-                  value === option.value
-                    ? 'bg-gold/15 text-gold-light font-semibold'
-                    : 'text-neutral-300 hover:bg-warm/8 hover:text-neutral-100'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-
-          {hoveredOption?.description ? (
-            <div className="border-t border-neutral-800 bg-background/80 px-4 py-3">
-              <p className="mb-2 text-sm font-semibold text-gold-light">{hoveredOption.label}</p>
-              <p className="whitespace-pre-line text-[13px] leading-5 text-neutral-300">{hoveredOption.description}</p>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 interface ProductRegistrationModalProps {
   isOpen: boolean;

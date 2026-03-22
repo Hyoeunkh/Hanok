@@ -15,7 +15,13 @@ export default function ItemDetailAccordion({ item }: { item: AuctionItem }) {
   const hasBottomUpPrice = item.startPrice !== null;
   const hasBidUnit = item.bidUnit !== null;
   const hasDetail =
-    item.description || item.auctionTime || item.auctionType || hasUniqueRange || hasBottomUpPrice || hasBidUnit || item.images?.length;
+    item.description ||
+    item.auctionTime ||
+    item.auctionType ||
+    hasUniqueRange ||
+    hasBottomUpPrice ||
+    hasBidUnit ||
+    item.images?.length;
 
   if (!hasDetail) {
     return null;
@@ -39,7 +45,7 @@ export default function ItemDetailAccordion({ item }: { item: AuctionItem }) {
           )}
           {item.auctionType === 'BOTTOM_UP' && hasBidUnit && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-neutral-600">호가 단위</span>
+              <span className="text-[10px] font-bold text-neutral-600">입찰 단위</span>
               <span className="text-[11px] font-extrabold text-gold-dark">{formatPrice(item.bidUnit ?? 0)}</span>
             </div>
           )}
