@@ -275,6 +275,7 @@ public class BottomUpAuctionService {
                                 buildBidSyncTimerInfo((int) remainingSeconds, serverNow, auction.getStartedAt()));
         }
 
+
         private boolean preventSniping(Long auctionId) {
                 long remaining = auctionTimerRepository.findRemainingSecondsByAuctionId(auctionId);
 
