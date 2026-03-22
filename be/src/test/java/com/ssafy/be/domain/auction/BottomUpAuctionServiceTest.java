@@ -1,15 +1,17 @@
 package com.ssafy.be.domain.auction;
 
-import com.ssafy.be.domain.auction.dto.request.AuctionStartRequest;
-import com.ssafy.be.domain.auction.dto.request.BidPlaceRequest;
+import com.ssafy.be.domain.bottomupauction.dto.request.AuctionStartRequest;
+import com.ssafy.be.domain.bottomupauction.dto.request.BidPlaceRequest;
 import com.ssafy.be.domain.auction.dto.request.ItemIntroduceRequest;
-import com.ssafy.be.domain.auction.dto.response.AuctionStartResponse;
-import com.ssafy.be.domain.auction.dto.response.BidPlaceResponse;
+import com.ssafy.be.domain.bottomupauction.entity.BottomUpAuctionDetail;
+import com.ssafy.be.domain.bottomupauction.dto.response.AuctionStartResponse;
+import com.ssafy.be.domain.bottomupauction.dto.response.BidPlaceResponse;
 import com.ssafy.be.domain.auction.dto.response.BidWinnerResponse;
 import com.ssafy.be.domain.auction.entity.Auction;
-import com.ssafy.be.domain.auction.exception.AuctionErrorCode;
-import com.ssafy.be.domain.auction.model.Bid;
-import com.ssafy.be.domain.auction.repository.AuctionBidRepository;
+import com.ssafy.be.domain.bottomupauction.exception.AuctionErrorCode;
+import com.ssafy.be.domain.bottomupauction.model.Bid;
+import com.ssafy.be.domain.bottomupauction.repository.AuctionBidRepository;
+import com.ssafy.be.domain.bottomupauction.repository.BottomUpAuctionDetailRepository;
 import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.auction.repository.AuctionTimerRepository;
 import com.ssafy.be.domain.auction.service.AuctionService;
@@ -25,7 +27,6 @@ import com.ssafy.be.domain.stream.entity.Stream;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
-import com.ssafy.be.global.infra.portone.PortoneClient;
 import com.ssafy.be.global.websocket.dto.StreamPublishTask;
 import com.ssafy.be.global.websocket.exception.StompException;
 import com.ssafy.be.support.annotation.IntegrationTest;
@@ -49,7 +50,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 @IntegrationTest
-class AuctionServiceTest {
+class BottomUpAuctionServiceTest {
     @Autowired
     private AuctionService auctionService;
     @Autowired
@@ -66,6 +67,8 @@ class AuctionServiceTest {
     private AuctionBidRepository auctionBidRepository;
     @Autowired
     private AuctionTimerRepository auctionTimerRepository;
+    @Autowired
+    private BottomUpAuctionDetailRepository bottomUpAuctionDetailRepository;
     @Autowired
     ShippingAddressRepository shippingAddressRepository;
     @Autowired
@@ -114,15 +117,24 @@ class AuctionServiceTest {
         userRepository.deleteAllInBatch();
     }
 
+    private Auction saveBottomUpAuction(AuctionStatus status) {
+        Auction auction = auctionRepository.save(
+                TestFixture.createAuction(status, stream, item)
+        );
+
+        BottomUpAuctionDetail detail = TestFixture.createBottomUpAuctionDetail(auction, item);
+        bottomUpAuctionDetailRepository.save(detail);
+
+        return auction;
+    }
+
     // ======================== 경매 물품 설명 ========================
 
     @DisplayName("라이브 스트림 호스트는 스트림에 등록된 경매 물품을 소개할 수 있다.")
     @Test
     void introduceItem() {
         //given
-        Auction readyAuction = auctionRepository.save(
-                TestFixture.createAuction(READY, stream, item)
-        );
+        Auction readyAuction = saveBottomUpAuction(READY);
 
         ItemIntroduceRequest request = ItemIntroduceRequest.builder()
                 .auctionId(readyAuction.getId())
@@ -145,9 +157,7 @@ class AuctionServiceTest {
     @Test
     void startAuction() {
         // given
-        Auction introductingAuction = auctionRepository.save(
-                TestFixture.createAuction(INTRODUCING, stream, item)
-        );
+        Auction introductingAuction = saveBottomUpAuction(INTRODUCING);
 
         AuctionStartRequest request = AuctionStartRequest.builder()
                 .auctionId(introductingAuction.getId())
@@ -192,9 +202,7 @@ class AuctionServiceTest {
     void placeBid() {
         // given
         // 1. 실시간 경매중인 auction 엔티티 생성
-        Auction liveAuction = auctionRepository.save(
-                TestFixture.createAuction(LIVE, stream, item)
-        );
+        Auction liveAuction = saveBottomUpAuction(LIVE);
 
         // 2. 입찰자 생성
         User bidder = userRepository.save(TestFixture.createUser("입찰자").toBuilder()
@@ -203,10 +211,10 @@ class AuctionServiceTest {
                 .build());
 
         // 3. 경매 타이머 설정
-        auctionTimerRepository.save(liveAuction.getId(), item.getAuctionDuration());
+        auctionTimerRepository.save(liveAuction.getId(), liveAuction.getAuctionDuration());
 
         // 4. request dto 생성
-        long bidAmount = liveAuction.getItem().getStartPrice() + item.getBidUnit(); // 시작가 + 입찰 단위
+        long bidAmount = TestFixture.TEST_BOTTOM_UP_START_PRICE + TestFixture.TEST_BOTTOM_UP_BID_UNIT;
 
         BidPlaceRequest request = BidPlaceRequest.builder()
                 .auctionId(liveAuction.getId())
@@ -242,9 +250,7 @@ class AuctionServiceTest {
     @Test
     void placeBidWithAmountBelowStartPrice() {
         // given
-        Auction liveAuction = auctionRepository.save(
-                TestFixture.createAuction(LIVE, stream, item)
-        );
+        Auction liveAuction = saveBottomUpAuction(LIVE);
 
         User bidder = userRepository.save(
                 TestFixture.createUser("입찰자").toBuilder()
@@ -254,7 +260,7 @@ class AuctionServiceTest {
         );
 
         // 시작가보다 1원 낮게
-        long bidAmount = item.getStartPrice() - 1;
+        long bidAmount = TestFixture.TEST_BOTTOM_UP_START_PRICE - 1;
 
         BidPlaceRequest request = BidPlaceRequest.builder()
                 .auctionId(liveAuction.getId())
@@ -272,9 +278,7 @@ class AuctionServiceTest {
     @Test
     void placeBidWithInsufficientBalance() {
         // given
-        Auction liveAuction = auctionRepository.save(
-                TestFixture.createAuction(LIVE, stream, item)
-        );
+        Auction liveAuction = saveBottomUpAuction(LIVE);
 
         User bidder = userRepository.save(
                 TestFixture.createUser("입찰자").toBuilder()
@@ -283,7 +287,7 @@ class AuctionServiceTest {
                         .build()
         );
 
-        long bidAmount = item.getStartPrice() + item.getBidUnit(); // 10000L + 1000L
+        long bidAmount = TestFixture.TEST_BOTTOM_UP_START_PRICE + TestFixture.TEST_BOTTOM_UP_BID_UNIT;
 
         BidPlaceRequest request = BidPlaceRequest.builder()
                 .auctionId(liveAuction.getId())
@@ -301,9 +305,7 @@ class AuctionServiceTest {
     @Test
     void placeBidWhenSnipingExtendsTimer() {
         // given
-        Auction liveAuction = auctionRepository.save(
-                TestFixture.createAuction(LIVE, stream, item)
-        );
+        Auction liveAuction = saveBottomUpAuction(LIVE);
 
         User bidder = userRepository.save(
                 TestFixture.createUser("입찰자").toBuilder()
@@ -312,7 +314,7 @@ class AuctionServiceTest {
                         .build()
         );
 
-        long bidAmount = item.getStartPrice() + item.getBidUnit();
+        long bidAmount = TestFixture.TEST_BOTTOM_UP_START_PRICE + TestFixture.TEST_BOTTOM_UP_BID_UNIT;
 
         BidPlaceRequest request = BidPlaceRequest.builder()
                 .auctionId(liveAuction.getId())
@@ -344,9 +346,7 @@ class AuctionServiceTest {
     @Test
     void endUnsoldAuction() {
         // given
-        Auction liveAuction = auctionRepository.save(
-                TestFixture.createAuction(LIVE, stream, item)
-        );
+        Auction liveAuction = saveBottomUpAuction(LIVE);
 
         // Redis에는 타이머가 만료되었다고 가정하고, bids 도 넣지 않음 (findTopBid → empty)
 
@@ -365,9 +365,7 @@ class AuctionServiceTest {
     void endSoldAuction() {
         // given
         // 1. 실시간 경매중인 auction 엔티티 생성
-        Auction liveAuction = auctionRepository.save(
-                TestFixture.createAuction(LIVE, stream, item)
-        );
+        Auction liveAuction = saveBottomUpAuction(LIVE);
 
         // 2. 최고 입찰자 생성 및 입찰 정보 저장
         User bidder = userRepository.save(
@@ -377,7 +375,7 @@ class AuctionServiceTest {
                         .build()
         );
 
-        long bidAmount = item.getStartPrice() + item.getBidUnit();
+        long bidAmount = TestFixture.TEST_BOTTOM_UP_START_PRICE + TestFixture.TEST_BOTTOM_UP_BID_UNIT;
 
         Bid topBid = new Bid(bidder.getId(), bidder.getNickname(), bidAmount, LocalDateTime.now());
         auctionBidRepository.save(liveAuction.getId(), topBid);
