@@ -11,7 +11,7 @@ export default function SellerRankingPanel({ rankingItems = [] }: SellerRankingP
   const navigate = useNavigate();
 
   return (
-    <section className="rounded-[28px] border border-primary-dark/30 bg-surface-elevated p-4">
+    <section className="rounded-(--radius-panel) border border-primary-dark/30 bg-surface-elevated p-4">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-point/15 text-point">
           <Trophy size={18} />

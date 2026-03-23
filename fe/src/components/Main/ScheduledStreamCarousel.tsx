@@ -50,7 +50,7 @@ export default function ScheduledStreamCarousel({ streams }: ScheduledStreamCaro
   };
 
   return (
-    <section className="relative rounded-[32px] border border-primary-dark/30 bg-surface px-6 pb-6 pt-5">
+    <section className="relative rounded-(--radius-section) border border-primary-dark/30 bg-surface px-6 pb-6 pt-5">
       <div className="mb-5">
         <h2 className="text-[28px] font-semibold text-warm">방송 예정 경매</h2>
         <p className="mt-1 text-sm text-neutral-500">
@@ -86,7 +86,7 @@ export default function ScheduledStreamCarousel({ streams }: ScheduledStreamCaro
               return (
                 <article
                   key={stream.streamId}
-                  className="group relative flex min-w-[360px] max-w-[360px] items-center gap-4 rounded-[26px] border border-primary-dark/30 bg-surface-elevated px-4 py-4 pt-5 text-left text-warm"
+                  className="group relative flex min-w-[360px] max-w-[360px] items-center gap-4 rounded-(--radius-panel) border border-primary-dark/30 bg-surface-elevated px-4 py-4 pt-5 text-left text-warm"
                 >
                   <span className="absolute left-4 top-3 z-10 rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">
                     LIVE
@@ -150,7 +150,7 @@ export default function ScheduledStreamCarousel({ streams }: ScheduledStreamCaro
           </div>
         </>
       ) : (
-        <div className="flex min-h-[160px] items-center justify-center rounded-[24px] border border-dashed border-primary-dark/30 text-sm text-neutral-500">
+        <div className="flex min-h-[160px] items-center justify-center rounded-(--radius-panel) border border-dashed border-primary-dark/30 text-sm text-neutral-500">
           예정된 경매가 없습니다.
         </div>
       )}

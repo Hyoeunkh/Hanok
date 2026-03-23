@@ -26,7 +26,7 @@ export default function MainCategoryPanel({ activeItemId, onItemClick }: MainCat
   };
 
   return (
-    <div className="rounded-[28px] border border-primary-dark/30 bg-surface p-3">
+    <div className="rounded-(--radius-panel) border border-primary-dark/30 bg-surface p-3">
       <button
         type="button"
         onClick={handleAllClick}

@@ -26,7 +26,7 @@ export default function NewSellerLiveSection({ streams }: NewSellerLiveSectionPr
   };
 
   return (
-    <section className="relative rounded-[32px] border border-white/8 bg-background px-6 pb-6 pt-6">
+    <section className="relative rounded-(--radius-section) border border-white/8 bg-background px-6 pb-6 pt-6">
       <div className="mb-6">
         <div>
           <h2 className="text-[28px] font-semibold text-warm">신규 상점 경매</h2>
