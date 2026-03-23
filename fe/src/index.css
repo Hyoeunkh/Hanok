@@ -96,6 +96,11 @@
   --nav-btn-height: 40px;
   --nav-btn-radius: 10px;
 
+  /* ── 모달 ── */
+  --modal-radius: 28px;
+  --modal-backdrop: rgba(0, 0, 0, 0.6);
+  --modal-blur: 12px;
+
   /* ── 애니메이션 ── */
   --animate-shimmer: shimmer 2.5s ease-in-out infinite;
   --animate-urgent-pulse: urgentPulse 1s ease-in-out infinite;

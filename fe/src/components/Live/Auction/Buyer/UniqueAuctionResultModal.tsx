@@ -23,8 +23,13 @@ export default function UniqueAuctionResultModal({ isOpen, itemName, payload, on
   }
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/45 px-4 backdrop-blur-[10px]">
-      <div className="relative z-100 w-full max-w-md overflow-hidden rounded-4xl bg-surface">
+    <div
+      className="fixed inset-0 z-100 flex items-center justify-center bg-(--modal-backdrop) px-4 backdrop-blur-(--modal-blur)"
+      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    >
+      <div className="relative z-100 w-full max-w-md overflow-hidden rounded-(--modal-radius) border border-white/6 bg-surface"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="border-b border-gold/10 bg-[linear-gradient(160deg,rgba(205,145,80,.08)_0%,transparent_60%)] px-7 py-8">
           <div className="text-center text-[22px] font-black text-point">
             {payload.isWon ? '유일 최고가 낙찰' : '유찰'}

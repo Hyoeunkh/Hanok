@@ -50,7 +50,7 @@ export default function AuctionReportModal({ open, onClose, items }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-[12px] transition-opacity duration-250 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+      className={`fixed inset-0 z-100 flex items-center justify-center bg-(--modal-backdrop) backdrop-blur-(--modal-blur) transition-opacity duration-250 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       onClick={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -58,7 +58,7 @@ export default function AuctionReportModal({ open, onClose, items }: Props) {
       }}
     >
       <div
-        className={`flex max-h-[80vh] w-130 flex-col overflow-hidden rounded-[28px] border border-white/7 bg-surface shadow-[0_32px_80px_rgba(0,0,0,0.6)] transition-transform duration-250 ${open ? 'translate-y-0' : 'translate-y-4'}`}
+        className={`flex max-h-[80vh] w-130 flex-col overflow-hidden rounded-(--modal-radius) border border-white/6 bg-surface shadow-[0_32px_80px_rgba(0,0,0,0.6)] transition-transform duration-250 ${open ? 'translate-y-0' : 'translate-y-4'}`}
       >
         <div className="flex shrink-0 items-start justify-between border-b border-white/5 px-7 pt-6 pb-5">
           <div>

@@ -31,10 +31,10 @@ export default function WinModal({ isOpen, itemName, itemCond, finalPrice, addre
   }
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/45 px-4 backdrop-blur-[10px]">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-(--modal-backdrop) px-4 backdrop-blur-(--modal-blur)">
       <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-101" />
 
-      <div className="relative z-100 w-105 overflow-hidden rounded-4xl bg-surface">
+      <div className="relative z-100 w-full max-w-md overflow-hidden rounded-(--modal-radius) border border-white/6 bg-surface">
         <div className="flex flex-col items-center gap-3 border-b border-gold/10 bg-[linear-gradient(160deg,rgba(205,145,80,.08)_0%,transparent_60%)] px-7 py-8 pb-6">
           <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gold/18 bg-gold/[0.08] text-[30px]">
             <GoTrophy className="text-primary-light" />
