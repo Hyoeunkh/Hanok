@@ -36,6 +36,8 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
   const currentStatus = statusClassMap[product.status] || { label: product.status, bg: 'bg-neutral-600' };
 
   const images = product.images.filter((img) => !!img);
+  const tagText = product.tags.map((tag) => `#${tag}`).join(' ');
+  const showActionButtons = product.status === 'READY' || product.status === 'SCHEDULED';
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -95,10 +97,12 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex justify-between mb-2">
-          <div className="text-neutral-500 text-[13px]">{product.tags.map((tag) => `#${tag}`).join(' ')}</div>
-          <div className="flex flex-col items-end gap-1">
-            {(product.status === 'READY' || product.status === 'SCHEDULED') && (
+        {tagText ? <div className="mb-2 text-[13px] text-neutral-500">{tagText}</div> : null}
+
+        <div className="mb-2 flex items-center justify-between gap-4">
+          <h3 className="m-0 text-lg font-bold text-neutral-100">{product.name}</h3>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            {showActionButtons && (
               <div className="flex gap-3">
                 <button
                   onClick={() => onEdit(product.itemId)}
@@ -115,9 +119,6 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
               </div>
             )}
           </div>
-        </div>
-        <div className="flex justify-between">
-          <h3 className="text-neutral-100 text-lg font-bold m-0">{product.name}</h3>
         </div>
         <p className="text-neutral-500 text-sm m-0 mb-4 leading-relaxed">{product.description}</p>
 

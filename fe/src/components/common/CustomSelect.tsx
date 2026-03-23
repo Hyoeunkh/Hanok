@@ -102,7 +102,7 @@ export default function CustomSelect({
         descriptionPlacement === 'right' ? (
           <>
             <div className="absolute z-[120] left-0 right-0 top-[calc(100%+4px)] bg-neutral-900 border border-neutral-700 rounded-xl overflow-hidden shadow-lg">
-              <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+              <div className="scrollbar-hide max-h-[240px] overflow-y-auto">
                 {options.map((option) => (
                   <button
                     key={option.value}
@@ -155,7 +155,7 @@ export default function CustomSelect({
           </>
         ) : (
           <div className="absolute z-[120] left-0 right-0 top-[calc(100%+4px)] bg-neutral-900 border border-neutral-700 rounded-xl overflow-hidden shadow-lg">
-            <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+            <div className="scrollbar-hide max-h-[240px] overflow-y-auto">
               {options.map((option) => (
                 <button
                   key={option.value}
