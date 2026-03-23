@@ -157,6 +157,7 @@ public class ItemService {
                 gcsClient.deleteImage(item.getImage1());
                 gcsClient.deleteImage(item.getImage2());
                 gcsClient.deleteImage(item.getImage3());
+
             } catch (IOException e) {
                 throw new GlobalException(ItemErrorCode.FILE_UPLOAD_FAILED);
             }
