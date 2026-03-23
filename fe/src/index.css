@@ -96,8 +96,12 @@
   --nav-btn-height: 40px;
   --nav-btn-radius: 10px;
 
+  /* ── 라운딩 ── */
+  --radius-section: 32px;
+  --radius-panel: 24px;
+  --radius-control: 12px;
+
   /* ── 모달 ── */
-  --modal-radius: 28px;
   --modal-backdrop: rgba(0, 0, 0, 0.6);
   --modal-blur: 12px;
 
