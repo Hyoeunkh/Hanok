@@ -31,7 +31,7 @@ export default function StreamEndModal({ open, isPending, hasRemainingItems, onC
       onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
     >
       <div
-        className="flex w-full max-w-105 flex-col gap-6 rounded-(--modal-radius) border border-white/6 bg-surface p-8 shadow-2xl"
+        className="flex w-full max-w-105 flex-col gap-6 rounded-(--radius-panel) border border-white/6 bg-surface p-8 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
           <div className="flex flex-col items-center gap-3 text-center">

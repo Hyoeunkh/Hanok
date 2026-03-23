@@ -24,7 +24,7 @@ export default function BidAccessModal({ isOpen, onClose, onAction }: BidAccessM
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-(--modal-radius) border border-white/6 bg-background/92 px-6 py-10 text-white shadow-[0_24px_80px_rgba(0,0,0,.45)]"
+        className="w-full max-w-sm rounded-(--radius-panel) border border-white/6 bg-background/92 px-6 py-10 text-white shadow-[0_24px_80px_rgba(0,0,0,.45)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="space-y-2">
