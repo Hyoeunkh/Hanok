@@ -14,7 +14,7 @@ const sizeClass: Record<NonNullable<Props['size']>, string> = {
   responsive: 'h-[36px] text-[16px] md:h-[42px] md:text-[14px] min-[960px]:h-[60px] min-[960px]:text-[22px]',
 };
 
-const defaultShape = 'w-full rounded-[36px]';
+const defaultShape = 'w-full rounded-(--radius-section)';
 const navShape = 'w-auto h-(--nav-btn-height) rounded-(--nav-btn-radius)';
 
 const variantClass: Record<NonNullable<Props['variant']>, string> = {

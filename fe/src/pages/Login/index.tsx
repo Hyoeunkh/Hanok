@@ -12,7 +12,7 @@ type FormError = { message: string; field: ErrorField };
 const EMPTY_ERROR: FormError = { message: '', field: '' };
 
 const INPUT_BASE =
-  'flex items-center border rounded-[10px] h-[52px] px-3 bg-transparent focus-within:border-primary transition-colors';
+  'flex items-center border rounded-(--radius-control) h-[52px] px-3 bg-transparent focus-within:border-primary transition-colors';
 const INPUT_ERROR = 'border-accent-light/60 bg-accent-muted/10';
 const INPUT_NORMAL = 'border-neutral-800';
 const INPUT_CLASS = 'flex-1 bg-transparent text-[15px] text-neutral-100 px-2 focus:outline-none placeholder-neutral-600';
