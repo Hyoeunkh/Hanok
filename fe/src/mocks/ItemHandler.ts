@@ -16,6 +16,17 @@ type MockItem = {
   createdAt: string;
 };
 
+const fileToDataUrl = async (file: Blob) => {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = '';
+
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return `data:${file.type || 'image/png'};base64,${btoa(binary)}`;
+};
+
 let mockItems: MockItem[] = [
   {
     itemId: 1,
@@ -88,6 +99,13 @@ export const itemHandlers = [
     const formData = await request.formData();
     const requestBlob = formData.get('request');
     const body = requestBlob ? (JSON.parse(await (requestBlob as Blob).text()) as Record<string, unknown>) : {};
+    const uploadedImages = await Promise.all(
+      formData
+        .getAll('images')
+        .filter((file): file is File => file instanceof File && file.size > 0)
+        .slice(0, 3)
+        .map((file) => fileToDataUrl(file)),
+    );
 
     const newItem: MockItem = {
       itemId: Date.now() + Math.floor(Math.random() * 1000),
@@ -95,7 +113,7 @@ export const itemHandlers = [
       name: (body.name as string) || 'Mock Item',
       description: (body.description as string) || 'Mock Description',
       tags: (body.tags as string[]) || [],
-      images: [Logo, Logo, Logo],
+      images: uploadedImages.length > 0 ? uploadedImages : [Logo, Logo, Logo],
       itemCondition: ((body.itemCondition as ItemSyncItemCondition | undefined) ?? 'USED'),
       category: (body.category as string) || 'ETC',
       createdAt: new Date().toISOString(),
@@ -123,17 +141,20 @@ export const itemHandlers = [
     const body = requestBlob ? (JSON.parse(await (requestBlob as Blob).text()) as Record<string, unknown>) : {};
     const currentItem = mockItems[itemIndex];
     const requestedImages = Array.isArray(body.images) ? body.images : currentItem.images;
-    const nextImages = [1, 2, 3]
-      .map((slot) => {
-        const uploadedFile = formData.get(`image${slot}`);
+    const nextImages = (
+      await Promise.all(
+        [1, 2, 3].map(async (slot) => {
+          const uploadedFile = formData.get(`image${slot}`);
 
-        if (uploadedFile instanceof File && uploadedFile.size > 0) {
-          return Logo;
-        }
+          if (uploadedFile instanceof File && uploadedFile.size > 0) {
+            return fileToDataUrl(uploadedFile);
+          }
 
-        const requestedImage = requestedImages[slot - 1];
-        return typeof requestedImage === 'string' && requestedImage ? requestedImage : null;
-      })
+          const requestedImage = requestedImages[slot - 1];
+          return typeof requestedImage === 'string' && requestedImage ? requestedImage : null;
+        }),
+      )
+    )
       .filter((image): image is string => Boolean(image));
 
     mockItems[itemIndex] = {
