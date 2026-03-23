@@ -6,7 +6,7 @@ import { usePatchItem } from '@/api/hooks/usePatchItem';
 import { usePostItem } from '@/api/hooks/usePostItem';
 import Button from '@/components/common/Button';
 import CustomSelect from '@/components/common/CustomSelect';
-import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
+import { MAIN_CATEGORY_ITEMS } from '@/components/Main/mainCategoryItems';
 import { ITEM_CONDITION_OPTIONS } from '@/constants/itemCondition';
 import type { Product } from '@/types';
 import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FaImage, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import type { Product } from '@/types';
-import { MAIN_CATEGORY_ITEMS } from '@/components/Main/SideBar';
+import { MAIN_CATEGORY_ITEMS } from '@/components/Main/mainCategoryItems';
 import { getItemConditionLabel } from '@/constants/itemCondition';
 
 const formatCreatedAt = (value?: string) => {
