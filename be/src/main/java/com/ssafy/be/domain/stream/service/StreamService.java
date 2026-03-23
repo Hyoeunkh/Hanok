@@ -10,6 +10,7 @@ import com.ssafy.be.domain.bottomupauction.repository.BottomUpAuctionDetailRepos
 import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.item.entity.Item;
+import com.ssafy.be.domain.item.entity.ItemStatus;
 import com.ssafy.be.domain.item.entity.Tag;
 import com.ssafy.be.domain.item.exception.ItemErrorCode;
 import com.ssafy.be.domain.item.repository.ItemRepository;
@@ -309,14 +310,10 @@ public class StreamService {
 
     @Transactional
     public void startStream(Long userId, Long streamId) {
-        Seller seller =
-                sellerRepository
-                        .findByUserId(userId)
+        Seller seller = sellerRepository.findByUserId(userId)
                         .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
-        Stream stream =
-                streamRepository
-                        .findByIdAndSellerId(streamId, seller.getId())
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         stream.start();
@@ -324,17 +321,16 @@ public class StreamService {
 
     @Transactional
     public void endStream(Long userId, Long streamId) {
-        Seller seller =
-                sellerRepository
-                        .findByUserId(userId)
+        Seller seller = sellerRepository.findByUserId(userId)
                         .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
-        Stream stream =
-                streamRepository
-                        .findByIdAndSellerId(streamId, seller.getId())
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         stream.end();
+
+        // 해당 방송에서 SCHEDULED 상태인 경매 물품을 다시 READY로 상태 변경
+        itemRepository.updateScheduledItemsToReadyByStreamId(streamId, ItemStatus.SCHEDULED, ItemStatus.READY);
 
         // Redis viewer Set 삭제
         streamViewerService.clearViewers(streamId);
