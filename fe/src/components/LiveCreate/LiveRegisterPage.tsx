@@ -613,7 +613,7 @@ export default function LiveRegisterPage() {
     return true;
   };
 
-  const buildStreamRequest = (startType: 'SCHEDULED' | 'IMMEDIATE', scheduledAtValue?: string): StreamRequest => {
+  const buildStreamRequest = (startType: 'SCHEDULED' | 'INSTANT', scheduledAtValue?: string): StreamRequest => {
     const resolvedScheduledAt = (scheduledAtValue ?? scheduledAt) || undefined;
 
     return {
@@ -674,7 +674,7 @@ export default function LiveRegisterPage() {
     }
   };
 
-  const submitStream = async (startType: 'SCHEDULED' | 'IMMEDIATE', scheduledAtValue?: string) => {
+  const submitStream = async (startType: 'SCHEDULED' | 'INSTANT', scheduledAtValue?: string) => {
     if (!categoryId || !validateStreamForm()) {
       return;
     }
@@ -696,7 +696,7 @@ export default function LiveRegisterPage() {
           }),
         ]);
 
-        if (startType === 'IMMEDIATE') {
+        if (startType === 'INSTANT') {
           navigate(`/live/${streamId}`);
         } else {
           showToast({ message: '방송을 수정했습니다.' });
@@ -711,7 +711,7 @@ export default function LiveRegisterPage() {
       });
       const newStreamId = res.streamId;
 
-      if (startType === 'IMMEDIATE') {
+      if (startType === 'INSTANT') {
         const startRes = await postStartStream.mutateAsync({
           streamId: newStreamId,
           ...payload,
@@ -727,7 +727,7 @@ export default function LiveRegisterPage() {
         body: { macros: buildMacrosPayload() },
       });
 
-      if (startType === 'IMMEDIATE') {
+      if (startType === 'INSTANT') {
         navigate(`/live/${newStreamId}`);
       } else {
         navigate('/lives');
@@ -832,7 +832,7 @@ export default function LiveRegisterPage() {
                   <span className="text-[13px] font-bold text-neutral-600">{tutorialVisibleItems.length}</span>
                 </div>
 
-                <div className="flex flex-col gap-2 overflow-y-auto pr-2">
+                <div className="scrollbar-hide flex flex-col gap-2 overflow-y-auto pr-2">
                   {tutorialVisibleItems.map((item, index) => {
                     const conditionLabel = getItemConditionLabel(item.itemCondition);
                     const isTutorialFocusItem = activeStepId === 'inventory' && index === 0;
@@ -1090,7 +1090,7 @@ export default function LiveRegisterPage() {
                   <span className="text-sm font-bold text-neutral-100">방송 기본 설정</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+                <div className="scrollbar-hide flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">썸네일 업로드</label>
                     <button
