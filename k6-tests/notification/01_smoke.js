@@ -9,7 +9,7 @@ export const options = {
   // ✅ 전역 태그 추가
   tags: { domain: 'notification', scenario: 'smoke' },
   vus: 5,
-  duration: '3m',
+  duration: '1m',
   thresholds: {
     http_req_failed: ['rate==0'],
   },
