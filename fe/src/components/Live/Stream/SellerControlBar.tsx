@@ -126,7 +126,7 @@ export default function SellerControlBar({
       <KeyboardGuide open={guideOpen} onToggle={setGuideOpen} activeKeys={activeKeys} />
 
       {/* 하단 중앙: 액션 버튼 */}
-      <div className="flex flex-1 items-center flex-col gap-2 px-4">
+      <div className="flex flex-1 items-center flex-col gap-2 px-2.5">
         <SellerActionButtons
           onIntroduce={handleAuctionItemIntroduce}
           onStart={handleAuctionStart}

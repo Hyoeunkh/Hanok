@@ -95,16 +95,16 @@ export default function BuyerControlBar({
                 <div className="flex flex-1 flex-col items-center justify-center gap-2">
                   {bid.visibleAuctionEndPhase === 'ended' ? (
                     <>
-                      <span className="text-sm font-bold text-neutral-300">경매가 종료되었습니다</span>
-                      <span className="text-xs text-neutral-500">잠시만 기다려주세요</span>
+                      <span className="text-base font-bold text-neutral-300">경매가 종료되었습니다</span>
+                      <span className="text-sm text-neutral-500">잠시만 기다려주세요</span>
                     </>
                   ) : (
                     <>
                       <div className="flex items-center gap-2">
                         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-gold" />
-                        <span className="text-sm font-bold text-neutral-200">다음 경매 준비 중...</span>
+                        <span className="text-base font-bold text-neutral-200">다음 경매 준비 중...</span>
                       </div>
-                      <span className="text-xs text-neutral-500">판매자가 다음 상품을 준비하고 있습니다</span>
+                      <span className="text-sm text-neutral-500">판매자가 다음 상품을 준비하고 있습니다</span>
                     </>
                   )}
                 </div>
@@ -112,14 +112,14 @@ export default function BuyerControlBar({
                 <>
                   <div className="flex gap-1 rounded-lg bg-neutral-900 p-0.5">
                     {bid.isUniqueAuction ? (
-                      <div className="flex-1 rounded-md bg-neutral-800 py-1.5 text-center text-xs font-bold text-neutral-100">
+                      <div className="flex-1 rounded-md bg-neutral-800 py-1.5 text-center text-sm font-bold text-neutral-100">
                         유일 최고가 경매
                       </div>
                     ) : (
                       <>
                         <button
                           type="button"
-                          className={`flex-1 rounded-md py-1.5 text-xs font-bold transition ${
+                          className={`flex-1 rounded-md py-1.5 text-sm font-bold transition ${
                             bid.activeTab === 'quick' ? 'bg-neutral-800 text-neutral-100' : 'text-neutral-500'
                           }`}
                           onClick={() => bid.setTab('quick')}
@@ -128,7 +128,7 @@ export default function BuyerControlBar({
                         </button>
                         <button
                           type="button"
-                          className={`flex-1 rounded-md py-1.5 text-xs font-bold transition ${
+                          className={`flex-1 rounded-md py-1.5 text-sm font-bold transition ${
                             bid.activeTab === 'custom' ? 'bg-neutral-800 text-neutral-100' : 'text-neutral-500'
                           }`}
                           onClick={() => bid.setTab('custom')}
@@ -170,7 +170,7 @@ export default function BuyerControlBar({
         </div>
 
         <div className="flex items-center gap-2 px-4">
-          <span className="shrink-0 text-warm/50 text-[12px]">투명도</span>
+          <span className="shrink-0 text-warm/50 text-body-sm">투명도</span>
           <div className="relative h-[4px] flex-1">
             <div className="absolute inset-0 rounded-full bg-warm/20" />
             <div
