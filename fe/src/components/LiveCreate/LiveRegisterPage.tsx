@@ -832,7 +832,7 @@ export default function LiveRegisterPage() {
                   <span className="text-[13px] font-bold text-neutral-600">{tutorialVisibleItems.length}</span>
                 </div>
 
-                <div className="flex flex-col gap-2 overflow-y-auto pr-2">
+                <div className="scrollbar-hide flex flex-col gap-2 overflow-y-auto pr-2">
                   {tutorialVisibleItems.map((item, index) => {
                     const conditionLabel = getItemConditionLabel(item.itemCondition);
                     const isTutorialFocusItem = activeStepId === 'inventory' && index === 0;
@@ -1090,7 +1090,7 @@ export default function LiveRegisterPage() {
                   <span className="text-sm font-bold text-neutral-100">방송 기본 설정</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+                <div className="scrollbar-hide flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-bold uppercase tracking-wider text-neutral-500">썸네일 업로드</label>
                     <button
