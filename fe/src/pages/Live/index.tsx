@@ -333,6 +333,8 @@ export default function LivePage() {
     });
   }, [activeAuctionType, activeBidAuctionId, streamId]);
 
+  const breakpoint = useBreakpoint();
+
   if (isNotFoundLive) {
     return (
       <LiveFallback
@@ -354,8 +356,6 @@ export default function LivePage() {
       />
     );
   }
-
-  const breakpoint = useBreakpoint();
 
   const layoutProps: LiveLayoutProps = {
     stream: {
@@ -418,7 +418,7 @@ export default function LivePage() {
       handleOpenStreamEndModal,
       winnerInfo,
       uniqueAuctionResult,
-      handleWinConfirm: () => void handleWinConfirm(),
+      handleWinConfirm: () => handleWinConfirm(),
       clearWinnerInfo,
       handleUniqueAuctionResultClose,
       markStreamEnded,

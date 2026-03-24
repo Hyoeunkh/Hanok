@@ -24,6 +24,7 @@ const CHAT_PANEL_ANIMATE = { flex: 1, opacity: 1 };
 const CHAT_PANEL_TRANSITION = { type: 'spring', stiffness: 400, damping: 30 } as const;
 
 export default function DesktopLayout({ stream, auction, livekit, chat, modal, navigate }: LiveLayoutProps) {
+  const { videoRef, bgVideoRef, livekitState, viewerCount, toggleMic, toggleCamera, toggleRemoteAudio, isMicOn, isCameraOn, isRemoteAudioMuted } = livekit;
   return (
     <div className="flex h-screen w-full flex-col bg-surface p-3">
       <LiveHeader
@@ -54,23 +55,23 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
                 : ''
           }`}
         >
-          <StreamOverlay viewerCount={livekit.viewerCount} isSeller={stream.isSeller} />
+          <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
           {stream.isSeller && <SellerGuideOverlay />}
           <video
-            ref={livekit.bgVideoRef}
+            ref={bgVideoRef}
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 h-full w-full object-cover -scale-x-100 blur-2xl brightness-50 saturate-120 ${livekit.livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`absolute inset-0 h-full w-full object-cover -scale-x-100 blur-2xl brightness-50 saturate-120 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
           <video
-            ref={livekit.videoRef}
+            ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={`relative h-full w-full object-contain -scale-x-100 ${livekit.livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`relative h-full w-full object-contain -scale-x-100 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
-          {livekit.livekitState !== 'connected' && <StreamPlaceholder />}
+          {livekitState !== 'connected' && <StreamPlaceholder />}
           {stream.isSeller ? (
             <SellerControlBar
               introduceAuctionId={auction.introduceAuctionId}
@@ -81,10 +82,10 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
               readyItems={auction.readyItems}
               selectedAuctionId={auction.selectedAuctionId}
               onSelectAuctionItem={auction.setSelectedAuctionId}
-              toggleMic={livekit.toggleMic}
-              toggleCamera={livekit.toggleCamera}
-              isMicOn={livekit.isMicOn}
-              isCameraOn={livekit.isCameraOn}
+              toggleMic={toggleMic}
+              toggleCamera={toggleCamera}
+              isMicOn={isMicOn}
+              isCameraOn={isCameraOn}
             />
           ) : (
             <BuyerControlBar
@@ -92,8 +93,8 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
               bidSync={auction.bidSync}
               uniqueBidSync={auction.uniqueBidSync}
               activeAuctionId={auction.activeBidAuctionId}
-              isRemoteAudioMuted={livekit.isRemoteAudioMuted}
-              onToggleMute={livekit.toggleRemoteAudio}
+              isRemoteAudioMuted={isRemoteAudioMuted}
+              onToggleMute={toggleRemoteAudio}
               onToggleChat={chat.handleToggleChat}
             />
           )}

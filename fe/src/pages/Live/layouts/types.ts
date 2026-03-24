@@ -75,7 +75,7 @@ export interface ModalProps {
   handleOpenStreamEndModal: () => void;
   winnerInfo: WinnerInfoState | null;
   uniqueAuctionResult: UniqueAuctionResultState | null;
-  handleWinConfirm: () => void;
+  handleWinConfirm: () => Promise<void>;
   clearWinnerInfo: () => void;
   handleUniqueAuctionResultClose: () => void;
   markStreamEnded: () => void;

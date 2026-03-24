@@ -24,6 +24,7 @@ import type { LiveLayoutProps } from './types';
 const SWIPE_THRESHOLD = 50;
 
 export default function MobileLayout({ stream, auction, livekit, modal, navigate }: LiveLayoutProps) {
+  const { videoRef, bgVideoRef, livekitState, viewerCount, toggleMic, toggleCamera, toggleRemoteAudio, isMicOn, isCameraOn, isRemoteAudioMuted } = livekit;
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'items' | 'chat' | 'auction'>('chat');
   const { messages, sendMessage, sendMacro, connectionState } = useStompChat(stream.activeStreamEnter?.category ?? '');
@@ -85,22 +86,22 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
                 : ''
           }`}
         >
-          <StreamOverlay viewerCount={livekit.viewerCount} isSeller={stream.isSeller} />
+          <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
           <video
-            ref={livekit.bgVideoRef}
+            ref={bgVideoRef}
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 h-full w-full object-cover -scale-x-100 blur-2xl brightness-50 saturate-120 ${livekit.livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`absolute inset-0 h-full w-full object-cover -scale-x-100 blur-2xl brightness-50 saturate-120 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
           <video
-            ref={livekit.videoRef}
+            ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={`relative h-full w-full object-contain -scale-x-100 ${livekit.livekitState === 'connected' ? '' : 'hidden'}`}
+            className={`relative h-full w-full object-contain -scale-x-100 ${livekitState === 'connected' ? '' : 'hidden'}`}
           />
-          {livekit.livekitState !== 'connected' && <StreamPlaceholder />}
+          {livekitState !== 'connected' && <StreamPlaceholder />}
 
           {auction.auctionComment && (
             <div className="pointer-events-none absolute bottom-4 left-1/2 z-40 w-[min(85%,20rem)] -translate-x-1/2">
@@ -196,10 +197,10 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
             readyItems={auction.readyItems}
             selectedAuctionId={auction.selectedAuctionId}
             onSelectAuctionItem={auction.setSelectedAuctionId}
-            toggleMic={livekit.toggleMic}
-            toggleCamera={livekit.toggleCamera}
-            isMicOn={livekit.isMicOn}
-            isCameraOn={livekit.isCameraOn}
+            toggleMic={toggleMic}
+            toggleCamera={toggleCamera}
+            isMicOn={isMicOn}
+            isCameraOn={isCameraOn}
           />
         ) : (
           <BuyerControlBar
@@ -209,8 +210,8 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
             bidSync={auction.bidSync}
             uniqueBidSync={auction.uniqueBidSync}
             activeAuctionId={auction.activeBidAuctionId}
-            isRemoteAudioMuted={livekit.isRemoteAudioMuted}
-            onToggleMute={livekit.toggleRemoteAudio}
+            isRemoteAudioMuted={isRemoteAudioMuted}
+            onToggleMute={toggleRemoteAudio}
           />
         )}
       </div>
