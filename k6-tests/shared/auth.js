@@ -3,7 +3,7 @@ import { SharedArray } from 'k6/data';
 
 const BASE = __ENV.BASE_URL || 'http://j14d105.p.ssafy.io/api/v1';
 
-// 1. 테스트 유저 데이터 로드 (다른 스크립트에서도 쓸 수 있게 export)
+// 1. 테스트 유저 데이터 로드
 export const TEST_USERS = new SharedArray('users', function () {
   return JSON.parse(open('../users.json'));
 });
@@ -16,7 +16,7 @@ export function loginAll() {
       JSON.stringify({ email: user.email, password: user.password }),
       {
         headers: { 'Content-Type': 'application/json' },
-        tags: { api: 'auth_login_setup' }
+        tags: { api: 'auth_login_setup' },
       }
     );
 
@@ -37,7 +37,7 @@ export function reLogin(user) {
     JSON.stringify({ email: user.email, password: user.password }),
     {
       headers: { 'Content-Type': 'application/json' },
-      tags: { api: 'auth_login_refresh' }
+      tags: { api: 'auth_login_refresh' },
     }
   );
 
@@ -46,4 +46,12 @@ export function reLogin(user) {
     return `Bearer ${body.data.accessToken}`;
   }
   return null;
+}
+
+// ✅ Fix: { headers: {...} } 래핑 제거 → 순수 headers 객체만 반환
+export function authHeader(token) {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': token, // "Bearer xxxxx" 형태
+  };
 }
