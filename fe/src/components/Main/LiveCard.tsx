@@ -2,6 +2,7 @@ import { getCategoryLabel } from '@/constants/category';
 import type { LiveCardData, SearchStreamStatus } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import Logo from '@/assets/Logo.png';
+import { formatScheduledDateTime } from '@/utils/formatDateTime';
 
 type LiveCardProps = {
   stream: LiveCardData;
@@ -40,20 +41,6 @@ const STREAM_STATUS_META_MAP: Record<SearchStreamStatus, { label: string; badgeC
     },
   };
 
-const formatScheduledAt = (scheduledAt: string | null) => {
-  if (!scheduledAt) return null;
-
-  const date = new Date(scheduledAt);
-  if (Number.isNaN(date.getTime())) return scheduledAt;
-
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hour = String(date.getHours()).padStart(2, '0');
-  const minute = String(date.getMinutes()).padStart(2, '0');
-
-  return `${month}/${day} ${hour}:${minute}`;
-};
-
 export default function LiveCard({
   stream,
   className = '',
@@ -67,7 +54,7 @@ export default function LiveCard({
   const categoryLabel = getCategoryLabel(stream.category);
   const isScheduledCard = stream.streamStatus === 'SCHEDULED';
   const isLiveStream = stream.streamStatus === 'LIVE';
-  const scheduledAtLabel = formatScheduledAt(stream.scheduledAt);
+  const scheduledAtLabel = formatScheduledDateTime(stream.scheduledAt);
   const resolvedStatusBadge =
     statusBadge ??
     (stream.streamStatus === 'PAUSED' || stream.streamStatus === 'ENDED'

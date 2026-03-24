@@ -9,18 +9,9 @@ import { useGetEscrowsBuyer } from '@/api/hooks/useGetEscrowsBuyer';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
 import NftReceiptCard from '@/components/common/NftReceiptCard';
 import { ESCROW_STATUS_OPTIONS, getEscrowStateUI, type EscrowStatusFilter } from '@/utils/getEscrowStateUI';
+import { formatDateTime } from '@/utils/formatDateTime';
 import { formatPrice } from '@/utils/formatPrice';
 import { useToast } from '@/hooks/useToast';
-
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hour = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hour}:${min}`;
-};
 
 type SortOption = 'LATEST' | 'AMOUNT';
 
@@ -198,7 +189,7 @@ export default function OrderHistorySection() {
                     <div className="flex flex-col gap-1.5">
                       <span className={ui.badgeClass}>{ui.label}</span>
                       <h4 className="m-0 mt-0.5 text-base font-bold text-white">{item.itemName}</h4>
-                      <p className="m-0 text-[13px] text-neutral-600">{formatDate(item.createdAt)}</p>
+                      <p className="m-0 text-[13px] text-neutral-600">{formatDateTime(item.createdAt)}</p>
                     </div>
                   </div>
 

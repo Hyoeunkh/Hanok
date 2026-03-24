@@ -5,31 +5,10 @@ import { useNavigate } from 'react-router-dom';
 
 import { getCategoryLabel } from '@/constants/category';
 import type { LiveCardData } from '@/types';
+import { formatScheduledDateTime } from '@/utils/formatDateTime';
 
 type ScheduledStreamCarouselProps = {
   streams: LiveCardData[];
-};
-
-const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
-
-const formatScheduleLabel = (dateTime: string | null) => {
-  if (!dateTime) {
-    return '일정 미정';
-  }
-
-  const date = new Date(dateTime);
-  if (Number.isNaN(date.getTime())) {
-    return dateTime;
-  }
-
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hour = date.getHours();
-  const minute = String(date.getMinutes()).padStart(2, '0');
-  const meridiem = hour >= 12 ? '오후' : '오전';
-  const displayHour = hour % 12 || 12;
-
-  return `${month}/${day}(${DAY_LABELS[date.getDay()]}) ${meridiem} ${displayHour}:${minute}`;
 };
 
 export default function ScheduledStreamCarousel({ streams }: ScheduledStreamCarouselProps) {
@@ -114,7 +93,7 @@ export default function ScheduledStreamCarousel({ streams }: ScheduledStreamCaro
 
                   <div className="min-w-0 flex-1">
                     <p className="pl-14 text-[15px] font-semibold text-gold-light">
-                      {formatScheduleLabel(stream.scheduledAt)}
+                      {formatScheduledDateTime(stream.scheduledAt, '일정 미정')}
                     </p>
                     <h3 className="mt-2 line-clamp-2 text-h2 font-semibold leading-[1.2] tracking-[-0.02em] text-warm">
                       {stream.title}

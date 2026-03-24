@@ -1,4 +1,5 @@
 import { formatStreamScheduledAt } from '@/utils/streamDateTime';
+import { formatScheduledDateTime } from '@/utils/formatDateTime';
 import { useState } from 'react';
 import { FaTimes, FaChevronLeft, FaChevronRight, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 
@@ -34,15 +35,6 @@ const getCalendarDays = (year: number, month: number) => {
   while (days.length % 7 !== 0) days.push(null);
 
   return days;
-};
-
-const formatDisplay = (date: Date, hour: number, minute: number) => {
-  const m = date.getMonth() + 1;
-  const d = date.getDate();
-  const day = DAYS[date.getDay()];
-  const ampm = hour < 12 ? '오전' : '오후';
-  const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${m}월 ${d}일 (${day}) ${ampm} ${h12}:${minute.toString().padStart(2, '0')}`;
 };
 
 export default function ScheduleModal({ onConfirm, onClose }: Props) {
@@ -119,7 +111,7 @@ export default function ScheduleModal({ onConfirm, onClose }: Props) {
           <p className="text-neutral-500 text-xs mb-5">오늘로부터 최대 30일 이내로 예약할 수 있습니다</p>
 
           <div className="bg-surface rounded-xl px-4 py-3 mb-5 text-center">
-            <span className="text-gold-light font-semibold text-base">{formatDisplay(selectedDate, hour, minute)}</span>
+            <span className="text-gold-light font-semibold text-base">{formatScheduledDateTime(getScheduled())}</span>
           </div>
 
           {/* ── Calendar ── */}
