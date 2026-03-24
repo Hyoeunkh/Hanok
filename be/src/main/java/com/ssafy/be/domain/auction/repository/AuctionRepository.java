@@ -2,6 +2,7 @@ package com.ssafy.be.domain.auction.repository;
 
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
+import com.ssafy.be.domain.item.entity.ItemStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,5 +24,14 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     @Query("SELECT a FROM Auction a JOIN FETCH a.bottomUpAuctionDetail WHERE a.id = :id")
     Optional<Auction> findByIdWithBottomUpDetail(@Param("id") Long id);
+
+    @Query("""
+            SELECT a FROM Auction a
+            JOIN FETCH a.item i
+            WHERE i.seller.id = :sellerId AND i.status = :status
+            """)
+    List<Auction> findAllBySellerIdAndItemStatus(
+            @Param("sellerId") Long sellerId,
+            @Param("status") ItemStatus status);
 
 }
