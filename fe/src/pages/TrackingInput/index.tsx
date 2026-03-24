@@ -175,9 +175,15 @@ export default function TrackingInput() {
 
   const handleCancelConfirm = (cancelReason: string) => {
     if (!selectedItemId) return;
+    const normalizedReason = cancelReason.trim();
+
+    if (!normalizedReason) {
+      showToast({ message: '취소 사유를 입력해 주세요.' });
+      return;
+    }
 
     cancelEscrow(
-      { escrowId: selectedItemId, cancelReason },
+      { escrowId: selectedItemId, cancelReason: normalizedReason },
       {
         onSuccess: () => {
           setShowCancelModal(false);

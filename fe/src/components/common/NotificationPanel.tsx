@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetNotifications } from '@/api/hooks/useGetNotifications';
@@ -23,6 +23,7 @@ export default function NotificationPanel({ onClose }: NotificationPanelProps) {
   const notifications = data?.pages.flatMap((page) => page.items) ?? [];
 
   const observer = useRef<IntersectionObserver | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const lastItemRef = useCallback(
     (node: HTMLElement | null) => {
       if (isFetchingNextPage) return;
@@ -49,11 +50,31 @@ export default function NotificationPanel({ onClose }: NotificationPanelProps) {
     onClose();
   };
 
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (!panelRef.current?.contains(target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [onClose]);
+
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-white/10 bg-background shadow-xl">
+      <div
+        ref={panelRef}
+        className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-white/10 bg-background shadow-xl"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
           <h3 className="text-sm font-bold text-white">알림</h3>
           {notifications.length > 0 && (
