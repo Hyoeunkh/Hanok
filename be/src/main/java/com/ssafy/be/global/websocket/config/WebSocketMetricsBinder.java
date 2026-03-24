@@ -26,6 +26,8 @@ public class WebSocketMetricsBinder {
     // 애플리케이션이 완전히 구동된 직후 메트릭을 바인딩
     @EventListener(ApplicationReadyEvent.class)
     public void bindMetrics() {
+        inboundExecutor.initialize();
+
         Tags tags = Tags.of("type", "inbound", "pool", "clientInbound");
         new ExecutorServiceMetrics(
                 inboundExecutor.getThreadPoolExecutor(),
