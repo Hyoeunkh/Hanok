@@ -96,9 +96,9 @@ class BottomUpAuctionServiceTest {
     static void suiteStart() {
         IT_LOG.info("");
         IT_LOG.info("╔════════════════════════════════════════════════════════════╗");
-        IT_LOG.info("║       BottomUpAuction 통합 테스트 Suite 시작               ║");
-        IT_LOG.info("║  Layer  : Service → Redis / DB                             ║");
-        IT_LOG.info("║  시나리오: 물품소개, 경매시작, 상향식 입찰, 에스크로 집계  ║");
+        IT_LOG.info("║           BottomUpAuction 통합 테스트 Suite 시작               ║");
+        IT_LOG.info("║             Layer  : Service → Redis / DB                  ║");
+        IT_LOG.info("║         시나리오: 물품소개, 경매시작, 상향식 입찰, 에스크로 집계        ║");
         IT_LOG.info("╚════════════════════════════════════════════════════════════╝");
     }
 
