@@ -9,7 +9,6 @@ import { validateTrackingInput } from '@/api/hooks/useGetTracking';
 import { usePostTrackingInfo } from '@/api/hooks/usePostTrackingInfo';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
 import SideBar from '@/components/common/layouts/SideBar';
-import { sellerSidebarItems } from '@/constants/sidebar';
 import { CARRIERS } from '@/constants/sellerRegister';
 import type { EscrowItem } from '@/types';
 import {
@@ -18,21 +17,21 @@ import {
   isPendingEscrowState,
   isTrackingSubmittedEscrowState,
 } from '@/utils/getEscrowStateUI';
+import { formatDateTime } from '@/utils/formatDateTime';
 import { formatPrice } from '@/utils/formatPrice';
 import { useToast } from '@/hooks/useToast';
+import { sellerSidebarItems } from '@/constants/sidebar';
 
 function CompletedItemRow({
   item,
   isSelected,
   onSelect,
   formatPrice,
-  formatDate,
 }: {
   item: EscrowItem;
   isSelected: boolean;
   onSelect: () => void;
   formatPrice: (price: number) => string;
-  formatDate: (dateStr: string) => string;
 }) {
   return (
     <div>
@@ -57,7 +56,7 @@ function CompletedItemRow({
           <div className="flex flex-col gap-1">
             <span className="text-gold-light text-xs font-bold">{getEscrowStateUI(item.escrowStatus).label}</span>
             <span className="text-lg font-bold text-neutral-100">{item.itemName}</span>
-            <span className="text-neutral-400 text-[13px]">{formatDate(item.createdAt)}</span>
+            <span className="text-neutral-400 text-[13px]">{formatDateTime(item.createdAt)}</span>
           </div>
         </div>
         <div className="text-lg font-bold text-neutral-100">{formatPrice(item.amount)}</div>
@@ -193,12 +192,6 @@ export default function TrackingInput() {
     );
   };
 
-  const formatDate = (dateStr: string) =>
-    dateStr
-      .replace(/T/, ' ')
-      .replace(/:\d{2}(\.\d+)?Z?$/, '')
-      .replace(/Z$/, '');
-
   return (
     <>
       {showCancelModal && selectedItemDetail && (
@@ -248,7 +241,7 @@ export default function TrackingInput() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-lg font-bold text-neutral-100">{item.itemName}</span>
-                        <span className="text-neutral-400 text-[13px]">{formatDate(item.createdAt)}</span>
+                        <span className="text-neutral-400 text-[13px]">{formatDateTime(item.createdAt)}</span>
                       </div>
                     </div>
                     <div className="text-lg font-bold text-neutral-100">{formatPrice(item.amount)}</div>
@@ -275,7 +268,6 @@ export default function TrackingInput() {
                     isSelected={selectedItemId === String(item.escrowId)}
                     onSelect={() => handleSelectItem(item.escrowId)}
                     formatPrice={formatPrice}
-                    formatDate={formatDate}
                   />
                 ))
               ) : (
@@ -310,7 +302,7 @@ export default function TrackingInput() {
                       <div className="flex flex-col gap-1">
                         <span className="text-neutral-500 text-xs font-bold">거래 취소</span>
                         <span className="text-lg font-bold text-neutral-100">{item.itemName}</span>
-                        <span className="text-neutral-400 text-[13px]">{formatDate(item.createdAt)}</span>
+                        <span className="text-neutral-400 text-[13px]">{formatDateTime(item.createdAt)}</span>
                       </div>
                     </div>
                     <div className="text-lg font-bold text-neutral-100">{formatPrice(item.amount)}</div>
