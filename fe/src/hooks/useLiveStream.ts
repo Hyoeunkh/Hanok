@@ -565,7 +565,8 @@ export function useLiveStream(streamId: string | undefined, isLiveFromServer: bo
           payload,
           itemCond: lastActiveItemRef.current?.itemCondition ?? '',
         };
-        const isUniqueWinnerEvent = payload.item.myBidPrice !== undefined;
+        const winnerAuctionType = lastActiveItemRef.current?.auctionType ?? null;
+        const isUniqueWinnerEvent = winnerAuctionType === 'UNIQUE_TOP';
 
         if (isUniqueWinnerEvent) {
           pendingUniqueWinnerInfoRef.current = nextWinnerInfo;
