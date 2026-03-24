@@ -53,7 +53,7 @@ public class BlockchainService {
 
     @Async
     public void issueNFTReceiptAsync(Long escrowId) {
-        Escrow escrow = escrowRepository.findById(escrowId)
+        Escrow escrow = escrowRepository.findByIdWithAuctionAndItem(escrowId)
                 .orElseThrow(() -> new GlobalException(EscorwErrorCode.ESCROW_NOT_FOUND));
 
         try {
