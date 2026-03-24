@@ -383,7 +383,7 @@ export default function LivePage() {
       />
 
       <div className="flex min-h-0 flex-1 gap-3">
-        <div className="min-w-0 flex-1 overflow-hidden rounded-2xl">
+        <div className="min-w-0 flex-1 overflow-hidden rounded-3xl">
           <LeftPanel
             isSeller={isSeller}
             syncedItems={itemSync?.items ?? null}
@@ -391,7 +391,7 @@ export default function LivePage() {
             onSelectAuctionItem={setSelectedAuctionId}
           />
         </div>
-        <div className={`relative min-w-0 flex-2 overflow-hidden rounded-2xl bg-background transition-shadow duration-500 ${
+        <div className={`relative min-w-0 flex-2 overflow-hidden rounded-3xl bg-background transition-shadow duration-500 ${
           liveAuctionItem ? 'shadow-[0_0_24px_rgba(166,61,46,0.4)]' :
           introducingAuctionItem ? 'shadow-[0_0_24px_rgba(240,230,216,0.25)]' : ''
         }`}>
@@ -503,7 +503,7 @@ export default function LivePage() {
           {isChatOpen && (
             <motion.div
               key="right-panel"
-              className="min-w-0 overflow-hidden rounded-2xl"
+              className="min-w-0 overflow-hidden rounded-3xl"
               initial={CHAT_PANEL_INITIAL}
               animate={CHAT_PANEL_ANIMATE}
               exit={CHAT_PANEL_INITIAL}
