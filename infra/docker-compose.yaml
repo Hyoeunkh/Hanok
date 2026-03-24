@@ -35,6 +35,10 @@ x-backend-common: &backend-template
 
 services:
   nginx:
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     image: nginx:latest
     container_name: hanok-nginx
     ports:
