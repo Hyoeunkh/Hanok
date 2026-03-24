@@ -1,5 +1,6 @@
 package com.ssafy.be.domain.item.service;
 
+import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.item.dto.request.ItemRegisterRequest;
 import com.ssafy.be.domain.item.dto.request.ItemUpdateRequest;
 import com.ssafy.be.domain.item.dto.response.ItemRegisterResponse;
@@ -22,8 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -34,6 +37,7 @@ public class ItemService {
     private final SellerRepository sellerRepository;
     private final TagRepository tagRepository;
     private final GcsClient gcsClient;
+    private final AuctionRepository auctionRepository;
 
     @Transactional
     public ItemRegisterResponse register(Long userId, ItemRegisterRequest request, List<MultipartFile> images) {
@@ -111,7 +115,7 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemRegisterResponse updateItem(Long userId, Long itemId, ItemUpdateRequest request, List<MultipartFile> images) {
+    public ItemRegisterResponse updateItem(Long userId, Long itemId, ItemUpdateRequest request, MultipartFile image1, MultipartFile image2, MultipartFile image3) {
         Seller seller = sellerRepository.findByUserId(userId)
                 .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
@@ -136,23 +140,70 @@ public class ItemService {
             tagRepository.saveAll(tags);
         }
 
-        if (images != null && !images.isEmpty()) {
-            // 기존 이미지 삭제
-            gcsClient.deleteImage(item.getImage1());
-            gcsClient.deleteImage(item.getImage2());
-            gcsClient.deleteImage(item.getImage3());
-
+        if (request.images() != null) {
             try {
-                String image1 = getImage(images, 0, seller.getId(), itemId);
-                String image2 = getImage(images, 1, seller.getId(), itemId);
-                String image3 = getImage(images, 2, seller.getId(), itemId);
-                item.updateImages(image1, image2, image3);
+                applyImageUpdate(item, request, image1, image2, image3, seller.getId(), itemId);
             } catch (IOException e) {
                 throw new GlobalException(ItemErrorCode.FILE_UPLOAD_FAILED);
             }
         }
 
         return new ItemRegisterResponse(item.getId(), item.getName(), item.getStatus());
+    }
+
+    /**
+     * 슬롯별: multipart가 있으면 새 업로드, 없고 JSON URL이 있으면 그대로, 둘 다 없으면 null(삭제).
+     * JSON images는 항상 길이 3 (null 생략 시 images 필드 자체를 보내지 않음).
+     */
+    private void applyImageUpdate(
+            Item item,
+            ItemUpdateRequest request,
+            MultipartFile image1,
+            MultipartFile image2,
+            MultipartFile image3,
+            Long sellerId,
+            Long itemId) throws IOException {
+        List<String> urls = request.images();
+        if (urls.size() != 3) {
+            throw new GlobalException(ItemErrorCode.ITEM_UPDATE_IMAGES_INVALID_SIZE);
+        }
+
+        String old1 = item.getImage1();
+        String old2 = item.getImage2();
+        String old3 = item.getImage3();
+
+        String new1 = resolveImageSlot(image1, urls.get(0), sellerId, itemId);
+        String new2 = resolveImageSlot(image2, urls.get(1), sellerId, itemId);
+        String new3 = resolveImageSlot(image3, urls.get(2), sellerId, itemId);
+
+        item.updateImages(new1, new2, new3);
+
+        Set<String> kept = new HashSet<>();
+        if (new1 != null) {
+            kept.add(new1);
+        }
+        if (new2 != null) {
+            kept.add(new2);
+        }
+        if (new3 != null) {
+            kept.add(new3);
+        }
+        for (String previous : List.of(old1, old2, old3)) {
+            if (previous != null && !previous.isBlank() && !kept.contains(previous)) {
+                gcsClient.deleteImage(previous);
+            }
+        }
+    }
+
+    private String resolveImageSlot(MultipartFile file, String jsonUrl, Long sellerId, Long itemId)
+            throws IOException {
+        if (file != null && !file.isEmpty()) {
+            return gcsClient.uploadItemImage(file, sellerId, itemId);
+        }
+        if (jsonUrl != null && !jsonUrl.isBlank()) {
+            return jsonUrl.trim();
+        }
+        return null;
     }
 
     @Transactional
@@ -163,10 +214,21 @@ public class ItemService {
         Item item = itemRepository.findByIdAndSellerId(itemId, seller.getId())
                 .orElseThrow(() -> new GlobalException(ItemErrorCode.ITEM_NOT_FOUND));
 
+        // 상태 가드
+        if (item.getStatus() == ItemStatus.PENDING) {
+            throw new GlobalException(ItemErrorCode.ITEM_NOT_DELETABLE_LIVE);
+        }
+        if (item.getStatus() == ItemStatus.SOLD) {
+            throw new GlobalException(ItemErrorCode.ITEM_NOT_DELETABLE_SOLD);
+        }
+
+        // FK 의존성 먼저 제거
+        auctionRepository.deleteByItemId(itemId);
+
         gcsClient.deleteImage(item.getImage1());
         gcsClient.deleteImage(item.getImage2());
         gcsClient.deleteImage(item.getImage3());
-
         itemRepository.delete(item);
     }
+
 }

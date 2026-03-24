@@ -9,11 +9,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     Optional<Follow> findByUserAndSeller(User user, Seller seller);
+
+    @Query("""
+            SELECT DISTINCT f
+            FROM Follow f
+            JOIN FETCH f.user
+            WHERE f.seller = :seller
+            """)
+    List<Follow> findBySeller(@Param("seller") Seller seller);
 
     boolean existsByUserAndSeller(User user, Seller seller);
 
@@ -28,4 +37,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             countQuery = "SELECT COUNT(f) FROM Follow f WHERE f.user = :user"
     )
     Page<Follow> findByUserWithSeller(@Param("user") User user, Pageable pageable);
+
+    @Query("SELECT f.seller.id, COUNT(f) AS cnt "
+            + "FROM Follow f "
+            + "GROUP BY f.seller.id "
+            + "ORDER BY cnt DESC")
+    List<Object[]> findTopSellerIdsByFollowerCount(Pageable pageable);
 }
