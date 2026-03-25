@@ -1,15 +1,15 @@
-package com.ssafy.be.domain.auction;
+package com.ssafy.be.domain.bottomupauction;
 
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.bottomupauction.dto.request.BidPlaceRequest;
 import com.ssafy.be.domain.auction.repository.AuctionRepository;
 import com.ssafy.be.domain.auction.repository.AuctionTimerRepository;
-import com.ssafy.be.domain.bottomupauction.service.AuctionBidService;
 import com.ssafy.be.domain.bottomupauction.service.BottomUpAuctionService;
 import com.ssafy.be.domain.bottomupauction.model.Bid;
 import com.ssafy.be.domain.bottomupauction.repository.AuctionBidRepository;
 import com.ssafy.be.domain.bottomupauction.repository.BottomUpAuctionDetailRepository;
 import com.ssafy.be.domain.auction.util.AuctionRedisKeys;
+import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.item.repository.ItemRepository;
 import com.ssafy.be.domain.seller.entity.Seller;
@@ -30,11 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.ssafy.be.domain.auction.entity.AuctionStatus.LIVE;
+import static com.ssafy.be.domain.item.entity.AuctionType.BOTTOM_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
@@ -49,8 +47,6 @@ public class AuctionBidLockTest {
 
     @Autowired
     private BottomUpAuctionService bottomUpAuctionService;
-    @Autowired
-    private AuctionBidService auctionBidService; // 락 없는 순수 테스트용
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -106,7 +102,7 @@ public class AuctionBidLockTest {
         seller = sellerRepository.save(TestFixture.createSeller(sellerUser));
         stream = streamRepository.save(TestFixture.createStream("테스트 라이브 방송", seller));
         item = itemRepository.save(TestFixture.createItem("테스트 상품"));
-        liveAuction = auctionRepository.save(TestFixture.createAuction(LIVE, stream, item));
+        liveAuction = auctionRepository.save(TestFixture.createAuction(BOTTOM_UP, LIVE, stream, item));
         bottomUpAuctionDetailRepository.save(TestFixture.createBottomUpAuctionDetail(liveAuction));
         auctionRepository.flush();
         liveAuction = auctionRepository.findByIdWithBottomUpDetail(liveAuction.getId()).orElseThrow();
@@ -155,7 +151,7 @@ public class AuctionBidLockTest {
             // when
             long startTime = System.currentTimeMillis();
 
-            ConcurrentTestUtil.executeConcurrentBids(
+            int successCount = ConcurrentTestUtil.executeConcurrentBids(
                     bidPlaceRequest,
                     stream.getId(),
                     bidders,
@@ -166,10 +162,16 @@ public class AuctionBidLockTest {
 
             // then
             List<Bid> bids = auctionBidRepository.findAll(liveAuction.getId());
+            long sumDeposited = sumDepositedBidBalance(bidders);
 
-            IT_LOG.info("    [검증] 실행 시간: {}ms, DB 저장된 참가자 수: {}", executionTime, bids.size());
+            IT_LOG.info("    [검증] 실행 시간: {}ms, 예외 없이 완료된 스레드: {}, Redis 입찰 건수: {}, 입찰자 예치금 합: {}",
+                    executionTime, successCount, bids.size(), sumDeposited);
+
+            assertThat(successCount).isEqualTo(1);
             assertThat(bids.size()).isEqualTo(1);
             assertThat(bids.getFirst().amount()).isEqualTo(bidAmount);
+            assertThat(sumDeposited).isEqualTo(bidAmount);
+
             IT_LOG.info("    [검증] ✔ 분산 락 덕분에 확실한 동시성 방어 및 순차적 처리 성공!");
         }
 
@@ -189,7 +191,7 @@ public class AuctionBidLockTest {
             // when
             long startTime = System.currentTimeMillis();
 
-            ConcurrentTestUtil.executeConcurrentBids(
+            int successCount = ConcurrentTestUtil.executeConcurrentBids(
                     bidPlaceRequest,
                     stream.getId(),
                     bidders,
@@ -200,11 +202,24 @@ public class AuctionBidLockTest {
 
             // then
             List<Bid> bids = auctionBidRepository.findAll(liveAuction.getId());
+            long sumDeposited = sumDepositedBidBalance(bidders);
 
-            IT_LOG.info("    [검증] 실행 시간: {}ms, DB 저장된 참가자 수: {}", executionTime, bids.size());
+            IT_LOG.info("    [검증] 실행 시간: {}ms, 예외 없이 완료된 스레드: {}, Redis 입찰 건수: {}, 입찰자 예치금 합: {}",
+                    executionTime, successCount, bids.size(), sumDeposited);
+
+            assertThat(successCount).isGreaterThan(1);
             assertThat(bids.size()).isNotEqualTo(1);
             assertThat(bids.getFirst().amount()).isEqualTo(bidAmount);
-            IT_LOG.info("    [검증] ✔ 락을 생략할 경우 여실히 드러나는 다중 입찰 오동작 증명!");
+
+            IT_LOG.info("    [검증] ✔ 락을 생략할 경우 여실히 드러나는 다중 입찰 오동작 증명! (예치금 합 참고: {})", sumDeposited);
         }
+    }
+
+    private long sumDepositedBidBalance(List<User> bidders) {
+        List<Long> ids = bidders.stream().map(User::getId).toList();
+
+        return userRepository.findAllById(ids).stream()
+                .mapToLong(User::getDepositedBidBalance)
+                .sum();
     }
 }

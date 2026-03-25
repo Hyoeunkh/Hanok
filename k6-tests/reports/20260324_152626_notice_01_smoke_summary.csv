@@ -1,2 +1,2 @@
 test_name,vus_max,p95_ms,p99_ms,avg_ms,tps,error_rate,ws_error_rate
-chat_03_stress,450,0.00,N/A,0.00,0.46,100.00,0.00
+notice_01_smoke,5,35.68,N/A,20.60,2.56,95.74,0.00

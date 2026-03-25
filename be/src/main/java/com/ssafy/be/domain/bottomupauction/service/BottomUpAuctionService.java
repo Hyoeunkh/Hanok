@@ -18,7 +18,6 @@ import com.ssafy.be.domain.bottomupauction.exception.AuctionErrorCode;
 import com.ssafy.be.domain.bottomupauction.model.Bid;
 import com.ssafy.be.domain.bottomupauction.repository.AuctionBidRepository;
 import com.ssafy.be.domain.escrow.service.EscrowService;
-import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.Item;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
@@ -520,29 +519,5 @@ public class BottomUpAuctionService {
                 bid.nickname(),
                 bid.amount(),
                 bid.bidAt());
-    }
-
-    private ItemSyncResponse.ItemInfo buildItemSyncInfo(Auction auction) {
-        List<String> images = Stream.of(
-                        auction.getItem().getImage1(),
-                        auction.getItem().getImage2(),
-                        auction.getItem().getImage3())
-                .filter(Objects::nonNull)
-                .toList();
-
-        return ItemSyncResponse.ItemInfo.builder()
-                .auctionId(auction.getId())
-                .itemName(auction.getItem().getName())
-                .description(auction.getItem().getDescription())
-                .images(images)
-                .startPrice(auction.getBottomUpAuctionDetail().getStartPrice())
-                .auctionType(auction.getAuctionType())
-                .auctionTime(auction.getAuctionDuration())
-                .bidUnit(auction.getBottomUpAuctionDetail().getBidUnit())
-                .auctionStatus(auction.getAuctionStatus())
-                .finalPrice(auction.getAuctionStatus() == AuctionStatus.SOLD ? auction.getFinalPrice()
-                        : null)
-                .itemCondition(auction.getItem().getItemCondition())
-                .build();
     }
 }
