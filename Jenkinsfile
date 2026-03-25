@@ -74,6 +74,13 @@ pipeline {
                     steps {
                         sh '''
                         set +e
+                        
+                        # Nginx 상태 확인 및 기동
+                        if ! docker ps | grep -q hanok-nginx; then
+                            docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d nginx
+                            sleep 3
+                        fi
+                        
                         cp /var/jenkins_home/env/.env.prod infra/.env.prod
                         
                         LIVEKIT_SECRET=$(grep LIVEKIT_API_SECRET infra/.env.prod | cut -d '=' -f2)
@@ -93,7 +100,7 @@ LKEOF
                         fi
                         
                         # 기본 인프라 컨테이너 실행
-                        docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis redis-exporter livekit prometheus grafana loki promtail nginx
+                        docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis redis-exporter livekit prometheus grafana loki promtail influxdb
                         
                         # 배포 타겟 결정
                         ACTIVE_TARGET=$(grep -oP 'server \\K[^:]+' infra/nginx/conf.d/upstream.conf || echo "backend-green")
@@ -112,7 +119,6 @@ LKEOF
                         
                         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} pull ${TARGET}
                         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps ${TARGET}
-                        docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis redis-exporter livekit prometheus grafana loki promtail influxdb
                         
                         # 헬스체크
                         HEALTH="000"
