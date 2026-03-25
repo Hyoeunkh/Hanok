@@ -24,7 +24,18 @@ const CHAT_PANEL_ANIMATE = { flex: 1, opacity: 1 };
 const CHAT_PANEL_TRANSITION = { type: 'spring', stiffness: 400, damping: 30 } as const;
 
 export default function DesktopLayout({ stream, auction, livekit, chat, modal, navigate }: LiveLayoutProps) {
-  const { videoRef, bgVideoRef, livekitState, viewerCount, toggleMic, toggleCamera, toggleRemoteAudio, isMicOn, isCameraOn, isRemoteAudioMuted } = livekit;
+  const {
+    videoRef,
+    bgVideoRef,
+    livekitState,
+    viewerCount,
+    toggleMic,
+    toggleCamera,
+    toggleRemoteAudio,
+    isMicOn,
+    isCameraOn,
+    isRemoteAudioMuted,
+  } = livekit;
   return (
     <div className="flex h-screen w-full flex-col bg-surface p-3">
       <LiveHeader
@@ -104,7 +115,7 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
           )}
 
           <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-            {stream.isSeller && auction.timer && (
+            {auction.timer && (
               <AuctionTimer
                 key={auction.timer.receivedAtMs}
                 timer={auction.timer}
