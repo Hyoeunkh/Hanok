@@ -11,7 +11,7 @@ import { useGetWallet } from '@/api/hooks/useGetWallet';
 import SideBar from '@/components/common/layouts/SideBar';
 import AccountSection from '@/components/Settings/accountSection';
 import FollowedStoresSection from '@/components/Settings/FollowedStoresSection';
-import OrderHistorySection from '@/components/Settings/OrderHistorySection';
+import OrderHistorySection from '@/components/Settings/orderHistory/OrderHistorySection';
 import PaymentSection from '@/components/Settings/PaymentSection';
 import ShippingSection from '@/components/Settings/ShippingSection';
 import { formatPrice } from '@/utils/formatPrice';
