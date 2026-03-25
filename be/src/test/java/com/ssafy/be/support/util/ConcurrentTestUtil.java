@@ -18,7 +18,11 @@ public class ConcurrentTestUtil {
         void bid(BidPlaceRequest request, Long streamId, Long userId) throws Exception;
     }
 
-    public static void executeConcurrentBids(
+    /**
+     * 동시 입찰을 실행하고, 예외 없이 완료된 스레드 수를 반환한다.
+     * (비즈니스 실패로 던진 예외도 여기서는 실패로 집계된다.)
+     */
+    public static int executeConcurrentBids(
             BidPlaceRequest request,
             Long streamId,
             List<User> bidders,
@@ -44,8 +48,10 @@ public class ConcurrentTestUtil {
             });
         }
 
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(120, TimeUnit.SECONDS);
         executorService.shutdown();
+        executorService.awaitTermination(60, TimeUnit.SECONDS);
+        return successCount.get();
     }
 }
 
