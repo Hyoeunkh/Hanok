@@ -37,6 +37,7 @@ pipeline {
                                     sh 'cp /var/jenkins_home/env/.env.fe .env'
                                     sh 'npm install --legacy-peer-deps'
                                     sh 'npm run build'
+                                    sh 'gzip -k dist/landging_model.glb'
                                 }
                             }
                         }
@@ -111,6 +112,7 @@ LKEOF
                         
                         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} pull ${TARGET}
                         docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --no-deps ${TARGET}
+                        docker-compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d mysql redis livekit prometheus grafana loki promtail nginx influxdb
                         
                         # 헬스체크
                         HEALTH="000"

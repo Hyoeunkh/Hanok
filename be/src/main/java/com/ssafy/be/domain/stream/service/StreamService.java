@@ -10,9 +10,11 @@ import com.ssafy.be.domain.bottomupauction.repository.BottomUpAuctionDetailRepos
 import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.item.entity.Category;
 import com.ssafy.be.domain.item.entity.Item;
+import com.ssafy.be.domain.item.entity.ItemStatus;
 import com.ssafy.be.domain.item.entity.Tag;
 import com.ssafy.be.domain.item.exception.ItemErrorCode;
 import com.ssafy.be.domain.item.repository.ItemRepository;
+import com.ssafy.be.domain.notification.service.NotificationService;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.seller.exception.SellerErrorCode;
 import com.ssafy.be.domain.seller.repository.SellerRepository;
@@ -44,6 +46,7 @@ import io.livekit.server.RoomJoin;
 import io.livekit.server.RoomName;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +62,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import static com.ssafy.be.domain.notification.model.NotificationType.STREAM_START;
+
 @Service
 @RequiredArgsConstructor
 public class StreamService {
 
+    private final NotificationService notificationService;
     private final StreamRepository streamRepository;
     private final SellerRepository sellerRepository;
     private final GcsClient gcsClient;
@@ -308,32 +314,38 @@ public class StreamService {
 
     @Transactional
     public void startStream(Long userId, Long streamId) {
-        Seller seller =
-                sellerRepository
-                        .findByUserId(userId)
+        Seller seller = sellerRepository.findByUserId(userId)
                         .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
-        Stream stream =
-                streamRepository
-                        .findByIdAndSellerId(streamId, seller.getId())
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         stream.start();
+
+        // 팔로워들에게 알림 발송
+        followRepository.findBySeller(seller).forEach(follow -> {
+            notificationService.sendNotification(
+                    follow.getUser().getId(),
+                    STREAM_START.name(),
+                    STREAM_START.getTitle(),
+                    STREAM_START.renderBody(seller.getUser().getNickname()),
+                    "/streams/%d/enter".formatted(stream.getId())
+            );
+        });
     }
 
     @Transactional
     public void endStream(Long userId, Long streamId) {
-        Seller seller =
-                sellerRepository
-                        .findByUserId(userId)
+        Seller seller = sellerRepository.findByUserId(userId)
                         .orElseThrow(() -> new GlobalException(SellerErrorCode.SELLER_NOT_FOUND));
 
-        Stream stream =
-                streamRepository
-                        .findByIdAndSellerId(streamId, seller.getId())
+        Stream stream = streamRepository.findByIdAndSellerId(streamId, seller.getId())
                         .orElseThrow(() -> new GlobalException(StreamErrorCode.STREAM_NOT_FOUND));
 
         stream.end();
+
+        // 해당 방송에서 SCHEDULED 상태인 경매 물품을 다시 READY로 상태 변경
+        itemRepository.updateScheduledItemsToReadyByStreamId(streamId, ItemStatus.SCHEDULED, ItemStatus.READY);
 
         // Redis viewer Set 삭제
         streamViewerService.clearViewers(streamId);
@@ -499,6 +511,35 @@ public class StreamService {
 
         return new ScheduledStreamListResponse(streams, slice.hasNext());
     }
+
+
+    @Transactional(readOnly = true)
+    public List<StreamRecommendResponse> getNewSellerLiveStreams(int withinDays, int limit) {
+        LocalDateTime since = LocalDateTime.now().minusDays(withinDays);
+
+        return streamRepository.findLiveStreamsByNewSellers(since)
+                .stream()
+                .map(stream -> {
+                    Seller sel = stream.getSeller();
+                    return new StreamRecommendResponse(
+                            stream.getId(),
+                            stream.getTitle(),
+                            stream.getCategory(),
+                            stream.getThumbnail(),
+                            stream.getStatus(),
+                            streamViewerService.getViewerCount(stream.getId()),
+                            stream.getStartedAt(),
+                            new StreamSellerResponse(
+                                    sel.getId(),
+                                    sel.getUser().getNickname(),
+                                    sel.getUser().getProfileImage())
+                    );
+                })
+                .limit(limit)
+                .toList();
+    }
+
+
 
     @Transactional
     public StreamEnterResponse enterStream(Long userId, Long streamId) {
