@@ -5,7 +5,6 @@ import coinImage from '@/assets/coin.png';
 
 type SellerUniqueBidOverlayProps = {
   participantCount: number;
-  className?: string;
 };
 
 type CoinDrop = {
@@ -35,10 +34,7 @@ const buildCoinDrops = (startId: number, count: number): CoinDrop[] =>
     delay: index * randomBetween(0.05, 0.09),
   }));
 
-export default function SellerUniqueBidOverlay({
-  participantCount,
-  className = '',
-}: SellerUniqueBidOverlayProps) {
+export default function SellerUniqueBidOverlay({ participantCount }: SellerUniqueBidOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coins, setCoins] = useState<CoinDrop[]>([]);
 
@@ -104,23 +100,6 @@ export default function SellerUniqueBidOverlay({
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="pointer-events-none fixed inset-0 z-10"
         >
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            className={`absolute ${className}`}
-          >
-            <div className="rounded-full border border-gold/18 bg-surface/72 px-3.5 py-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.24)] backdrop-blur-xl">
-              <div className="inline-flex items-center gap-2">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
-                <span className="text-[12px] font-extrabold tracking-[0.12em] text-gold-light">
-                  입찰 발생
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
           <AnimatePresence>
             {coins.map((coin) => (
               <motion.div

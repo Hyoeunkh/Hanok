@@ -26,7 +26,18 @@ import type { LiveLayoutProps } from './types';
 type TabletTab = 'items' | 'chat' | 'auction';
 
 export default function TabletLayout({ stream, auction, livekit, modal, navigate }: LiveLayoutProps) {
-  const { videoRef, bgVideoRef, livekitState, viewerCount, toggleMic, toggleCamera, toggleRemoteAudio, isMicOn, isCameraOn, isRemoteAudioMuted } = livekit;
+  const {
+    videoRef,
+    bgVideoRef,
+    livekitState,
+    viewerCount,
+    toggleMic,
+    toggleCamera,
+    toggleRemoteAudio,
+    isMicOn,
+    isCameraOn,
+    isRemoteAudioMuted,
+  } = livekit;
   const [activeTab, setActiveTab] = useState<TabletTab>('chat');
   const { messages, sendMessage, sendMacro, connectionState } = useStompChat(stream.activeStreamEnter?.category ?? '');
 
@@ -69,10 +80,7 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
             <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
             {stream.isSeller && <SellerGuideOverlay />}
             {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
-              <SellerUniqueBidOverlay
-                className="left-3 top-14 z-10"
-                participantCount={auction.uniqueBidSync.participantCount}
-              />
+              <SellerUniqueBidOverlay participantCount={auction.uniqueBidSync.participantCount} />
             )}
             <video
               ref={bgVideoRef}
@@ -105,7 +113,9 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
             </div>
 
             <SellerStartModal
-              open={modal.showSellerStartModal && stream.isSeller && !stream.isStreamLive && !modal.hasStartedThisStream}
+              open={
+                modal.showSellerStartModal && stream.isSeller && !stream.isStreamLive && !modal.hasStartedThisStream
+              }
               streamTitle={stream.streamTitle}
               isPending={modal.postStartStreamIsPending}
               onConfirm={modal.handleSellerStartModalConfirm}
@@ -128,8 +138,8 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
                 onClose={modal.clearWinnerInfo}
               />
             )}
-            {modal.uniqueAuctionResult && (
-              stream.isSeller ? (
+            {modal.uniqueAuctionResult &&
+              (stream.isSeller ? (
                 <SellerUniqueAuctionResultModal
                   isOpen
                   itemName={modal.uniqueAuctionResult.itemName}
@@ -144,10 +154,13 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
                   winnerInfo={modal.uniqueAuctionResult.winnerInfo}
                   onClose={modal.handleUniqueAuctionResultClose}
                 />
-              )
-            )}
+              ))}
             {stream.streamState === 'disconnected' && (
-              <StreamDisconnected initialSeconds={300} onTimeout={modal.markStreamEnded} onExit={() => navigate('/main')} />
+              <StreamDisconnected
+                initialSeconds={300}
+                onTimeout={modal.markStreamEnded}
+                onExit={() => navigate('/main')}
+              />
             )}
             {stream.streamState === 'ended' && <StreamEnded onClose={() => navigate('/main')} />}
           </div>
