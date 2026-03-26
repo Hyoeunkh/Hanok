@@ -72,7 +72,7 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
           {stream.isSeller && <SellerGuideOverlay />}
           {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
             <SellerUniqueBidOverlay
-              className="absolute left-3 top-16 z-20"
+              className="left-3 top-14 z-10"
               participantCount={auction.uniqueBidSync.participantCount}
             />
           )}

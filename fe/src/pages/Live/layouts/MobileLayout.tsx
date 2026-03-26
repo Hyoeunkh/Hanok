@@ -91,7 +91,7 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
           <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
           {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
             <SellerUniqueBidOverlay
-              className="absolute left-3 top-14 z-20"
+              className="left-3 top-14 z-10"
               participantCount={auction.uniqueBidSync.participantCount}
             />
           )}
