@@ -67,6 +67,8 @@ export default function FollowedStoresSection() {
                   <img
                     src={seller.profileImageUri}
                     alt={seller.nickname}
+                    loading="lazy"
+                    decoding="async"
                     className="w-14 h-14 rounded-full object-cover bg-surface"
                   />
                 ) : (

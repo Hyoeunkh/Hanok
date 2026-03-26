@@ -77,12 +77,16 @@ export default function ScheduledStreamCarousel({ streams }: ScheduledStreamCaro
                       <img
                         src={stream.thumbnailUri}
                         alt={stream.title}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : stream.seller.profileImageUri ? (
                       <img
                         src={stream.seller.profileImageUri}
                         alt={`${stream.seller.nickname} profile`}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
