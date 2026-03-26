@@ -156,8 +156,8 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
               onClose={modal.clearWinnerInfo}
             />
           )}
-          {modal.uniqueAuctionResult && (
-            stream.isSeller ? (
+          {modal.uniqueAuctionResult &&
+            (stream.isSeller ? (
               <SellerUniqueAuctionResultModal
                 isOpen
                 itemName={modal.uniqueAuctionResult.itemName}
@@ -172,8 +172,7 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
                 winnerInfo={modal.uniqueAuctionResult.winnerInfo}
                 onClose={modal.handleUniqueAuctionResultClose}
               />
-            )
-          )}
+            ))}
           {stream.streamState === 'disconnected' && (
             <StreamDisconnected
               initialSeconds={300}
