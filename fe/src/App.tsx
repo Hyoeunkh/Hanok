@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
+import Loading from '@/components/common/layouts/Loading';
 import MainLayout from '@/components/common/layouts/MainLayout';
 import AdminOnlyRoute from '@/routes/AdminOnlyRoute';
 import SellerOnlyRoute from '@/routes/SellerOnlyRoute';
@@ -22,19 +23,10 @@ const SettingsPage = lazy(() => import('./pages/Settings'));
 const LiveRegisterPage = lazy(() => import('./pages/LiveRegister'));
 const SellerReportPage = lazy(() => import('./pages/SellerReport'));
 const AdminPage = lazy(() => import('./pages/Admin'));
-const NftReceiptPage = lazy(() => import('./pages/NftReceipt'));
-
-function RouteFallback() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-sm text-neutral-500">
-      Loading...
-    </div>
-  );
-}
 
 function App() {
   return (
-    <Suspense fallback={<RouteFallback />}>
+    <Suspense fallback={<Loading size={32} />}>
       <Routes>
         <Route index element={<LandingPage />} />
 
@@ -52,7 +44,6 @@ function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="wallet" element={<WalletPage />} />
-          <Route path="nft-receipt/:escrowId" element={<NftReceiptPage />} />
           <Route path="settings" element={<SettingsPage />} />
 
           <Route element={<SellerOnlyRoute />}>
