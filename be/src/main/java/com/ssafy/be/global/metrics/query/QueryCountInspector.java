@@ -1,18 +1,27 @@
 package com.ssafy.be.global.metrics.query;
 
 import org.hibernate.resource.jdbc.spi.StatementInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class QueryCountInspector implements StatementInspector {
+
+    private static final Logger log = LoggerFactory.getLogger(QueryCountInspector.class);
+
     @Override
     public String inspect(String sql) {
-        // 현재 스레드의 RequestContext 가져오기
+        log.info("QueryCountInspector.inspect thread={}", Thread.currentThread().getName());
+
         RequestContext ctx = RequestContextHolder.getContext();
 
-        if (ctx != null) {
-            // 쿼리 카운트 증가
-            ctx.incrementQueryCount(sql);
+        if (ctx == null) {
+            log.info(
+                    "QueryCountInspector.skipCount reason=no RequestContext thread={}",
+                    Thread.currentThread().getName());
+            return sql;
         }
 
+        ctx.incrementQueryCount(sql);
         return sql;
     }
 }
