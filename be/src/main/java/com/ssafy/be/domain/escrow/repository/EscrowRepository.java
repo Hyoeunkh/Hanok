@@ -19,8 +19,10 @@ public interface EscrowRepository extends JpaRepository<Escrow, Long> {
             select distinct e from Escrow e
             join fetch e.auction a
             join fetch a.item
-            join e.seller s
-            where s.user.id = :userId
+            left join fetch a.bottomUpAuctionDetail
+            left join fetch a.uniqueBidAuctionDetail
+            where e.seller.user.id = :userId
+            order by e.createdAt desc
             """)
     List<Escrow> findAllBySellerUserId(@Param("userId") Long userId);
 
@@ -81,11 +83,11 @@ public interface EscrowRepository extends JpaRepository<Escrow, Long> {
     List<Escrow> findByTxStatus(TxStatus txStatus);
 
     @Query("""
-        select e from Escrow e
-        join fetch e.auction a
-        join fetch a.item
-        where e.id = :id
-        """)
+            select e from Escrow e
+            join fetch e.auction a
+            join fetch a.item
+            where e.id = :id
+            """)
     Optional<Escrow> findByIdWithAuctionAndItem(@Param("id") Long id);
 }
 
