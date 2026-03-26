@@ -16,10 +16,11 @@ import java.util.Optional;
 public interface EscrowRepository extends JpaRepository<Escrow, Long> {
 
     @Query("""
-            select e from Escrow e
+            select distinct e from Escrow e
             join fetch e.auction a
             join fetch a.item
-            where e.seller.user.id = :userId
+            join e.seller s
+            where s.user.id = :userId
             """)
     List<Escrow> findAllBySellerUserId(@Param("userId") Long userId);
 
