@@ -72,7 +72,7 @@ export default function WinModal({
 
         <div className="flex flex-col gap-4 px-7 py-6">
           <div className="flex items-center justify-between gap-4 rounded-(--radius-panel) border border-white/6 bg-white/3 px-4.5 py-4">
-            <div className="min-w-0 flex shrink-0 flex-col gap-2">
+            <div className="flex min-w-0 flex-col gap-2">
               <p className="truncate text-sub-lg font-bold text-warm">{itemName}</p>
               <p className="text-sub-sm text-neutral-500">{itemConditionLabel}</p>
             </div>

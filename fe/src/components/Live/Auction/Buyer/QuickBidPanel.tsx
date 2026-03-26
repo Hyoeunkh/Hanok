@@ -28,8 +28,10 @@ export default function QuickBidPanel({ bid }: Props) {
       >
         <div className="flex flex-1 flex-col items-center gap-1">
           <div className="flex items-center gap-2 text-sm font-black">
-            <IoCheckmark size={16} strokeWidth={4} />
-            {bid.hasActiveAuction ? `${bid.effectiveBidAmount.toLocaleString()}원으로 입찰` : '입찰'}
+            <IoCheckmark size={16} strokeWidth={4} className="shrink-0" />
+            <span className="min-w-0 truncate">
+              {bid.hasActiveAuction ? `${bid.effectiveBidAmount.toLocaleString()}원으로 입찰` : '입찰'}
+            </span>
           </div>
           {bid.hasActiveAuction && (
             <span className="text-xs font-bold text-gold-light">(+{bid.increment.toLocaleString()})</span>
