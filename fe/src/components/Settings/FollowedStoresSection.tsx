@@ -104,7 +104,7 @@ export default function FollowedStoresSection() {
                   disabled={isPending}
                   className="w-full py-2.5 rounded-lg border border-accent-light/40 bg-transparent text-accent-light text-[14px] font-bold cursor-pointer hover:bg-accent/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Unfollow
+                  언팔로우
                 </button>
               </div>
             ))}
@@ -120,7 +120,7 @@ export default function FollowedStoresSection() {
 
           {totalStores > 0 && (
             <p className="mt-6 text-[14px] text-neutral-500">
-              Showing 1-{followedList.length} of {totalStores} items
+              총 {totalStores}개 중 {followedList.length}개 표시
             </p>
           )}
         </div>

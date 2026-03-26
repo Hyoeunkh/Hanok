@@ -33,7 +33,7 @@ export default function Header() {
   const { data: unreadData } = useGetUnreadCount();
   const unreadCount = unreadData ?? 0;
   const { data: addressesData } = useGetAddresses(isLoggedIn);
-  const { data: walletData } = useGetWallet();
+  const { data: walletData } = useGetWallet(isLoggedIn);
   const hasNoAddress = isLoggedIn && addressesData != null && addressesData.length === 0;
   const hasNoBalance = isLoggedIn && walletData != null && (walletData.balance ?? 0) === 0;
   const setupCount = (hasNoAddress ? 1 : 0) + (hasNoBalance ? 1 : 0);
@@ -133,7 +133,12 @@ export default function Header() {
             </HeaderIcon>
             <div className="relative">
               <HeaderIcon
-                onClick={() => setIsNotifOpen((prev) => !prev)}
+                onClick={() => {
+                  setIsNotifOpen((prev) => {
+                    if (!prev) setIsSetupOpen(false);
+                    return !prev;
+                  });
+                }}
                 ariaLabel="Open alerts"
                 tooltip="알림"
                 badgeCount={unreadCount > 0 ? unreadCount : undefined}
@@ -147,7 +152,10 @@ export default function Header() {
               <HeaderIcon
                 onClick={() => {
                   if (setupCount > 0) {
-                    setIsSetupOpen((prev) => !prev);
+                    setIsSetupOpen((prev) => {
+                      if (!prev) setIsNotifOpen(false);
+                      return !prev;
+                    });
                   } else {
                     handleMyPageClick();
                   }
