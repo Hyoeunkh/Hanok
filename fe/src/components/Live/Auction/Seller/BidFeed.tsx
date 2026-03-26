@@ -67,7 +67,7 @@ export default function BidFeed({ auctionStatistics, currentUserId }: Props) {
                   {bid.nickname}
                 </span>
                 <span
-                  className={`ml-auto shrink-0 font-mono text-label font-black ${isTop ? 'text-gold' : 'text-neutral-500'}`}
+                  className={`ml-auto min-w-0 truncate font-mono text-label font-black ${isTop ? 'text-gold' : 'text-neutral-500'}`}
                 >
                   {formatPrice(bid.amount)}
                 </span>

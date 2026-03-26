@@ -51,8 +51,8 @@ export default function ActiveItemCard({ item, isSelected, isSeller, onSelect }:
 
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
           <span className="truncate text-xs font-bold leading-snug text-white">{item.name}</span>
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <span className={`text-body-md font-black ${PRICE_CLASS[item.status]}`}>{formatAuctionLabel(item)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className={`min-w-0 truncate text-body-md font-black ${PRICE_CLASS[item.status]}`}>{formatAuctionLabel(item)}</span>
             <span
               className={`shrink-0 rounded-full bg-gold/[0.08] px-1.5 py-0.5 text-caption font-extrabold ${conditionBadge.className}`}
             >
