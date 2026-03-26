@@ -3,8 +3,13 @@ package com.ssafy.be.support.util;
 import com.ssafy.be.domain.auction.entity.Auction;
 import com.ssafy.be.domain.auction.entity.AuctionStatus;
 import com.ssafy.be.domain.bottomupauction.entity.BottomUpAuctionDetail;
+import com.ssafy.be.domain.bottomupauction.model.Bid;
+import com.ssafy.be.domain.escrow.dto.request.EscrowCancelRequest;
+import com.ssafy.be.domain.escrow.dto.request.ShipmentRegisterRequest;
 import com.ssafy.be.domain.item.entity.AuctionType;
 import com.ssafy.be.domain.item.entity.Item;
+import com.ssafy.be.domain.item.entity.ItemCondition;
+import com.ssafy.be.domain.item.entity.ItemStatus;
 import com.ssafy.be.domain.seller.entity.Seller;
 import com.ssafy.be.domain.shippingaddress.entity.ShippingAddress;
 import com.ssafy.be.domain.stream.entity.Stream;
@@ -12,6 +17,7 @@ import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.wallet.model.PaymentStatus;
 import com.ssafy.be.domain.wallet.model.WalletCharge;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +34,8 @@ public class TestFixture {
     public static final long TEST_BOTTOM_UP_BID_UNIT = 1000L;
     /** 경매 타이머 테스트용 기본 지속 시간(초) */
     public static final int TEST_AUCTION_DURATION_SEC = 60;
+    /** 에스크로 통합 테스트용 낙찰가(입찰 예치 → 에스크로 이동 금액) */
+    public static final long TEST_ESCROW_WINNING_PRICE = TEST_BOTTOM_UP_START_PRICE;
 
     public static User createUser(String name) {
         return User.createUser(
@@ -74,6 +82,52 @@ public class TestFixture {
         return Item.builder()
                 .name(name != null ? name : "테스트 상품")
                 .category(CLOTHING)
+                .build();
+    }
+
+    /** 에스크로·상향 경매 연동 테스트용: 판매자 연결, READY, 이미지 포함 */
+    public static Item createEscrowAuctionItem(String name, Seller seller) {
+        return Item.builder()
+                .name(name != null ? name : "에스크로 테스트 상품")
+                .description("테스트용 상품 설명")
+                .category(CLOTHING)
+                .status(ItemStatus.READY)
+                .itemCondition(ItemCondition.BRAND_NEW)
+                .image1("https://test.example/item.jpg")
+                .seller(seller)
+                .build();
+    }
+
+    /** startEscrow 직전 구매자: 입찰 예치만 winning 금액만큼 보유 */
+    public static User createBuyerWithBidDepositForEscrow(String name, long winningPrice) {
+        return createUser(name).toBuilder()
+                .balance(500_000L)
+                .depositedBidBalance(winningPrice)
+                .depositedEscrowBalance(0L)
+                .build();
+    }
+
+    /** 저장된 구매자 id 기준 낙찰 Bid (에스크로 시작용) */
+    public static Bid createEscrowWinningBid(Long buyerUserId, String buyerNickname, long winningPrice) {
+        return Bid.builder()
+                .userId(buyerUserId)
+                .nickname(buyerNickname)
+                .amount(winningPrice)
+                .bidAt(LocalDateTime.now())
+                .build();
+    }
+
+    public static ShipmentRegisterRequest escrowShipmentRegisterRequest() {
+        return ShipmentRegisterRequest.builder()
+                .carrierName("한진")
+                .trackingNumber("503012345678")
+                .build();
+    }
+
+    public static EscrowCancelRequest escrowManualCancelRequest(long escrowId, String cancelReason) {
+        return EscrowCancelRequest.builder()
+                .escrowId(escrowId)
+                .cancelReason(cancelReason)
                 .build();
     }
 
