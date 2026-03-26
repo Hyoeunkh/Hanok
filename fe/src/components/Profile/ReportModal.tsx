@@ -12,9 +12,13 @@ export default function ReportModal({ sellerNickname, onClose, onSubmit }: Repor
   const [detail, setDetail] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const { showToast } = useToast();
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setImages((prev) => [...prev, ...files].slice(0, 3));
+
+    const { optimizeImages } = await import('@/utils/imageOptimizer');
+    const optimized = await optimizeImages(files);
+
+    setImages((prev) => [...prev, ...optimized].slice(0, 3));
     e.target.value = '';
   };
   const handleRemoveImage = (index: number) => {

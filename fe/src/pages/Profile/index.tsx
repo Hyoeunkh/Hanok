@@ -104,10 +104,14 @@ export default function ProfilePage() {
     if (isMyProfile) fileInputRef.current?.click();
   };
 
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    patchProfileImage(file, {
+
+    const { optimizeImage } = await import('@/utils/imageOptimizer');
+    const optimized = await optimizeImage(file);
+
+    patchProfileImage(optimized, {
       onSuccess: () => {
         showToast({ message: '프로필 이미지가 변경되었습니다.' });
       },
