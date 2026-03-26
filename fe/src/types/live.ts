@@ -30,6 +30,7 @@ export type StreamEnterResponse = {
   identity: string;
   isFollowing: boolean;
   isHost: boolean;
+  remainingSeconds: number | null;
 };
 
 export type SearchStreamStatus = 'LIVE' | 'SCHEDULED' | 'PAUSED' | 'ENDED';
