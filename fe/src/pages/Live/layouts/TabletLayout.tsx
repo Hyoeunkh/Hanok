@@ -5,10 +5,12 @@ import AuctionCommentToast from '@/components/Live/Stream/AuctionCommentToast';
 import BuyerControlBar from '@/components/Live/Stream/BuyerControlBar';
 import SellerControlBar from '@/components/Live/Stream/SellerControlBar';
 import SellerGuideOverlay from '@/components/Live/Stream/SellerGuideOverlay';
+import SellerUniqueBidOverlay from '@/components/Live/Stream/SellerUniqueBidOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
 import StreamDisconnected from '@/components/Live/Stream/Streamdisconnected';
 import StreamEnded from '@/components/Live/Stream/StreamEnded';
+import SellerUniqueAuctionResultModal from '@/components/Live/Auction/Buyer/SellerUniqueAuctionResultModal';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import UniqueAuctionResultModal from '@/components/Live/Auction/Buyer/UniqueAuctionResultModal';
 import AuctionPanel from '@/components/Live/Auction/shared/AuctionPanel';
@@ -24,7 +26,18 @@ import type { LiveLayoutProps } from './types';
 type TabletTab = 'items' | 'chat' | 'auction';
 
 export default function TabletLayout({ stream, auction, livekit, modal, navigate }: LiveLayoutProps) {
-  const { videoRef, bgVideoRef, livekitState, viewerCount, toggleMic, toggleCamera, toggleRemoteAudio, isMicOn, isCameraOn, isRemoteAudioMuted } = livekit;
+  const {
+    videoRef,
+    bgVideoRef,
+    livekitState,
+    viewerCount,
+    toggleMic,
+    toggleCamera,
+    toggleRemoteAudio,
+    isMicOn,
+    isCameraOn,
+    isRemoteAudioMuted,
+  } = livekit;
   const [activeTab, setActiveTab] = useState<TabletTab>('chat');
   const { messages, sendMessage, sendMacro, connectionState } = useStompChat(stream.activeStreamEnter?.category ?? '');
 
@@ -66,6 +79,9 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
           >
             <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
             {stream.isSeller && <SellerGuideOverlay />}
+            {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
+              <SellerUniqueBidOverlay participantCount={auction.uniqueBidSync.participantCount} />
+            )}
             <video
               ref={bgVideoRef}
               autoPlay
@@ -97,7 +113,9 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
             </div>
 
             <SellerStartModal
-              open={modal.showSellerStartModal && stream.isSeller && !stream.isStreamLive && !modal.hasStartedThisStream}
+              open={
+                modal.showSellerStartModal && stream.isSeller && !stream.isStreamLive && !modal.hasStartedThisStream
+              }
               streamTitle={stream.streamTitle}
               isPending={modal.postStartStreamIsPending}
               onConfirm={modal.handleSellerStartModalConfirm}
@@ -120,17 +138,29 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
                 onClose={modal.clearWinnerInfo}
               />
             )}
-            {modal.uniqueAuctionResult && (
-              <UniqueAuctionResultModal
-                isOpen
-                itemName={modal.uniqueAuctionResult.itemName}
-                payload={modal.uniqueAuctionResult.payload}
-                winnerInfo={modal.uniqueAuctionResult.winnerInfo}
-                onClose={modal.handleUniqueAuctionResultClose}
-              />
-            )}
+            {modal.uniqueAuctionResult &&
+              (stream.isSeller ? (
+                <SellerUniqueAuctionResultModal
+                  isOpen
+                  itemName={modal.uniqueAuctionResult.itemName}
+                  payload={modal.uniqueAuctionResult.payload}
+                  onClose={modal.handleUniqueAuctionResultClose}
+                />
+              ) : (
+                <UniqueAuctionResultModal
+                  isOpen
+                  itemName={modal.uniqueAuctionResult.itemName}
+                  payload={modal.uniqueAuctionResult.payload}
+                  winnerInfo={modal.uniqueAuctionResult.winnerInfo}
+                  onClose={modal.handleUniqueAuctionResultClose}
+                />
+              ))}
             {stream.streamState === 'disconnected' && (
-              <StreamDisconnected initialSeconds={300} onTimeout={modal.markStreamEnded} onExit={() => navigate('/main')} />
+              <StreamDisconnected
+                initialSeconds={300}
+                onTimeout={modal.markStreamEnded}
+                onExit={() => navigate('/main')}
+              />
             )}
             {stream.streamState === 'ended' && <StreamEnded onClose={() => navigate('/main')} />}
           </div>

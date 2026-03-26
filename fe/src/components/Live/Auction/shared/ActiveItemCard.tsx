@@ -21,9 +21,7 @@ export default function ActiveItemCard({ item, isSelected, isSeller, onSelect }:
   const statusBadge = AUCTION_STATUS_BADGES[item.status];
   const conditionBadge = ITEM_CONDITION_BADGE[item.condition];
   const isExpanded = isSeller ? isSelected : expanded;
-  const borderClass = isSelected
-    ? 'border-gold/55 shadow-primary-glow'
-    : CARD_BORDER_CLASS[item.status];
+  const borderClass = isSelected ? 'border-gold/55 shadow-primary-glow' : CARD_BORDER_CLASS[item.status];
 
   const handleCardClick = () => {
     if (isSeller) {
@@ -52,7 +50,9 @@ export default function ActiveItemCard({ item, isSelected, isSeller, onSelect }:
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
           <span className="truncate text-xs font-bold leading-snug text-white">{item.name}</span>
           <div className="flex items-center gap-1.5">
-            <span className={`min-w-0 truncate text-body-md font-black ${PRICE_CLASS[item.status]}`}>{formatAuctionLabel(item)}</span>
+            <span className={`min-w-0 truncate text-body-md font-black ${PRICE_CLASS[item.status]}`}>
+              {formatAuctionLabel(item)}
+            </span>
             <span
               className={`shrink-0 rounded-full bg-gold/[0.08] px-1.5 py-0.5 text-caption font-extrabold ${conditionBadge.className}`}
             >
@@ -65,19 +65,7 @@ export default function ActiveItemCard({ item, isSelected, isSeller, onSelect }:
           <span className={`rounded-full px-1.5 py-0.5 text-caption font-extrabold ${statusBadge.className}`}>
             {statusBadge.label}
           </span>
-          <button
-            type="button"
-            className="rounded-full p-0.5 transition-colors hover:bg-white/10"
-            onClick={(event) => {
-              event.stopPropagation();
-              if (isSeller) {
-                onSelect?.();
-                return;
-              }
-
-              setExpanded((prev) => !prev);
-            }}
-          >
+          <button type="button" className="rounded-full p-0.5 transition-colors hover:bg-white/10">
             <IoChevronDown
               size={12}
               className={`text-neutral-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
