@@ -425,10 +425,6 @@ export type BroadcastStreamEvent =
       payload?: UniqueAuctionCalculatingPayload | null;
     }
   | {
-      eventType: 'UNIQUE_AUCTION_END';
-      payload?: UniqueAuctionEndPayload;
-    }
-  | {
       eventType: 'ITEM_INTRODUCE';
       payload: null;
     }

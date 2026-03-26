@@ -973,25 +973,27 @@ const handleUniqueAuctionCalculating = (destination: string, body: string, reque
   streamUniqueBidSyncStates.delete(streamId);
   streamUniqueBidAmountsStates.delete(streamId);
 
-  broadcastToDestination(`/broadcast/streams/${streamId}`, {
+  const buildUniqueAuctionEndPayload = (myBidPrice: number | null) => ({
     eventType: 'UNIQUE_AUCTION_END',
     payload: {
       isWon: winnerPrice !== null,
       winnerPrice,
-      myBidPrice: null,
+      myBidPrice,
       topDuplicates,
     },
   });
 
+  bidEntries.forEach((entry) => {
+    sendToPrivateDestination(
+      `/user/private/streams/${streamId}`,
+      buildUniqueAuctionEndPayload(entry.amount),
+      entry.userId,
+    );
+  });
+
   if (winnerEntry && winnerPrice !== null && winnerEntry.userId === requesterUserId) {
     sendToPrivateDestination(`/user/private/streams/${streamId}`, {
-      eventType: 'UNIQUE_AUCTION_END',
-      payload: {
-        isWon: true,
-        winnerPrice,
-        myBidPrice: winnerEntry.amount,
-        topDuplicates: null,
-      },
+      ...buildUniqueAuctionEndPayload(winnerEntry.amount),
     }, winnerEntry.userId);
 
     sendToPrivateDestination(`/user/private/streams/${streamId}`, {

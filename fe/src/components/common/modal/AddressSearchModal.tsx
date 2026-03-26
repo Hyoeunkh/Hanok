@@ -37,7 +37,7 @@ export default function AddressSearchModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80" onClick={onClose}>
+    <div className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/80" onClick={onClose}>
       <div
         className="max-h-[80vh] w-[520px] overflow-hidden rounded-2xl border border-white/5 bg-background p-8 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
         onClick={(event) => event.stopPropagation()}
