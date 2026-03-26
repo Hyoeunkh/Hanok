@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
 import BuyerControlBar from '@/components/Live/Stream/BuyerControlBar';
 import SellerControlBar from '@/components/Live/Stream/SellerControlBar';
+import SellerUniqueBidOverlay from '@/components/Live/Stream/SellerUniqueBidOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
 import StreamDisconnected from '@/components/Live/Stream/Streamdisconnected';
@@ -88,6 +89,12 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
           }`}
         >
           <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
+          {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
+            <SellerUniqueBidOverlay
+              className="absolute left-3 top-14 z-20"
+              participantCount={auction.uniqueBidSync.participantCount}
+            />
+          )}
           <video
             ref={bgVideoRef}
             autoPlay

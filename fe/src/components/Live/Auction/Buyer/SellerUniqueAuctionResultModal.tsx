@@ -45,8 +45,8 @@ export default function SellerUniqueAuctionResultModal({
   const badgeText = hasWinner ? '낙찰 완료' : '유찰';
   const titleText = hasWinner ? '상품이 낙찰되었습니다' : '이번 경매는 유찰되었습니다';
   const noticeText = hasWinner
-    ? '라이브는 계속 진행할 수 있습니다. 거래 현황은 판매 내역에서 확인하세요.'
-    : '라이브 시청은 계속 가능합니다. 다른 상품을 바로 소개해 보세요.';
+    ? '라이브는 계속 진행할 수 있습니다.\n거래 현황은 판매 내역에서 확인하세요.'
+    : '라이브 시청은 계속 가능합니다. 다음 상품을 소개하세요!';
 
   const content = (
     <>
@@ -94,7 +94,7 @@ export default function SellerUniqueAuctionResultModal({
           {hasWinner && (
             <div className="rounded-(--radius-panel) border border-gold/12 bg-[linear-gradient(180deg,rgba(205,145,80,0.12)_0%,rgba(255,255,255,0.03)_100%)] px-5 py-5">
               <div className="text-sub-sm font-extrabold text-gold-light/80">낙찰가</div>
-              <div className="mt-3 text-price-lg leading-none font-black text-point">
+              <div className="mt-3 text-price-lg leading-none font-black text-gold">
                 {payload.winnerPrice !== null ? formatPrice(payload.winnerPrice) : '-'}
               </div>
             </div>
@@ -144,7 +144,7 @@ export default function SellerUniqueAuctionResultModal({
 
           <div className="rounded-[22px] border border-white/6 bg-black/18 px-5 py-4">
             <div className="text-[14px] font-extrabold uppercase text-neutral-500">참고사항</div>
-            <p className="mt-2 text-[16px] leading-6 text-neutral-300">{noticeText}</p>
+            <p className="mt-2 text-[16px] leading-6 whitespace-pre-line text-neutral-300">{noticeText}</p>
           </div>
 
           <button

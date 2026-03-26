@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 type SellerGuideOverlayProps = {
   defaultOpen?: boolean;
+  sideContent?: ReactNode;
 };
 
 const guideSteps = [
@@ -32,7 +34,7 @@ const guideSteps = [
   },
 ] as const;
 
-export default function SellerGuideOverlay({ defaultOpen = true }: SellerGuideOverlayProps) {
+export default function SellerGuideOverlay({ defaultOpen = true, sideContent = null }: SellerGuideOverlayProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [checkedSteps, setCheckedSteps] = useState<boolean[]>(() => guideSteps.map(() => false));
 
@@ -116,6 +118,8 @@ export default function SellerGuideOverlay({ defaultOpen = true }: SellerGuideOv
             </div>
           </div>
         </div>
+
+        {sideContent}
       </div>
     </div>
   );
