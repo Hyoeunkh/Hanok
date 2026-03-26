@@ -29,6 +29,7 @@ import com.ssafy.be.domain.stream.entity.StreamStatus;
 import com.ssafy.be.domain.stream.entity.StreamViewType;
 import com.ssafy.be.domain.stream.repository.MacroRedisRepository;
 import com.ssafy.be.domain.stream.exception.StreamErrorCode;
+import com.ssafy.be.domain.stream.repository.StreamReconnectRedisRepository;
 import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
@@ -93,6 +94,7 @@ class StreamServiceTest {
     @Mock private com.ssafy.be.domain.bottomupauction.repository.BottomUpAuctionDetailRepository bottomUpAuctionDetailRepository;
     @Mock private com.ssafy.be.domain.uniqueaction.repository.UniqueBidAuctionDetailRepository uniqueBidAuctionDetailRepository;
     @Mock private MacroRedisRepository macroRedisRepository;
+    @Mock private StreamReconnectRedisRepository streamReconnectRedisRepository;
 
     @BeforeAll
     static void suiteStart() {
@@ -316,10 +318,31 @@ class StreamServiceTest {
 
             assertThat(response.token()).isNotNull();
             assertThat(response.isHost()).isTrue();
+            assertThat(response.remainingSeconds()).isNull();
             TEST_LOG.info("    [검증] ✔ LiveKit JWT 토큰 및 호스트 여부 확인");
         }
 
         @Test @Order(4)
+        @DisplayName("Q-3b. 방송 입장 — PAUSED면 재연결 타이머 remainingSeconds")
+        void enterStream_whenPaused_includesRemainingSeconds() {
+            User user = User.createUser("h@t.com", "pw", "h", "0").toBuilder().id(1L).build();
+            Seller seller = TestFixture.spySellerWithId(TestFixture.createSeller(user), 30L);
+            Stream stream = TestFixture.spyStreamWithId(
+                    Stream.builder().seller(seller).status(StreamStatus.PAUSED).build(), 100L);
+            given(streamRepository.findById(100L)).willReturn(Optional.of(stream));
+            given(streamViewerService.enter(100L, 1L)).willReturn("id_1");
+            given(streamReconnectRedisRepository.getRemainingSeconds(100L)).willReturn(240L);
+            given(liveKitProperties.apiKey()).willReturn("k");
+            given(liveKitProperties.apiSecret()).willReturn("s");
+            given(auctionRepository.findByStreamId(100L)).willReturn(List.of());
+
+            StreamEnterResponse response = streamService.enterStream(1L, 100L);
+
+            assertThat(response.remainingSeconds()).isEqualTo(240L);
+            TEST_LOG.info("    [검증] ✔ PAUSED 입장 시 remainingSeconds=240");
+        }
+
+        @Test @Order(5)
         @DisplayName("Q-4. 방송 상세 없으면 STREAM_NOT_FOUND")
         void getStream_whenMissing_throws() {
             given(streamRepository.findById(404L)).willReturn(Optional.empty());
@@ -331,7 +354,7 @@ class StreamServiceTest {
             TEST_LOG.info("    [검증] ✔ STREAM_NOT_FOUND");
         }
 
-        @Test @Order(5)
+        @Test @Order(6)
         @DisplayName("Q-5. 내 예약·라이브 목록 (getScheduledStreamList)")
         void getScheduledStreamList_success() {
             User u = User.createUser("u@u.com", "p", "n", "010").toBuilder().id(1L).build();
@@ -357,7 +380,7 @@ class StreamServiceTest {
             TEST_LOG.info("    [검증] ✔ 예약 목록");
         }
 
-        @Test @Order(6)
+        @Test @Order(7)
         @DisplayName("Q-6. 신규 셀러 라이브 추천 (getNewSellerLiveStreams)")
         void getNewSellerLiveStreams_success() {
             User u = User.createUser("n@n.com", "p", "신인", "010").toBuilder().id(1L).build();
@@ -379,7 +402,7 @@ class StreamServiceTest {
             TEST_LOG.info("    [검증] ✔ 추천 스트림");
         }
 
-        @Test @Order(7)
+        @Test @Order(8)
         @DisplayName("Q-7. 입장 — 스트림 없으면 STREAM_NOT_FOUND")
         void enterStream_whenMissing_throws() {
             given(streamRepository.findById(999L)).willReturn(Optional.empty());
@@ -391,7 +414,7 @@ class StreamServiceTest {
             TEST_LOG.info("    [검증] ✔ STREAM_NOT_FOUND");
         }
 
-        @Test @Order(8)
+        @Test @Order(9)
         @DisplayName("Q-8. 입장 — 판매자가 아니면 isHost=false")
         void enterStream_whenViewer_notHost() {
             User host = User.createUser("h@h.com", "p", "호스트", "010").toBuilder().id(88L).build();
@@ -411,10 +434,11 @@ class StreamServiceTest {
             StreamEnterResponse response = streamService.enterStream(1L, 100L);
 
             assertThat(response.isHost()).isFalse();
+            assertThat(response.remainingSeconds()).isNull();
             TEST_LOG.info("    [검증] ✔ 비호스트");
         }
 
-        @Test @Order(9)
+        @Test @Order(10)
         @DisplayName("Q-9. 방송 연결 경매 물품 목록 (getStreamItems)")
         void getStreamItems_success() {
             Item item = TestFixture.spyItemWithId(Item.builder()
@@ -439,7 +463,7 @@ class StreamServiceTest {
             TEST_LOG.info("    [검증] ✔ 물품 목록");
         }
 
-        @Test @Order(10)
+        @Test @Order(11)
         @DisplayName("Q-10. 목록 LATEST — 페이지 리포지토리 경로")
         void getStreamList_latest_usesPagedQuery() {
             User u = User.createUser("a@a.com", "p", "n1", "010").toBuilder().id(1L).build();
