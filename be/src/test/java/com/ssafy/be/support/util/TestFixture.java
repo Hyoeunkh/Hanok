@@ -166,4 +166,30 @@ public class TestFixture {
                 .isDefault(true)
                 .build();
     }
+
+    public static ShippingAddress createShippingAddressHome(User user) {
+        return ShippingAddress.builder()
+                .addressName("집")
+                .postalCode(12345)
+                .address("서울시 강남구")
+                .addressDetail("101")
+                .phone("010-0000-0001")
+                .recipientName("A")
+                .isDefault(true)
+                .user(user)
+                .build();
+    }
+
+    public static ShippingAddress createShippingAddressWoori(User user) {
+        return ShippingAddress.builder()
+                .addressName("우리집")
+                .postalCode(12345)
+                .address("서울시 강남구 테헤란로 1")
+                .addressDetail("101호")
+                .phone("010-1234-5678")
+                .recipientName("홍길동")
+                .isDefault(false)
+                .user(user)
+                .build();
+    }
 }
