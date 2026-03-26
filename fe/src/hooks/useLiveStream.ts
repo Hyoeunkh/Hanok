@@ -64,11 +64,6 @@ const isUniqueAuctionCalculatingEvent = (
 ): event is Extract<BroadcastStreamEvent, { eventType: 'UNIQUE_AUCTION_CALCULATING' }> =>
   event.eventType === 'UNIQUE_AUCTION_CALCULATING';
 
-const isUniqueAuctionEndEvent = (
-  event: BroadcastStreamEvent,
-): event is Extract<BroadcastStreamEvent, { eventType: 'UNIQUE_AUCTION_END' }> =>
-  event.eventType === 'UNIQUE_AUCTION_END';
-
 const isStreamPausedEvent = (
   event: BroadcastStreamEvent,
 ): event is Extract<BroadcastStreamEvent, { eventType: 'STREAM_PAUSED' }> =>
@@ -108,6 +103,11 @@ const isUniqueBidAckEvent = (
 const isUniqueBidSyncEvent = (
   event: PrivateStreamEvent,
 ): event is Extract<PrivateStreamEvent, { eventType: 'UNIQUE_BID_SYNC' }> => event.eventType === 'UNIQUE_BID_SYNC';
+
+const isPrivateUniqueAuctionEndEvent = (
+  event: PrivateStreamEvent,
+): event is Extract<PrivateStreamEvent, { eventType: 'UNIQUE_AUCTION_END' }> =>
+  event.eventType === 'UNIQUE_AUCTION_END';
 
 const isStompErrorEvent = (event: ErrorStreamEvent): event is Extract<ErrorStreamEvent, { eventType: 'ERROR' }> =>
   event.eventType === 'ERROR';
@@ -208,8 +208,8 @@ export function useLiveStream(
   const uniqueAuctionResultDismissedRef = useRef(true);
   const snipingTimerSetAtRef = useRef<number>(0);
   const pendingAmbiguousUniqueEndRef = useRef<UniqueAuctionEndPayload | null>(null);
-  const pendingUniqueWinnerInfoRef = useRef<WinnerInfoState | null>(null);
   const uniqueWinnerResolveTimeoutRef = useRef<number | null>(null);
+  const ignoreWonUniqueEndRef = useRef(false);
   // Ref that is set once the STOMP subscription is established.
   // Used to gate ITEM_SYNC calls on subscription readiness (race condition fix).
   const requestItemSyncRef = useRef<(() => Promise<void>) | null>(null);
@@ -345,7 +345,6 @@ export function useLiveStream(
 
     const clearPendingUniqueWinnerResolution = () => {
       pendingAmbiguousUniqueEndRef.current = null;
-      pendingUniqueWinnerInfoRef.current = null;
 
       if (uniqueWinnerResolveTimeoutRef.current !== null) {
         window.clearTimeout(uniqueWinnerResolveTimeoutRef.current);
@@ -353,7 +352,7 @@ export function useLiveStream(
       }
     };
 
-    const applyUniqueAuctionResult = (payload: UniqueAuctionEndPayload, nextWinnerInfo: WinnerInfoState | null = null) => {
+    const applyUniqueAuctionResult = (payload: UniqueAuctionEndPayload) => {
       uniqueAuctionResultDismissedRef.current = false;
       setUniqueAuctionResult((prev) => ({
         itemName: lastActiveItemRef.current?.itemName ?? prev?.itemName ?? 'Auction item',
@@ -361,33 +360,48 @@ export function useLiveStream(
           ...payload,
           myBidPrice: payload.myBidPrice ?? prev?.payload.myBidPrice ?? null,
         },
-        winnerInfo: nextWinnerInfo,
+        winnerInfo: null,
       }));
     };
 
-    const tryFinalizeUniqueWinnerResult = () => {
-      const pendingWinnerEnd = pendingAmbiguousUniqueEndRef.current;
-      const pendingWinnerInfo = pendingUniqueWinnerInfoRef.current;
+    const handleUniqueAuctionEndPayload = (payload: UniqueAuctionEndPayload) => {
+      setTimer(null);
+      setUniqueBidSync(null);
 
-      if (!pendingWinnerEnd || !pendingWinnerInfo) {
+      if (payload.isWon && ignoreWonUniqueEndRef.current) {
         return;
       }
 
-      applyUniqueAuctionResult(
-        {
-          ...pendingWinnerEnd,
-          myBidPrice: pendingWinnerEnd.myBidPrice ?? pendingWinnerInfo.payload.item.myBidPrice ?? pendingWinnerEnd.winnerPrice,
-        },
-        pendingWinnerInfo,
-      );
-      setWinnerInfo(null);
-      clearPendingUniqueWinnerResolution();
+      if (!payload.isWon) {
+        clearPendingUniqueWinnerResolution();
+        setWinnerInfo(null);
+        applyUniqueAuctionResult(payload);
+        return;
+      }
+
+      pendingAmbiguousUniqueEndRef.current = payload;
+
+      if (uniqueWinnerResolveTimeoutRef.current !== null) {
+        window.clearTimeout(uniqueWinnerResolveTimeoutRef.current);
+      }
+
+      uniqueWinnerResolveTimeoutRef.current = window.setTimeout(() => {
+        const pendingPayload = pendingAmbiguousUniqueEndRef.current;
+
+        if (pendingPayload && !ignoreWonUniqueEndRef.current) {
+          setWinnerInfo(null);
+          applyUniqueAuctionResult(pendingPayload);
+        }
+
+        clearPendingUniqueWinnerResolution();
+      }, UNIQUE_WINNER_RESOLVE_DELAY_MS);
     };
 
     const handleBroadcastEvent = (event: BroadcastStreamEvent) => {
       console.log('[stream] broadcast event:', event);
       if (isAuctionStartEvent(event) && event.payload?.timer) {
         clearPendingUniqueWinnerResolution();
+        ignoreWonUniqueEndRef.current = false;
         uniqueAuctionResultDismissedRef.current = true;
         setStreamState('live');
         setTimer(createSyncedTimer(event.payload.timer));
@@ -410,6 +424,7 @@ export function useLiveStream(
 
       if (isUniqueAuctionStartEvent(event) && event.payload?.bidRange && event.payload?.timer) {
         clearPendingUniqueWinnerResolution();
+        ignoreWonUniqueEndRef.current = false;
         uniqueAuctionResultDismissedRef.current = false;
         setStreamState('live');
         setBidSync(null);
@@ -472,6 +487,7 @@ export function useLiveStream(
 
       if (isSystemStreamEndEvent(event)) {
         clearPendingUniqueWinnerResolution();
+        ignoreWonUniqueEndRef.current = false;
         uniqueAuctionResultDismissedRef.current = true;
         setStreamState('ended');
         setLiveStateOverride(false);
@@ -503,40 +519,6 @@ export function useLiveStream(
               }
             : prev,
         );
-        return;
-      }
-
-      if (isUniqueAuctionEndEvent(event) && event.payload) {
-        setTimer(null);
-        setUniqueBidSync(null);
-        if (event.payload.isWon && event.payload.myBidPrice === null) {
-          pendingAmbiguousUniqueEndRef.current = event.payload;
-
-          if (pendingUniqueWinnerInfoRef.current) {
-            tryFinalizeUniqueWinnerResult();
-            void requestItemSync();
-            return;
-          }
-
-          if (uniqueWinnerResolveTimeoutRef.current !== null) {
-            window.clearTimeout(uniqueWinnerResolveTimeoutRef.current);
-          }
-
-          uniqueWinnerResolveTimeoutRef.current = window.setTimeout(() => {
-            const pendingPayload = pendingAmbiguousUniqueEndRef.current;
-
-            if (pendingPayload) {
-              applyUniqueAuctionResult(pendingPayload);
-            }
-
-            clearPendingUniqueWinnerResolution();
-          }, UNIQUE_WINNER_RESOLVE_DELAY_MS);
-        } else {
-          clearPendingUniqueWinnerResolution();
-          applyUniqueAuctionResult(event.payload);
-        }
-
-        void requestItemSync();
         return;
       }
 
@@ -591,6 +573,11 @@ export function useLiveStream(
         return;
       }
 
+      if (isPrivateUniqueAuctionEndEvent(event) && event.payload) {
+        handleUniqueAuctionEndPayload(event.payload);
+        return;
+      }
+
       if (isBidWinnerEvent(event) && event.payload) {
         const payload = event.payload;
         const nextWinnerInfo: WinnerInfoState = {
@@ -601,8 +588,10 @@ export function useLiveStream(
         const isUniqueWinnerEvent = winnerAuctionType === 'UNIQUE_TOP';
 
         if (isUniqueWinnerEvent) {
-          pendingUniqueWinnerInfoRef.current = nextWinnerInfo;
-          tryFinalizeUniqueWinnerResult();
+          ignoreWonUniqueEndRef.current = true;
+          clearPendingUniqueWinnerResolution();
+          setUniqueAuctionResult(null);
+          setWinnerInfo(nextWinnerInfo);
           return;
         }
 
@@ -666,7 +655,7 @@ export function useLiveStream(
 
       unsubscribeStream();
     };
-  }, [showToast, streamId]);
+  }, [setStreamState, showToast, streamId]);
 
   // ---------------------------------------------------------------------------
   // Race-condition-safe ITEM_SYNC on stream live transition.
@@ -700,7 +689,6 @@ export function useLiveStream(
     uniqueAuctionResultDismissedRef.current = true;
 
     pendingAmbiguousUniqueEndRef.current = null;
-    pendingUniqueWinnerInfoRef.current = null;
 
     if (uniqueWinnerResolveTimeoutRef.current !== null) {
       window.clearTimeout(uniqueWinnerResolveTimeoutRef.current);

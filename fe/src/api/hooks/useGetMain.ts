@@ -49,6 +49,8 @@ export const useGetMain = (params: UseGetMainParams = {}) => {
   const status = params.status ?? 'LIVE';
   const sort = params.sort ?? 'LATEST';
   const size = params.size ?? 10;
+  const normalizePage = (value: unknown) =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
 
   return useInfiniteQuery({
     queryKey: ['liveCards', type, category ?? null, status, sort, size],
@@ -61,9 +63,23 @@ export const useGetMain = (params: UseGetMainParams = {}) => {
         status,
         sort,
         size,
-        page: typeof pageParam === 'number' ? pageParam : 0,
+        page: normalizePage(pageParam),
       }),
-    getNextPageParam: (lastPage) => (!lastPage.last ? lastPage.number + 1 : undefined),
+    getNextPageParam: (lastPage) => {
+      const currentPage = normalizePage(lastPage.number);
+      const totalPages = normalizePage(lastPage.totalPages);
+      const numberOfElements = normalizePage(lastPage.numberOfElements);
+      const contentLength = Array.isArray(lastPage.content) ? lastPage.content.length : 0;
+      const isLastByTotalPages = totalPages > 0 && currentPage >= totalPages - 1;
+      const isLastByEmptyPage = numberOfElements === 0 || contentLength === 0;
+      const isLastByShortPage = contentLength < size;
+
+      if (lastPage.last || isLastByTotalPages || isLastByEmptyPage || isLastByShortPage) {
+        return undefined;
+      }
+
+      return currentPage + 1;
+    },
     staleTime: 1000 * 60,
     placeholderData: keepPreviousData,
   });

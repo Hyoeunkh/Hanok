@@ -76,9 +76,9 @@ export default function AuctionPanel({
       </div>
 
       {/* 물품명 칩 */}
-      <div className="-mt-2 flex items-center gap-2">
-        <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-caption font-bold text-gold">경매중</span>
-        <span className="text-xs font-bold text-white">{auctionStatistics?.itemName ?? '데이터 수신 대기중'}</span>
+      <div className="-mt-2 flex min-w-0 items-center gap-2">
+        <span className="shrink-0 rounded-full bg-gold/15 px-2.5 py-0.5 text-caption font-bold text-gold">경매중</span>
+        <span className="min-w-0 truncate text-xs font-bold text-white">{auctionStatistics?.itemName ?? '데이터 수신 대기중'}</span>
       </div>
 
       <SellerPriceInfo auctionStatistics={auctionStatistics} />

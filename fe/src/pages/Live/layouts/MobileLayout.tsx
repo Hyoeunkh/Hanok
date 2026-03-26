@@ -5,10 +5,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import AuctionTimer from '@/components/Live/Auction/shared/AuctionTimer';
 import BuyerControlBar from '@/components/Live/Stream/BuyerControlBar';
 import SellerControlBar from '@/components/Live/Stream/SellerControlBar';
+import SellerUniqueBidOverlay from '@/components/Live/Stream/SellerUniqueBidOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
 import StreamDisconnected from '@/components/Live/Stream/Streamdisconnected';
 import StreamEnded from '@/components/Live/Stream/StreamEnded';
+import SellerUniqueAuctionResultModal from '@/components/Live/Auction/Buyer/SellerUniqueAuctionResultModal';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import UniqueAuctionResultModal from '@/components/Live/Auction/Buyer/UniqueAuctionResultModal';
 import AuctionPanel from '@/components/Live/Auction/shared/AuctionPanel';
@@ -24,7 +26,18 @@ import type { LiveLayoutProps } from './types';
 const SWIPE_THRESHOLD = 50;
 
 export default function MobileLayout({ stream, auction, livekit, modal, navigate }: LiveLayoutProps) {
-  const { videoRef, bgVideoRef, livekitState, viewerCount, toggleMic, toggleCamera, toggleRemoteAudio, isMicOn, isCameraOn, isRemoteAudioMuted } = livekit;
+  const {
+    videoRef,
+    bgVideoRef,
+    livekitState,
+    viewerCount,
+    toggleMic,
+    toggleCamera,
+    toggleRemoteAudio,
+    isMicOn,
+    isCameraOn,
+    isRemoteAudioMuted,
+  } = livekit;
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'items' | 'chat' | 'auction'>('chat');
   const { messages, sendMessage, sendMacro, connectionState } = useStompChat(stream.activeStreamEnter?.category ?? '');
@@ -87,6 +100,9 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
           }`}
         >
           <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
+          {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
+            <SellerUniqueBidOverlay participantCount={auction.uniqueBidSync.participantCount} />
+          )}
           <video
             ref={bgVideoRef}
             autoPlay
@@ -110,11 +126,21 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
                 <div className="relative flex items-center gap-2 px-3 py-2.5">
                   <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-accent">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-white">
-                      <path d="M3 11.5V12.5C3 13.0523 3.44772 13.5 4 13.5H6L11.2 17.4C11.8598 17.8948 12.8 17.4241 12.8 16.6V7.4C12.8 6.57589 11.8598 6.10521 11.2 6.6L6 10.5H4C3.44772 10.5 3 10.9477 3 11.5Z" fill="currentColor" />
-                      <path d="M16.5 9C17.8807 10.3807 17.8807 13.6193 16.5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <path
+                        d="M3 11.5V12.5C3 13.0523 3.44772 13.5 4 13.5H6L11.2 17.4C11.8598 17.8948 12.8 17.4241 12.8 16.6V7.4C12.8 6.57589 11.8598 6.10521 11.2 6.6L6 10.5H4C3.44772 10.5 3 10.9477 3 11.5Z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M16.5 9C17.8807 10.3807 17.8807 13.6193 16.5 15"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </div>
-                  <p className="min-w-0 flex-1 text-xs font-semibold leading-snug text-warm">{auction.auctionComment.message}</p>
+                  <p className="min-w-0 flex-1 text-xs font-semibold leading-snug text-warm">
+                    {auction.auctionComment.message}
+                  </p>
                 </div>
               </div>
             </div>
@@ -132,7 +158,11 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
 
           <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
             {stream.isSeller && auction.timer && (
-              <AuctionTimer key={auction.timer.receivedAtMs} timer={auction.timer} onExpire={auction.handleAuctionTimerExpire} />
+              <AuctionTimer
+                key={auction.timer.receivedAtMs}
+                timer={auction.timer}
+                onExpire={auction.handleAuctionTimerExpire}
+              />
             )}
           </div>
 
@@ -160,17 +190,29 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
               onClose={modal.clearWinnerInfo}
             />
           )}
-          {modal.uniqueAuctionResult && (
-            <UniqueAuctionResultModal
-              isOpen
-              itemName={modal.uniqueAuctionResult.itemName}
-              payload={modal.uniqueAuctionResult.payload}
-              winnerInfo={modal.uniqueAuctionResult.winnerInfo}
-              onClose={modal.handleUniqueAuctionResultClose}
-            />
-          )}
+          {modal.uniqueAuctionResult &&
+            (stream.isSeller ? (
+              <SellerUniqueAuctionResultModal
+                isOpen
+                itemName={modal.uniqueAuctionResult.itemName}
+                payload={modal.uniqueAuctionResult.payload}
+                onClose={modal.handleUniqueAuctionResultClose}
+              />
+            ) : (
+              <UniqueAuctionResultModal
+                isOpen
+                itemName={modal.uniqueAuctionResult.itemName}
+                payload={modal.uniqueAuctionResult.payload}
+                winnerInfo={modal.uniqueAuctionResult.winnerInfo}
+                onClose={modal.handleUniqueAuctionResultClose}
+              />
+            ))}
           {stream.streamState === 'disconnected' && (
-            <StreamDisconnected initialSeconds={300} onTimeout={modal.markStreamEnded} onExit={() => navigate('/main')} />
+            <StreamDisconnected
+              initialSeconds={300}
+              onTimeout={modal.markStreamEnded}
+              onExit={() => navigate('/main')}
+            />
           )}
           {stream.streamState === 'ended' && <StreamEnded onClose={() => navigate('/main')} />}
         </div>
@@ -235,9 +277,7 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
                     role="tab"
                     aria-selected={activeTab === tab.key}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      activeTab === tab.key
-                        ? 'bg-gold/15 text-gold'
-                        : 'text-neutral-500 hover:text-neutral-300'
+                      activeTab === tab.key ? 'bg-gold/15 text-gold' : 'text-neutral-500 hover:text-neutral-300'
                     }`}
                     onClick={() => setActiveTab(tab.key)}
                   >

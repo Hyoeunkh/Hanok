@@ -38,15 +38,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setSendTimeLimit(20_000);
     }
 
-    // ✅ 인터셉터와 스레드 풀 사이즈를 여기서 한 번에 설정합니다.
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(stompAuthChannelInterceptor);
-
         registration.taskExecutor()
-                .corePoolSize(25)
+                .corePoolSize(200)
                 .maxPoolSize(500)
-                .queueCapacity(200)
+                .queueCapacity(1000)
                 .keepAliveSeconds(60);
     }
 

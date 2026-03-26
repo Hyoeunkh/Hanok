@@ -3,6 +3,14 @@ spring:
     activate:
       on-profile: prod
 
+  datasource:
+    hikari:
+      maximum-pool-size: 150
+      minimum-idle: 10
+      connection-timeout: 3000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+
   cloud:
     gcp:
       storage:

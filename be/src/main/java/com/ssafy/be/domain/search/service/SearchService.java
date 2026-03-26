@@ -10,11 +10,13 @@ import com.ssafy.be.domain.stream.entity.StreamStatus;
 import com.ssafy.be.domain.stream.service.StreamViewerService; // ✅ import 추가
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -23,41 +25,45 @@ public class SearchService {
     private final StreamSearchRepositoryCustom searchRepository;
     private final StreamViewerService streamViewerService;
 
+    @Transactional(readOnly = true)
     public List<StreamSearchResult> search(String keyword) {
-        String trimmed = keyword.trim();
+        String safeKeyword = keyword.trim()
+                .replaceAll("[+\\-><()~*\"@]", " ").trim();
 
-        // IN BOOLEAN MODE 특수기호 처리
-        String safeKeyword = trimmed.replaceAll("[+\\-><()~*\"@]", " ").trim();
+        if (safeKeyword.isEmpty()) return new ArrayList<>();
 
-        if (safeKeyword.isEmpty()) {
-            return new ArrayList<>();
-        }
+        CompletableFuture<List<StreamSearchRow>> titleFuture =
+                CompletableFuture.supplyAsync(() ->
+                        searchRepository.searchByStreamTitle(safeKeyword));
 
-        // 방송 -> 아이템 -> 태그 순서 보장
+        CompletableFuture<List<StreamSearchRow>> itemFuture =
+                CompletableFuture.supplyAsync(() ->
+                        searchRepository.searchByItemName(safeKeyword));
+
+        CompletableFuture<List<StreamSearchRow>> tagFuture =
+                CompletableFuture.supplyAsync(() ->
+                        searchRepository.searchByTagName(safeKeyword));
+
+        CompletableFuture.allOf(titleFuture, itemFuture, tagFuture).join();
+
         Map<Long, StreamSearchResult> resultMap = new LinkedHashMap<>();
 
-        // 1. 방송 제목 검색
-        searchRepository.searchByStreamTitle(safeKeyword)
-                .forEach(row -> resultMap
-                        .computeIfAbsent(row.streamId(), id -> toResult(row))
+        titleFuture.join().forEach(row ->
+                resultMap.computeIfAbsent(row.streamId(), id -> toResult(row))
                         .addReason(MatchReason.builder()
                                 .type(MatchType.STREAM_TITLE)
                                 .matchedValue(row.title())
                                 .build()));
 
-        // 2. 아이템 이름 검색
-        searchRepository.searchByItemName(safeKeyword)
-                .forEach(row -> resultMap
-                        .computeIfAbsent(row.streamId(), id -> toResult(row))
+        itemFuture.join().forEach(row ->
+                resultMap.computeIfAbsent(row.streamId(), id -> toResult(row))
                         .addReason(MatchReason.builder()
                                 .type(MatchType.ITEM_NAME)
                                 .matchedValue(safeKeyword)
                                 .build()));
 
-        // 3. 태그 검색
-        searchRepository.searchByTagName(safeKeyword)
-                .forEach(row -> resultMap
-                        .computeIfAbsent(row.streamId(), id -> toResult(row))
+        tagFuture.join().forEach(row ->
+                resultMap.computeIfAbsent(row.streamId(), id -> toResult(row))
                         .addReason(MatchReason.builder()
                                 .type(MatchType.TAG)
                                 .matchedValue("#" + safeKeyword)

@@ -5,10 +5,12 @@ import AuctionCommentToast from '@/components/Live/Stream/AuctionCommentToast';
 import BuyerControlBar from '@/components/Live/Stream/BuyerControlBar';
 import SellerControlBar from '@/components/Live/Stream/SellerControlBar';
 import SellerGuideOverlay from '@/components/Live/Stream/SellerGuideOverlay';
+import SellerUniqueBidOverlay from '@/components/Live/Stream/SellerUniqueBidOverlay';
 import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
 import StreamDisconnected from '@/components/Live/Stream/Streamdisconnected';
 import StreamEnded from '@/components/Live/Stream/StreamEnded';
+import SellerUniqueAuctionResultModal from '@/components/Live/Auction/Buyer/SellerUniqueAuctionResultModal';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import UniqueAuctionResultModal from '@/components/Live/Auction/Buyer/UniqueAuctionResultModal';
 
@@ -68,6 +70,9 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
         >
           <StreamOverlay viewerCount={viewerCount} isSeller={stream.isSeller} />
           {stream.isSeller && <SellerGuideOverlay />}
+          {auction.activeAuctionType === 'UNIQUE_TOP' && auction.uniqueBidSync && (
+            <SellerUniqueBidOverlay participantCount={auction.uniqueBidSync.participantCount} />
+          )}
           <video
             ref={bgVideoRef}
             autoPlay
@@ -148,15 +153,23 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
               onClose={modal.clearWinnerInfo}
             />
           )}
-          {modal.uniqueAuctionResult && (
-            <UniqueAuctionResultModal
-              isOpen
-              itemName={modal.uniqueAuctionResult.itemName}
-              payload={modal.uniqueAuctionResult.payload}
-              winnerInfo={modal.uniqueAuctionResult.winnerInfo}
-              onClose={modal.handleUniqueAuctionResultClose}
-            />
-          )}
+          {modal.uniqueAuctionResult &&
+            (stream.isSeller ? (
+              <SellerUniqueAuctionResultModal
+                isOpen
+                itemName={modal.uniqueAuctionResult.itemName}
+                payload={modal.uniqueAuctionResult.payload}
+                onClose={modal.handleUniqueAuctionResultClose}
+              />
+            ) : (
+              <UniqueAuctionResultModal
+                isOpen
+                itemName={modal.uniqueAuctionResult.itemName}
+                payload={modal.uniqueAuctionResult.payload}
+                winnerInfo={modal.uniqueAuctionResult.winnerInfo}
+                onClose={modal.handleUniqueAuctionResultClose}
+              />
+            ))}
           {stream.streamState === 'disconnected' && (
             <StreamDisconnected
               initialSeconds={300}

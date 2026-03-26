@@ -38,6 +38,7 @@ export default function UniqueAuctionResultModal({
   const isOtherWin = hasWinner && !isMyWin;
   const isUnsold = !hasWinner;
   const hasTopDuplicates = Boolean(payload.topDuplicates && payload.topDuplicates.length > 0);
+  const hasMyBidPrice = payload.myBidPrice !== null;
   const itemConditionLabel = winnerInfo ? getItemConditionLabel(winnerInfo.itemCond) : null;
 
   useEscKey(isOpen && layout === 'modal', onClose);
@@ -60,7 +61,6 @@ export default function UniqueAuctionResultModal({
     return null;
   }
 
-  const badgeText = hasWinner ? '낙찰 성공' : '낙찰 실패';
   const titleText = isMyWin
     ? '낙찰에 성공하셨습니다!'
     : isOtherWin
@@ -80,7 +80,7 @@ export default function UniqueAuctionResultModal({
   const winnerContent = winnerInfo && isMyWin && (
     <>
       <div className="flex items-center justify-between gap-4 rounded-(--radius-panel) border border-white/6 bg-white/3 px-4.5 py-4">
-        <div className="min-w-0 flex shrink-0 flex-col gap-2">
+        <div className="flex min-w-0 flex-col gap-2">
           <p className="truncate text-sub-lg font-bold text-warm">{itemName}</p>
           <p className="text-sub-sm text-neutral-500">{itemConditionLabel}</p>
         </div>
@@ -124,23 +124,13 @@ export default function UniqueAuctionResultModal({
           }`}
         >
           <div
-            className={`flex h-16 w-16 items-center justify-center rounded-full border text-[30px] ${
+            className={`flex h-14 w-14 items-center justify-center rounded-full border text-[30px] ${
               hasWinner
                 ? 'border-gold/18 bg-gold/[0.08] text-primary-light'
                 : 'border-slate-300/10 bg-slate-300/[0.06] text-slate-300'
             }`}
           >
             {hasWinner ? <GoTrophy /> : <FiAlertCircle />}
-          </div>
-
-          <div
-            className={`inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-extrabold ${
-              hasWinner
-                ? 'border-gold/18 bg-gold/[0.08] text-gold-light'
-                : 'border-slate-300/10 bg-slate-300/[0.06] text-slate-300'
-            }`}
-          >
-            {badgeText}
           </div>
 
           <h2 className={`text-center text-[22px] font-black ${hasWinner ? 'text-point' : 'text-white'}`}>
@@ -172,7 +162,7 @@ export default function UniqueAuctionResultModal({
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <div className="text-sub-sm font-extrabold text-gold-light/80">최종 낙찰가</div>
-                      <div className="mt-3 text-price-md leading-none font-black text-point">
+                      <div className="mt-3 text-price-md leading-none font-black text-gold">
                         {payload.winnerPrice !== null ? formatPrice(payload.winnerPrice) : '-'}
                       </div>
                     </div>
@@ -188,13 +178,23 @@ export default function UniqueAuctionResultModal({
 
               {isUnsold && (
                 <div className="rounded-(--radius-panel) border border-slate-300/10 bg-[linear-gradient(180deg,rgba(148,163,184,0.08)_0%,rgba(255,255,255,0.02)_100%)] px-5 py-5">
+                  {hasMyBidPrice && (
+                    <div className="mb-4 flex items-center justify-between gap-4 rounded-[18px] border border-gold/20 bg-gold/[0.08] px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-gold" />
+                        <span className="text-[13px] font-extrabold text-gold-light">나의 입찰가</span>
+                      </div>
+                      <span className="text-[18px] font-black text-white">{formatPrice(payload.myBidPrice)}</span>
+                    </div>
+                  )}
+
                   {hasTopDuplicates ? (
                     <>
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
                           <div className="text-sub-lg font-extrabold text-slate-300/90">상위 중복 입찰</div>
                         </div>
-                        <div className="rounded-full border border-slate-300/12 bg-black/20 px-3 py-1 text-[12px] font-bold text-slate-300">
+                        <div className="shrink-0 rounded-full border border-slate-300/12 bg-black/20 px-3 py-1 text-[12px] font-bold text-slate-300">
                           {payload.topDuplicates?.length}건
                         </div>
                       </div>
@@ -223,15 +223,17 @@ export default function UniqueAuctionResultModal({
                     </>
                   ) : (
                     <>
-                      <div className="text-body-sm font-extrabold text-slate-300/80">입찰 없음</div>
-                      <p className="mt-2 text-price-md font-black text-white">이번 라운드에서는 낙찰자가 없었습니다</p>
+                      <div className="text-body-sm font-extrabold text-slate-300/80">입찰 현황</div>
+                      <p className="mt-2 text-price-md font-black text-white">
+                        중복 없이 성사된 유일가가 없어 유찰되었어요.
+                      </p>
                     </>
                   )}
                 </div>
               )}
 
               <div className="rounded-[22px] border border-white/6 bg-black/18 px-5 py-4">
-                <div className="text-[14px] font-extrabold uppercase text-neutral-500">참고 사항</div>
+                <div className="text-[14px] font-extrabold uppercase text-neutral-500">참고사항</div>
                 <p className="mt-2 text-[16px] leading-6 text-neutral-300">
                   라이브 시청은 계속 가능합니다. 다음 경매에 참여하세요!
                 </p>
@@ -241,8 +243,8 @@ export default function UniqueAuctionResultModal({
 
           {winnerInfo && isMyWin && (
             <p className="text-center text-sub-sm text-neutral-500">
-              낙찰 상품 배송은 결제 확인 후 <em className="not-italic font-bold text-gold">영업일 기준 2~5일</em> 내에
-              진행됩니다.
+              낙찰 상품 배송지는 결제 완료 후 <em className="not-italic font-bold text-gold">영업일 기준 2~5일</em> 내
+              순차적으로 발송됩니다.
             </p>
           )}
 
@@ -255,7 +257,7 @@ export default function UniqueAuctionResultModal({
             onClick={handleConfirm}
             disabled={isLoading}
           >
-            {isLoading ? '처리 중...' : '확인'}
+            {isLoading ? '닫는 중...' : '확인'}
           </button>
         </div>
       </div>
