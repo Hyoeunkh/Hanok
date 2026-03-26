@@ -9,6 +9,7 @@ import StreamOverlay from '@/components/Live/Stream/StreamOverlay';
 import StreamPlaceholder from '@/components/Live/Stream/StreamPlaceholder';
 import StreamDisconnected from '@/components/Live/Stream/Streamdisconnected';
 import StreamEnded from '@/components/Live/Stream/StreamEnded';
+import SellerUniqueAuctionResultModal from '@/components/Live/Auction/Buyer/SellerUniqueAuctionResultModal';
 import WinModal from '@/components/Live/Auction/Buyer/WinModal';
 import UniqueAuctionResultModal from '@/components/Live/Auction/Buyer/UniqueAuctionResultModal';
 import AuctionPanel from '@/components/Live/Auction/shared/AuctionPanel';
@@ -161,13 +162,22 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
             />
           )}
           {modal.uniqueAuctionResult && (
-            <UniqueAuctionResultModal
-              isOpen
-              itemName={modal.uniqueAuctionResult.itemName}
-              payload={modal.uniqueAuctionResult.payload}
-              winnerInfo={modal.uniqueAuctionResult.winnerInfo}
-              onClose={modal.handleUniqueAuctionResultClose}
-            />
+            stream.isSeller ? (
+              <SellerUniqueAuctionResultModal
+                isOpen
+                itemName={modal.uniqueAuctionResult.itemName}
+                payload={modal.uniqueAuctionResult.payload}
+                onClose={modal.handleUniqueAuctionResultClose}
+              />
+            ) : (
+              <UniqueAuctionResultModal
+                isOpen
+                itemName={modal.uniqueAuctionResult.itemName}
+                payload={modal.uniqueAuctionResult.payload}
+                winnerInfo={modal.uniqueAuctionResult.winnerInfo}
+                onClose={modal.handleUniqueAuctionResultClose}
+              />
+            )
           )}
           {stream.streamState === 'disconnected' && (
             <StreamDisconnected initialSeconds={300} onTimeout={modal.markStreamEnded} onExit={() => navigate('/main')} />
