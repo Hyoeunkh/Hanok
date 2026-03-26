@@ -8,7 +8,7 @@ export default function UniqueBidPanel({ bid }: Props) {
   return (
     <div className="flex flex-1 gap-1">
       <div className="flex w-1/2 flex-col gap-2">
-        <div className="flex-1 rounded-md bg-neutral-800 px-3 py-1.5 text-center text-caption font-bold text-neutral-100">
+        <div className="flex-1 overflow-hidden truncate rounded-md bg-neutral-800 px-3 py-1.5 text-center text-caption font-bold text-neutral-100">
           입찰 범위: {bid.uniqueMinPrice.toLocaleString()} ~ {bid.uniqueMaxPrice.toLocaleString()}원
         </div>
         <div className="flex flex-1 items-center gap-2 rounded-lg bg-neutral-900 px-2.5 py-1">
