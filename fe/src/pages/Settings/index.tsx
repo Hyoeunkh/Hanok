@@ -146,7 +146,7 @@ export default function SettingsPage() {
             <button
               onClick={handleLogout}
               disabled={isLogoutPending}
-              className="flex items-center gap-2 rounded-lg bg-transparent border border-white/[0.06] px-4 py-2 text-[13px] font-medium text-neutral-500 cursor-pointer hover:text-neutral-300 hover:border-white/10 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-white/[0.06] border-none px-4 py-2 text-[13px] font-medium text-neutral-300 cursor-pointer hover:bg-white/[0.1] hover:text-white transition-colors"
             >
               <FiLogOut size={14} />
               {isLogoutPending ? '로그아웃 중...' : '로그아웃'}
