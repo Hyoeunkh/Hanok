@@ -130,8 +130,8 @@ export default function AuctionReportModal({ open, onClose, items }: Props) {
                   >
                     {item.name}
                   </span>
-                  <div className="flex flex-col items-end gap-0.5">
-                    <span className="text-caption font-medium text-neutral-600">
+                  <div className="flex shrink-0 flex-col items-end gap-0.5">
+                    <span className="whitespace-nowrap text-caption font-medium text-neutral-600">
                       {item.auctionType === 'UNIQUE_TOP' ? '응찰 범위' : '시작가'} {formatAuctionLabel(item)}
                     </span>
                     {isDone && item.finalPrice ? (
