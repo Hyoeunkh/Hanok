@@ -773,6 +773,7 @@ export default function LiveRegisterPage() {
 
             {showScheduleModal && (
               <ScheduleModal
+                initialScheduledAt={scheduledAt || undefined}
                 onConfirm={async (iso) => {
                   setScheduledAt(iso);
                   setShowScheduleModal(false);

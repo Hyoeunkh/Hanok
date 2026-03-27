@@ -1,8 +1,8 @@
 import { CATEGORIES } from '@/constants/category';
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { FiChevronDown } from 'react-icons/fi';
+import { useState, useRef, useEffect, useMemo } from 'react';import { FiChevronDown } from 'react-icons/fi';
 import { getItems } from '@/api/hooks/useGetItems';
 import { useQuery } from '@tanstack/react-query';
+
 
 type Props = {
   onConfirm: (categoryId: string) => void;
@@ -25,13 +25,8 @@ export default function CategorySelectModal({ onConfirm, onClose }: Props) {
 
   const [selectedId, setSelectedId] = useState<string>('');
 
-  useEffect(() => {
-    if (availableCategories.length > 0 && !selectedId) {
-      setSelectedId(availableCategories[0].id);
-    }
-  }, [availableCategories, selectedId]);
-
-  const selectedLabel = availableCategories.find((c) => c.id === selectedId)?.label ?? '';
+  const effectiveSelectedId = selectedId || availableCategories[0]?.id || '';
+  const selectedLabel = availableCategories.find((c) => c.id === effectiveSelectedId)?.label ?? '';
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -74,7 +69,7 @@ export default function CategorySelectModal({ onConfirm, onClose }: Props) {
                     <p className="px-4 py-3 text-sm text-neutral-500">등록된 상품이 없습니다.</p>
                   ) : (
                     availableCategories.map((cat) => {
-                      const isSelected = cat.id === selectedId;
+                      const isSelected = cat.id === effectiveSelectedId;
                       return (
                         <button
                           key={cat.id}
@@ -109,8 +104,8 @@ export default function CategorySelectModal({ onConfirm, onClose }: Props) {
             </button>
             <button
               type="button"
-              onClick={() => onConfirm(selectedId)}
-              disabled={!selectedId}
+              onClick={() => onConfirm(effectiveSelectedId)}
+              disabled={!effectiveSelectedId}
               className="flex-1 py-4 rounded-2xl bg-gold text-background text-base font-bold hover:bg-gold-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               방송 등록하기
