@@ -125,10 +125,7 @@ export default function Header() {
             <div className="relative">
               <HeaderIcon
                 onClick={() => {
-                  setIsNotifOpen((prev) => {
-                    if (!prev) setIsSetupOpen(false);
-                    return !prev;
-                  });
+                  setIsNotifOpen((prev) => !prev);
                 }}
                 ariaLabel="Open alerts"
                 tooltip="알림"
