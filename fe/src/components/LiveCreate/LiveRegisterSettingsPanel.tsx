@@ -29,7 +29,7 @@ export default function LiveRegisterSettingsPanel({
   onMacroAnswerChange,
 }: Props) {
   return (
-    <aside className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-surface-elevated">
+    <aside className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background">
       <div className="border-b border-neutral-700 px-3 py-2">
         <span className="text-sm font-bold text-white">방송 기본 설정</span>
       </div>
