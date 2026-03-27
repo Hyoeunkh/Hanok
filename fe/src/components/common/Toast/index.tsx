@@ -14,29 +14,33 @@ interface ToastProps extends ToastData {
   onClose: (id: string) => void;
 }
 
-const toastStyles: Record<ToastType, { border: string; dot: string; title: string; icon: string }> = {
+const toastStyles: Record<ToastType, { bg: string; border: string; dot: string; text: string; icon: string }> = {
   success: {
-    border: 'border-emerald-500/30',
+    bg: 'bg-emerald-900/80',
+    border: 'border-emerald-500/40',
     dot: 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]',
-    title: 'text-emerald-400',
+    text: 'text-emerald-100',
     icon: '✓',
   },
   error: {
-    border: 'border-red-500/30',
+    bg: 'bg-red-900/80',
+    border: 'border-red-500/40',
     dot: 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]',
-    title: 'text-red-400',
+    text: 'text-red-100',
     icon: '✕',
   },
   warning: {
-    border: 'border-amber-500/30',
+    bg: 'bg-amber-900/80',
+    border: 'border-amber-500/40',
     dot: 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]',
-    title: 'text-amber-400',
+    text: 'text-amber-100',
     icon: '!',
   },
   info: {
+    bg: 'bg-background/95',
     border: 'border-accent/20',
     dot: 'bg-accent shadow-[0_0_10px_rgba(166,61,46,0.4)]',
-    title: 'text-gold-light',
+    text: 'text-neutral-200',
     icon: '',
   },
 };
@@ -75,7 +79,7 @@ export default function Toast({ id, type = 'info', title, message, duration = 40
       role="alert"
       aria-live="polite"
       className={`flex cursor-pointer select-none items-center gap-3 rounded-(--radius-control)
-        border ${style.border} bg-background/95 px-[18px] py-[14px]
+        border ${style.border} ${style.bg} px-[18px] py-[14px]
         shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-[20px]
         ${isExiting ? 'animate-toast-out' : 'animate-toast-in'}
         min-w-[280px] max-w-[380px]`}
@@ -90,8 +94,8 @@ export default function Toast({ id, type = 'info', title, message, duration = 40
       )}
 
       {/* text */}
-      <p className="m-0 text-body-sm font-bold leading-[1.5] text-neutral-200">
-        {title && <span className={`font-extrabold ${style.title}`}>{title}</span>}
+      <p className={`m-0 text-body-sm font-bold leading-[1.5] ${style.text}`}>
+        {title && <span className="font-extrabold">{title}</span>}
         {title ? ' ' : ''}
         {message}
       </p>
