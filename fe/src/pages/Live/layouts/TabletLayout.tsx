@@ -61,6 +61,7 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
         streamTitle={stream.streamTitle}
         isLive={stream.isStreamLive}
         startedAt={stream.liveStartedAt ?? stream.activeStreamEnter?.createdAt ?? null}
+        isSeller={stream.isSeller}
         showEndButton={stream.isSeller && stream.isStreamLive}
         isEndDisabled={auction.isAuctionInProgress}
         isEnding={modal.postEndStreamIsPending}
