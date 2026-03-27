@@ -184,7 +184,7 @@ export default function SettingsPage() {
                 </span>
               </div>
               {defaultAddress ? (
-                <span className="text-[13px] text-neutral-400 truncate w-full">
+                <span className="text-[13px] text-gold-light truncate w-full">
                   {defaultAddress.address} {defaultAddress.addressDetail}
                 </span>
               ) : (
