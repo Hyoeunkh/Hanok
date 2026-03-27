@@ -10,19 +10,15 @@ export default function useInViewOnce(
   { rootMargin = '280px 0px' }: UseInViewOnceOptions = {},
 ) {
   const [hasEnteredView, setHasEnteredView] = useState(false);
+  const isObserverUnavailable = typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined';
 
   useEffect(() => {
-    if (hasEnteredView) {
+    if (hasEnteredView || isObserverUnavailable) {
       return;
     }
 
     const target = targetRef.current;
     if (!target) {
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      setHasEnteredView(true);
       return;
     }
 
@@ -43,7 +39,7 @@ export default function useInViewOnce(
     return () => {
       observer.disconnect();
     };
-  }, [hasEnteredView, rootMargin, targetRef]);
+  }, [hasEnteredView, isObserverUnavailable, rootMargin, targetRef]);
 
-  return hasEnteredView;
+  return hasEnteredView || isObserverUnavailable;
 }
