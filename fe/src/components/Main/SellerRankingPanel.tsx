@@ -44,7 +44,7 @@ export default function SellerRankingPanel({ rankingItems = [] }: SellerRankingP
 
       <div className="mt-4 flex flex-col gap-2">
         {rankingItems.map((seller) => {
-          const sellerInitial = seller.nickname.trim().charAt(0) || '?';
+          const sellerInitial = seller.shopName.trim().charAt(0) || '?';
 
           return (
             <button
@@ -60,7 +60,7 @@ export default function SellerRankingPanel({ rankingItems = [] }: SellerRankingP
               {seller.profileImage ? (
                 <img
                   src={seller.profileImage}
-                  alt={`${seller.nickname} profile`}
+                  alt={`${seller.shopName} profile`}
                   loading="lazy"
                   decoding="async"
                   className="h-10 w-10 shrink-0 rounded-full object-cover"
@@ -72,7 +72,7 @@ export default function SellerRankingPanel({ rankingItems = [] }: SellerRankingP
               )}
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-semibold leading-tight text-warm">{seller.nickname}</p>
+                <p className="truncate text-[14px] font-semibold leading-tight text-warm">{seller.shopName}</p>
                 <p className="mt-0.5 text-[12px] leading-tight text-neutral-500">
                   팔로워 {seller.followerCount.toLocaleString()}명
                 </p>

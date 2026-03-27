@@ -217,7 +217,7 @@ export default function ProfilePage() {
   const handleOpenProfileEdit = () => {
     if (!data) return;
     setProfileForm({
-      nickname: data.nickname,
+      nickname: data.shopName,
       intro: data.intro,
       instaUrl: stripPrefix(data.instagramUrl ?? ''),
       youtubeUrl: stripPrefix(data.youtubeUrl ?? ''),
@@ -233,7 +233,9 @@ export default function ProfilePage() {
     }
     patchProfile(
       {
-        ...profileForm,
+        shopName: profileForm.nickname.trim(),
+        intro: profileForm.intro,
+        profileImage: undefined,
         instaUrl: addPrefix(profileForm.instaUrl, SOCIAL_PREFIX.instagram),
         youtubeUrl: addPrefix(profileForm.youtubeUrl, SOCIAL_PREFIX.youtube),
         tiktokUrl: addPrefix(profileForm.tiktokUrl, SOCIAL_PREFIX.tiktok),
@@ -325,7 +327,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { nickname, intro, profileImage, instagramUrl, youtubeUrl, tiktokUrl } = data;
+  const { shopName, intro, profileImage, instagramUrl, youtubeUrl, tiktokUrl } = data;
 
   return (
     <div className="w-full box-border max-w-[1200px] mx-auto py-10 px-5 flex flex-col gap-6">
@@ -349,7 +351,7 @@ export default function ProfilePage() {
                   <>
                     <img
                       src={profileImage}
-                      alt={nickname}
+                      alt={shopName}
                       className="w-[96px] h-[96px] rounded-full object-cover border-[3px] border-surface"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
@@ -358,12 +360,12 @@ export default function ProfilePage() {
                       }}
                     />
                     <div className="hidden w-[96px] h-[96px] rounded-full bg-surface border-[3px] border-surface text-gold-light text-[36px] items-center justify-center font-bold">
-                      {nickname.charAt(0)}
+                      {shopName.charAt(0)}
                     </div>
                   </>
                 ) : (
                   <div className="w-[96px] h-[96px] rounded-full bg-surface border-[3px] border-surface text-gold-light text-[36px] flex items-center justify-center font-bold">
-                    {nickname.charAt(0)}
+                    {shopName.charAt(0)}
                   </div>
                 )}
               </div>
@@ -376,7 +378,7 @@ export default function ProfilePage() {
 
             <div className="flex flex-col gap-2 flex-1 min-w-0 pt-1">
               <div className="flex items-center gap-3">
-                <h2 className="m-0 text-[22px] text-white">{nickname}</h2>
+                <h2 className="m-0 text-[22px] text-white">{shopName}</h2>
                 {isMyProfile && (
                   <button onClick={handleOpenProfileEdit} className="rounded-lg bg-white/[0.06] border-none px-3 py-1.5 text-[12px] text-neutral-300 cursor-pointer hover:bg-white/[0.1] hover:text-white transition-colors">
                     수정
@@ -718,7 +720,7 @@ export default function ProfilePage() {
 
       {isReportModalOpen && (
         <ReportModal
-          sellerNickname={nickname}
+          sellerNickname={shopName}
           onClose={() => setIsReportModalOpen(false)}
           onSubmit={() => {
             showToast({ type: 'success', message: '신고가 접수되었습니다.' });

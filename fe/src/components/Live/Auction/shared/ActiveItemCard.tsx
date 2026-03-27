@@ -6,6 +6,7 @@ import { CARD_BORDER_CLASS, PRICE_CLASS } from '@/constants/live';
 
 import type { AuctionItem } from '@/types';
 import { formatAuctionLabel } from '@/utils/formatAuctionLabel';
+import { formatPrice } from '@/utils/formatPrice';
 import ItemDetailAccordion from './ItemDetailAccordion';
 
 interface ActiveCardProps {
@@ -20,6 +21,10 @@ export default function ActiveItemCard({ item, isSelected, isSeller, onSelect }:
   const statusBadge = AUCTION_STATUS_BADGES[item.status];
   const isExpanded = isSeller ? isSelected : expanded;
   const borderClass = isSelected ? 'border-gold/55 shadow-primary-glow' : CARD_BORDER_CLASS[item.status];
+  const priceLabel =
+    item.auctionType === 'UNIQUE_TOP'
+      ? `시작가 ${formatPrice(item.minPrice ?? 0)} ~`
+      : formatAuctionLabel(item);
 
   const handleCardClick = () => {
     if (isSeller) {
@@ -49,7 +54,7 @@ export default function ActiveItemCard({ item, isSelected, isSeller, onSelect }:
           <span className="truncate text-xs font-bold leading-snug text-white">{item.name}</span>
           <div className="flex items-center gap-1.5">
             <span className={`min-w-0 truncate text-body-md font-black ${PRICE_CLASS[item.status]}`}>
-              {formatAuctionLabel(item)}
+              {priceLabel}
             </span>
             <span className={`shrink-0 rounded-full bg-gold/[0.08] px-1.5 py-0.5 text-caption font-extrabold`}>
               {AUCTION_TYPE_LABELS[item.auctionType]}
