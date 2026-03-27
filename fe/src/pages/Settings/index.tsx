@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const tabParam = searchParams.get('tab');
   const initialTab = SETTINGS_TABS.includes(tabParam as SettingsTab) ? (tabParam as SettingsTab) : 'order';
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+  const [autoOpenAddressModal, setAutoOpenAddressModal] = useState(false);
 
   const { data: meData, isLoading: isMeLoading } = useGetMe();
   const { isLoading: isNotiLoading } = useGetNotification();
@@ -172,6 +173,7 @@ export default function SettingsPage() {
               onClick={() => {
                 setActiveTab('shipping');
                 setSearchParams({ tab: 'shipping' });
+                if (!defaultAddress) setAutoOpenAddressModal(true);
               }}
               className="flex flex-col justify-center gap-1 rounded-xl bg-white/[0.04] border border-white/[0.06] px-5 py-4 cursor-pointer hover:border-gold-light/30 transition-colors text-left min-w-0 overflow-hidden"
             >
@@ -278,7 +280,12 @@ export default function SettingsPage() {
         <div className="w-full flex flex-1 flex-col gap-6">
           {activeTab === 'order' && <OrderHistorySection />}
           {activeTab === 'stores' && <FollowedStoresSection />}
-          {activeTab === 'shipping' && <ShippingSection />}
+          {activeTab === 'shipping' && (
+            <ShippingSection
+              autoOpenModal={autoOpenAddressModal}
+              onModalOpened={() => setAutoOpenAddressModal(false)}
+            />
+          )}
           {activeTab === 'payment' && <PaymentSection />}
           {activeTab === 'account' && <AccountSection />}
         </div>
