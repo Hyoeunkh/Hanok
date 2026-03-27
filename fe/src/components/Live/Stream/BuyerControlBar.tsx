@@ -98,10 +98,15 @@ export default function BuyerControlBar({
               {BUYER_AUCTION_TYPE_LABELS[auctionType]}
             </div>
             {auctionType === 'UNIQUE_TOP' && uniqueBidSync?.bidRange ? (
-              <div className="rounded-full border border-white/8 bg-surface/75 px-4 py-3 text-price-sm font-bold tabular-nums text-neutral-300 backdrop-blur-md">
-                입찰 범위 {uniqueBidSync.bidRange.minPrice.toLocaleString()} ~{' '}
-                {uniqueBidSync.bidRange.maxPrice.toLocaleString()}원
-              </div>
+              <>
+                <div className="rounded-full border border-white/8 bg-surface/75 px-4 py-3 text-price-sm font-bold tabular-nums text-neutral-300 backdrop-blur-md">
+                  입찰 범위 {uniqueBidSync.bidRange.minPrice.toLocaleString()} ~{' '}
+                  {uniqueBidSync.bidRange.maxPrice.toLocaleString()}원
+                </div>
+                <div className="rounded-full border border-white/8 bg-surface/75 px-4 py-3 text-price-sm font-bold text-neutral-300 backdrop-blur-md">
+                  중복되지 않는 최고가를 제시하세요
+                </div>
+              </>
             ) : null}
           </div>
         ) : null}
