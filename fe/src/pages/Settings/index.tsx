@@ -281,10 +281,7 @@ export default function SettingsPage() {
           {activeTab === 'order' && <OrderHistorySection />}
           {activeTab === 'stores' && <FollowedStoresSection />}
           {activeTab === 'shipping' && (
-            <ShippingSection
-              autoOpenModal={autoOpenAddressModal}
-              onModalOpened={() => setAutoOpenAddressModal(false)}
-            />
+            <ShippingSection autoOpenModal={autoOpenAddressModal} />
           )}
           {activeTab === 'payment' && <PaymentSection />}
           {activeTab === 'account' && <AccountSection />}

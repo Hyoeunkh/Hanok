@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FiMapPin, FiPlus } from 'react-icons/fi';
 
 import { useDeleteAddress } from '@/api/hooks/useDeleteAddress';
@@ -9,8 +9,8 @@ import type { Address, AddressModalMode } from '@/types';
 import AddressCard from './AddressCard';
 import AddressFormModal from '@/components/common/modal/AddressFormModal';
 
-export default function ShippingSection({ autoOpenModal = false, onModalOpened }: { autoOpenModal?: boolean; onModalOpened?: () => void }) {
-  const [modalOpen, setModalOpen] = useState(false);
+export default function ShippingSection({ autoOpenModal = false }: { autoOpenModal?: boolean }) {
+  const [modalOpen, setModalOpen] = useState(autoOpenModal);
   const [modalMode, setModalMode] = useState<AddressModalMode>('add');
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const { data, isLoading } = useGetAddresses();
@@ -18,15 +18,6 @@ export default function ShippingSection({ autoOpenModal = false, onModalOpened }
   const { mutate: removeAddress } = useDeleteAddress();
 
   const addresses = data ?? [];
-
-  useEffect(() => {
-    if (autoOpenModal) {
-      setModalMode('add');
-      setEditingAddress(null);
-      setModalOpen(true);
-      onModalOpened?.();
-    }
-  }, [autoOpenModal, onModalOpened]);
 
   const openAddModal = () => {
     setModalMode('add');
