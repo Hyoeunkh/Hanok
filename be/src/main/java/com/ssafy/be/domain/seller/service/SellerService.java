@@ -134,7 +134,7 @@ public class SellerService {
 
         return new SellerProfileResponse(
                 seller.getId(),
-                seller.getShopName(),
+                seller.getShopName() != null ? seller.getShopName() : "",
                 seller.getIntro(),
                 user.getProfileImage(),
                 seller.getInstaUrl(),
@@ -348,7 +348,7 @@ public class SellerService {
                     return new SellerRankingResponse(
                             i + 1,
                             ((Number) r[0]).longValue(),
-                            (String) r[1],
+                            r[1] != null ? (String) r[1] : "",
                             (String) r[2],
                             ((Number) r[3]).longValue()
                     );
