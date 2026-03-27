@@ -113,10 +113,10 @@ export default function ProfilePage() {
 
     patchProfileImage(optimized, {
       onSuccess: () => {
-        showToast({ message: '프로필 이미지가 변경되었습니다.' });
+        showToast({ type: 'success', message: '프로필 이미지가 변경되었습니다.' });
       },
       onError: (error) => {
-        showToast({ message: getUploadErrorMessage(error, '프로필 이미지 변경에 실패했습니다.') });
+        showToast({ type: 'error', message: getUploadErrorMessage(error, '프로필 이미지 변경에 실패했습니다.') });
       },
     });
   };
@@ -227,7 +227,7 @@ export default function ProfilePage() {
 
   const handleSubmitProfileEdit = () => {
     if (!profileForm.nickname.trim()) {
-      showToast({ message: '닉네임을 입력해주세요.' });
+      showToast({ type: 'warning', message: '닉네임을 입력해주세요.' });
       return;
     }
     patchProfile(
@@ -240,10 +240,10 @@ export default function ProfilePage() {
       {
         onSuccess: () => {
           setIsProfileEditOpen(false);
-          showToast({ message: '프로필이 수정되었습니다.' });
+          showToast({ type: 'success', message: '프로필이 수정되었습니다.' });
         },
         onError: () => {
-          showToast({ message: '프로필 수정에 실패했습니다.' });
+          showToast({ type: 'error', message: '프로필 수정에 실패했습니다.' });
         },
       },
     );
@@ -272,7 +272,7 @@ export default function ProfilePage() {
 
   const handleSubmitNotice = () => {
     if (!noticeTitle.trim() || !noticeContent.trim()) {
-      showToast({ message: '제목과 내용을 모두 입력해주세요.' });
+      showToast({ type: 'warning', message: '제목과 내용을 모두 입력해주세요.' });
       return;
     }
     const finalContent = buildNoticeContent();
@@ -700,7 +700,7 @@ export default function ProfilePage() {
           sellerNickname={nickname}
           onClose={() => setIsReportModalOpen(false)}
           onSubmit={() => {
-            showToast({ message: '신고가 접수되었습니다.' });
+            showToast({ type: 'success', message: '신고가 접수되었습니다.' });
             setIsReportModalOpen(false);
           }}
         />

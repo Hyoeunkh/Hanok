@@ -54,7 +54,7 @@ export default function Step4({
       navigate('/main');
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 409) {
-        showToast({ message: '이미 판매자로 등록된 사용자입니다.' });
+        showToast({ type: 'warning', message: '이미 판매자로 등록된 사용자입니다.' });
         navigate('/main');
         return;
       }
