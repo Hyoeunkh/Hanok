@@ -38,6 +38,7 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
     isMicOn,
     isCameraOn,
     isRemoteAudioMuted,
+    micLevel,
   } = livekit;
   const pausedInitialSeconds = getPausedInitialSeconds(stream.activeStreamEnter);
 
@@ -106,6 +107,7 @@ export default function DesktopLayout({ stream, auction, livekit, chat, modal, n
               toggleCamera={toggleCamera}
               isMicOn={isMicOn}
               isCameraOn={isCameraOn}
+              micLevel={micLevel}
             />
           ) : (
             <BuyerControlBar

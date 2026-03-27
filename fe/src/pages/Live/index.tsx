@@ -155,6 +155,7 @@ export default function LivePage() {
     isCameraOn,
     isRemoteAudioMuted,
     viewerCount,
+    micLevel,
     disconnect,
   } = useLiveKit({
     serverUrl: isStreamLive ? livekitUrl : '',
@@ -403,6 +404,7 @@ export default function LivePage() {
       isMicOn,
       isCameraOn,
       isRemoteAudioMuted,
+      micLevel,
     },
     chat: {
       isChatOpen,

@@ -38,6 +38,7 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
     isMicOn,
     isCameraOn,
     isRemoteAudioMuted,
+    micLevel,
   } = livekit;
   const [activeTab, setActiveTab] = useState<TabletTab>('chat');
   const { messages, sendMessage, sendMacro, connectionState } = useStompChat(stream.activeStreamEnter?.category ?? '');
@@ -184,6 +185,7 @@ export default function TabletLayout({ stream, auction, livekit, modal, navigate
                 toggleCamera={toggleCamera}
                 isMicOn={isMicOn}
                 isCameraOn={isCameraOn}
+                micLevel={micLevel}
               />
             ) : (
               <BuyerControlBar
