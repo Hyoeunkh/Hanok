@@ -37,7 +37,7 @@ import com.ssafy.be.domain.uniqueaction.repository.UniqueBidAuctionDetailReposit
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
 import com.ssafy.be.global.exception.GlobalException;
-import com.ssafy.be.global.infra.gcs.GcsClient;
+import com.ssafy.be.global.infra.storage.gcs.GcsClient;
 import com.ssafy.be.global.infra.livekit.LiveKitProperties;
 import com.ssafy.be.global.websocket.enums.StreamEventType;
 import com.ssafy.be.global.websocket.publisher.StreamPublisher;
@@ -107,6 +107,9 @@ public class StreamService {
             } catch (IOException e) {
                 throw new GlobalException(StreamErrorCode.THUMBNAIL_UPLOAD_FAILED);
             }
+        }
+        else{ // 썸네일 생성해서 저장
+
         }
 
         // 물품 상태 변경 및 경매 생성

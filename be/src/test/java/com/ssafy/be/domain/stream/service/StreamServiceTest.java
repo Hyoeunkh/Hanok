@@ -34,7 +34,7 @@ import com.ssafy.be.domain.stream.repository.StreamRepository;
 import com.ssafy.be.domain.user.entity.User;
 import com.ssafy.be.domain.user.repository.UserRepository;
 import com.ssafy.be.global.exception.GlobalException;
-import com.ssafy.be.global.infra.gcs.GcsClient;
+import com.ssafy.be.global.infra.storage.gcs.GcsClient;
 import com.ssafy.be.global.infra.livekit.LiveKitProperties;
 import com.ssafy.be.global.websocket.enums.StreamEventType;
 import com.ssafy.be.global.websocket.publisher.StreamPublisher;
