@@ -148,6 +148,8 @@
 
             List<StreamPublishTask> publishTasks = new ArrayList<>();
 
+            Long sellerUserId = auction.getStream().getSeller().getUser().getId();
+
             // 유찰: winnerPrice=null로 각 입찰자에게 private 전송
             if (winnerPrice.isEmpty()) {
                 auction.unsold();
@@ -160,6 +162,10 @@
                     publishTasks.add(buildStreamPublishTask(PRIVATE, streamId, bidUserId, UNIQUE_AUCTION_END,
                             buildResultResponse(result, bidAmount)));
                 }
+
+                // 판매자에게 유찰 결과 전송
+                publishTasks.add(buildStreamPublishTask(PRIVATE, streamId, sellerUserId, UNIQUE_AUCTION_END,
+                        buildResultResponse(result, null)));
 
                 publishTasks.add(buildStreamPublishTask(BROADCAST, streamId, null, AUCTION_COMMENT,
                         buildAuctionCommentResponse(UNSOLD.getValue())));
@@ -199,6 +205,10 @@
 
             // 낙찰자에게 배송지 포함 상세 정보
             publishTasks.add(buildStreamPublishTask(PRIVATE, streamId, winnerId, BID_WINNER, buildWinnerResponse(result)));
+
+            // 판매자에게 낙찰 결과 전송
+            publishTasks.add(buildStreamPublishTask(PRIVATE, streamId, sellerUserId, UNIQUE_AUCTION_END,
+                    buildResultResponse(result, null)));
 
             // 전체 경매 중계 메시지
             String message = String.format(SOLD.getValue(), winner.getNickname(), winnerPrice.get());
