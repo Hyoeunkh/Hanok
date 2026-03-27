@@ -37,7 +37,13 @@ export default function AccountSection() {
       return;
     }
 
-    patchNotification({ notificationSetting: !notiData.notificationSetting });
+    patchNotification(
+      { notificationSetting: !notiData.notificationSetting },
+      {
+        onSuccess: () => showToast({ type: 'success', message: '알림 설정이 변경되었습니다.' }),
+        onError: () => showToast({ type: 'error', message: '알림 설정 변경에 실패했습니다.' }),
+      },
+    );
   };
 
   const handleOpenPasswordModal = () => {
