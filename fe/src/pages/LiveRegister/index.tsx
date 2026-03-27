@@ -398,11 +398,7 @@ export default function LiveRegisterPage() {
   };
 
   const handleSchedule = () => {
-    if (!title.trim()) {
-      showToast({ type: 'warning', message: '방송 제목을 입력해주세요.' });
-      return;
-    }
-
+    if (!validateStreamForm()) return;
     setShowScheduleModal(true);
   };
 
@@ -773,6 +769,7 @@ export default function LiveRegisterPage() {
 
             {showScheduleModal && (
               <ScheduleModal
+                initialScheduledAt={scheduledAt || undefined}
                 onConfirm={async (iso) => {
                   setScheduledAt(iso);
                   setShowScheduleModal(false);
