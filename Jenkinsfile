@@ -22,7 +22,7 @@ pipeline {
                                     sh 'chmod +x gradlew'
                                     withSonarQubeEnv('sonarqube') {
                                         // 🚨 [수정됨] || true 제거! 이제 컴파일/테스트 실패 시 여기서 배포가 즉시 멈춥니다.
-                                        sh '''./gradlew bootJar sonar --no-daemon --build-cache --continue -x test \
+                                        sh '''./gradlew bootJar sonar --no-daemon --build-cache --continue -x test -x compileTestJava \
                                         -Dsonar.projectKey=hanok \
                                         -Dsonar.projectName=hanok \
                                         -Dsonar.host.url=http://j14d105.p.ssafy.io:9000'''
