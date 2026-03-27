@@ -6,6 +6,7 @@ import { usePostItem } from '@/api/hooks/usePostItem';
 import CustomSelect from '@/components/common/CustomSelect';
 import { ITEM_CONDITION_OPTIONS } from '@/constants/itemCondition';
 import type { Product } from '@/types';
+import { useToast } from '@/hooks/useToast';
 import { getUploadErrorMessage } from '@/utils/getUploadErrorMessage';
 
 import ProductImageUploader from './productRegistration/ProductImageUploader';
@@ -30,6 +31,7 @@ type ProductRegistrationModalContentProps = Omit<ProductRegistrationModalProps, 
 
 function ProductRegistrationModalContent({ onClose, onSuccess, initialData }: ProductRegistrationModalContentProps) {
   const initialForm = useMemo(() => getInitialFormState(initialData), [initialData]);
+  const { showToast } = useToast();
   const { mutateAsync: createItem, isPending: isCreating } = usePostItem();
   const { mutateAsync: updateItem, isPending: isUpdating } = usePatchItem();
   const isPending = isCreating || isUpdating;
@@ -53,7 +55,7 @@ function ProductRegistrationModalContent({ onClose, onSuccess, initialData }: Pr
     };
   }, [newImagePreviews]);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) {
       return;
     }
@@ -66,7 +68,10 @@ function ProductRegistrationModalContent({ onClose, onSuccess, initialData }: Pr
       return;
     }
 
-    setImages((prev) => [...prev, ...newFiles]);
+    const { optimizeImages } = await import('@/utils/imageOptimizer');
+    const optimized = await optimizeImages(newFiles);
+
+    setImages((prev) => [...prev, ...optimized]);
     setError('');
     event.target.value = '';
   };
@@ -131,6 +136,7 @@ function ProductRegistrationModalContent({ onClose, onSuccess, initialData }: Pr
         });
       }
 
+      showToast({ type: 'success', message: initialData ? '상품이 수정되었습니다.' : '상품이 등록되었습니다.' });
       onSuccess?.();
       onClose();
     } catch (submitError) {
