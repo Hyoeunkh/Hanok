@@ -38,6 +38,7 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
     isMicOn,
     isCameraOn,
     isRemoteAudioMuted,
+    micLevel,
   } = livekit;
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'items' | 'chat' | 'auction'>('chat');
@@ -83,6 +84,7 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
           streamTitle={stream.streamTitle}
           isLive={stream.isStreamLive}
           startedAt={stream.liveStartedAt ?? stream.activeStreamEnter?.createdAt ?? null}
+          isSeller={stream.isSeller}
           showEndButton={stream.isSeller && stream.isStreamLive}
           isEndDisabled={auction.isAuctionInProgress}
           isEnding={modal.postEndStreamIsPending}
@@ -245,6 +247,7 @@ export default function MobileLayout({ stream, auction, livekit, modal, navigate
             toggleCamera={toggleCamera}
             isMicOn={isMicOn}
             isCameraOn={isCameraOn}
+            micLevel={micLevel}
           />
         ) : (
           <BuyerControlBar

@@ -98,10 +98,15 @@ export default function BuyerControlBar({
               {BUYER_AUCTION_TYPE_LABELS[auctionType]}
             </div>
             {auctionType === 'UNIQUE_TOP' && uniqueBidSync?.bidRange ? (
-              <div className="rounded-full border border-white/8 bg-surface/75 px-4 py-3 text-price-sm font-bold tabular-nums text-neutral-300 backdrop-blur-md">
-                입찰 범위 {uniqueBidSync.bidRange.minPrice.toLocaleString()} ~{' '}
-                {uniqueBidSync.bidRange.maxPrice.toLocaleString()}원
-              </div>
+              <>
+                <div className="rounded-full border border-white/8 bg-surface/75 px-4 py-3 text-price-sm font-bold tabular-nums text-neutral-300 backdrop-blur-md">
+                  입찰 범위 {uniqueBidSync.bidRange.minPrice.toLocaleString()} ~{' '}
+                  {uniqueBidSync.bidRange.maxPrice.toLocaleString()}원
+                </div>
+                <div className="rounded-full border border-white/8 bg-surface/75 px-4 py-3 text-price-sm font-bold text-neutral-300 backdrop-blur-md">
+                  중복되지 않는 최고가를 제시하세요
+                </div>
+              </>
             ) : null}
           </div>
         ) : null}
@@ -115,8 +120,8 @@ export default function BuyerControlBar({
             placement={variant === 'inline' ? 'top' : 'left'}
           />
 
-          <div className="mx-4 flex min-h-[88px] flex-1">
-            <div className="flex min-h-[88px] flex-1 flex-col gap-1.5 rounded-2xl bg-surface/80 px-4 py-2">
+          <div className="mx-4 flex h-[120px] flex-1 overflow-hidden">
+            <div className="flex flex-1 flex-col gap-1.5 overflow-hidden rounded-2xl bg-surface/80 px-4 py-2">
               {bid.visibleAuctionEndPhase !== null ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2">
                   {bid.visibleAuctionEndPhase === 'ended' ? (
@@ -171,7 +176,7 @@ export default function BuyerControlBar({
             </div>
           </div>
 
-          <div className="flex h-[88px] flex-col justify-center gap-1.5 rounded-2xl bg-surface/80 px-2">
+          <div className="flex h-[120px] flex-col justify-center gap-1.5 rounded-2xl bg-surface/80 px-2">
             <button
               type="button"
               className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-400 transition hover:bg-warm/10 hover:text-neutral-200"

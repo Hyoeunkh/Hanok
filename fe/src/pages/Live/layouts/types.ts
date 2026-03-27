@@ -56,6 +56,7 @@ export interface LiveKitProps {
   isMicOn: boolean;
   isCameraOn: boolean;
   isRemoteAudioMuted: boolean;
+  micLevel: number;
 }
 
 export interface ChatProps {
