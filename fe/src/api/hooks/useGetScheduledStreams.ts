@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getFetchInstance } from '@/api/instance';
 import type { ScheduledStreamsResponse } from '@/types';
 
-export const useGetScheduledStreams = (page = 0, size = 8) => {
+export const useGetScheduledStreams = (page = 0, size = 8, enabled = true) => {
   return useQuery<ScheduledStreamsResponse, Error>({
     queryKey: ['scheduled-streams', page, size],
     queryFn: async () => {
@@ -12,5 +12,6 @@ export const useGetScheduledStreams = (page = 0, size = 8) => {
       );
       return res.data;
     },
+    enabled,
   });
 };
