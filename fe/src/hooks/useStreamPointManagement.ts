@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 import { useGetAccount } from '@/api/hooks/useGetAccount';
 import { completeWalletCharge } from '@/api/hooks/usePostCompleteWalletCharge';
@@ -11,10 +12,12 @@ import { useToast } from '@/hooks/useToast';
 import { requestPointChargePayment } from '@/utils/requestPointChargePayment';
 
 export default function useStreamPointManagement() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { data: wallet } = useGetWallet();
-  const { data: account } = useGetAccount();
+  const isLoggedIn = Boolean(localStorage.getItem('accessToken'));
+  const { data: wallet } = useGetWallet(isLoggedIn);
+  const { data: account } = useGetAccount(isLoggedIn);
 
   const balance = wallet?.balance ?? 0;
   const registeredWithdrawAccount = account ? `${account.bankName} ${account.accountNum}(등록됨)` : '';
@@ -36,6 +39,19 @@ export default function useStreamPointManagement() {
   };
 
   const openChargeModal = () => {
+    if (!isLoggedIn) {
+      navigate('/login', {
+        replace: true,
+        state: {
+          toast: {
+            type: 'warning',
+            message: '로그인이 필요합니다.',
+          },
+        },
+      });
+      return;
+    }
+
     setPointModalType('charge');
     setPointAmountInput('');
     setIsDirectInputMode(false);
@@ -89,6 +105,19 @@ export default function useStreamPointManagement() {
   };
 
   const handlePointAction = async () => {
+    if (!isLoggedIn) {
+      navigate('/login', {
+        replace: true,
+        state: {
+          toast: {
+            type: 'warning',
+            message: '로그인이 필요합니다.',
+          },
+        },
+      });
+      return;
+    }
+
     if (numericPointAmount <= 0 || isPointSubmitting) {
       return;
     }

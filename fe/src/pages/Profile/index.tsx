@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+﻿import { useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useGetSellerProfile } from '@/api/hooks/useGetSellerProfile';
 import { useGetSellerReputation } from '@/api/hooks/useGetSellerReputation';
@@ -135,7 +135,9 @@ export default function ProfilePage() {
   const { data: noticeDetail } = useGetSellerNoticeDetail(sellerId, activeNoticeId);
 
   const [selectedStream, setSelectedStream] = useState<ScheduledStream | null>(null);
+  const [pendingLinkedStreamText, setPendingLinkedStreamText] = useState<string | null>(null);
   const [streamDropdownOpen, setStreamDropdownOpen] = useState(false);
+  const [shouldLoadScheduledStreams, setShouldLoadScheduledStreams] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -155,8 +157,19 @@ export default function ProfilePage() {
       document.removeEventListener('mousedown', handleClick);
     };
   }, [streamDropdownOpen]);
-  const { data: scheduledStreamsData } = useGetScheduledStreams(0, 50);
-  const scheduledStreamOptions = scheduledStreamsData?.streams ?? [];
+  const mySellerId = meData?.sellerId ?? mySellerStatus?.sellerId ?? null;
+  const isMyProfile = mySellerId != null && mySellerId === sellerId;
+  const isOwner = mySellerStatus?.isSeller || true;
+  const shouldFetchScheduledStreams = isMyProfile && shouldLoadScheduledStreams;
+  const { data: scheduledStreamsData, isLoading: isScheduledStreamsLoading } = useGetScheduledStreams(
+    0,
+    50,
+    shouldFetchScheduledStreams,
+  );
+  const scheduledStreamOptions = useMemo(
+    () => scheduledStreamsData?.streams ?? [],
+    [scheduledStreamsData?.streams],
+  );
 
   const { mutate: postFollow, isPending: isFollowPending } = usePostFollow();
 
@@ -168,9 +181,15 @@ export default function ProfilePage() {
     setIsFollowing(data?.isFollowed ?? false);
   }, [data?.isFollowed, sellerId]);
 
-  const mySellerId = meData?.sellerId ?? mySellerStatus?.sellerId ?? null;
-  const isMyProfile = mySellerId != null && mySellerId === sellerId;
-  const isOwner = mySellerStatus?.isSeller || true;
+  React.useEffect(() => {
+    if (!pendingLinkedStreamText || scheduledStreamOptions.length === 0) {
+      return;
+    }
+
+    const matched = scheduledStreamOptions.find((stream) => pendingLinkedStreamText.includes(stream.title)) ?? null;
+    setSelectedStream(matched);
+    setPendingLinkedStreamText(null);
+  }, [pendingLinkedStreamText, scheduledStreamOptions]);
 
   const handleFollowToggle = () => {
     postFollow(
@@ -182,14 +201,17 @@ export default function ProfilePage() {
   };
 
   const handleOpenCreateModal = () => {
+    setShouldLoadScheduledStreams(true);
     setModalMode('create');
     setNoticeTitle('');
     setNoticeContent('');
     setSelectedStream(null);
+    setPendingLinkedStreamText(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (postId: number, title: string, content: string) => {
+    setShouldLoadScheduledStreams(true);
     setModalMode('edit');
     setEditPostId(postId);
     setNoticeTitle(title);
@@ -200,9 +222,11 @@ export default function ProfilePage() {
       const infoText = streamMatch[1].trim();
       const matched = scheduledStreamOptions.find((s) => infoText.includes(s.title)) ?? null;
       setSelectedStream(matched);
+      setPendingLinkedStreamText(matched ? null : infoText);
     } else {
       setNoticeContent(content);
       setSelectedStream(null);
+      setPendingLinkedStreamText(null);
     }
 
     setIsModalOpen(true);
@@ -605,7 +629,13 @@ export default function ProfilePage() {
                     onClick={() => setStreamDropdownOpen(!streamDropdownOpen)}
                     className="w-full box-border bg-background text-neutral-500 border border-neutral-800 rounded-lg p-4 text-subtitle-lg outline-none cursor-pointer flex items-center justify-between hover:border-neutral-700 transition-colors"
                   >
-                    <span>{scheduledStreamOptions.length > 0 ? '방송을 선택하세요' : '예약된 방송이 없습니다'}</span>
+                    <span>
+                      {isScheduledStreamsLoading
+                        ? '예약된 방송을 불러오는 중'
+                        : scheduledStreamOptions.length > 0
+                          ? '방송을 선택하세요'
+                          : '예약된 방송이 없습니다'}
+                    </span>
                     <FiChevronDown
                       size={16}
                       className={`text-neutral-500 transition-transform ${streamDropdownOpen ? 'rotate-180' : ''}`}
