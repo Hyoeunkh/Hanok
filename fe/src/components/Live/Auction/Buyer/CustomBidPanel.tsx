@@ -10,7 +10,7 @@ interface Props {
 
 export default function CustomBidPanel({ bid }: Props) {
   return (
-    <div className="flex min-h-[74px] min-w-0 flex-1 items-stretch gap-1">
+    <div className="flex min-w-0 flex-1 items-stretch gap-1">
       <div className="flex min-w-0 flex-[1.3] self-stretch flex-col gap-1.5">
         <div className="flex rounded-lg bg-neutral-900 p-0.5">
           {CUSTOM_UNIT_OPTIONS.map((option) => (

@@ -8,7 +8,7 @@ interface Props {
 
 export default function QuickBidPanel({ bid }: Props) {
   return (
-    <div className="flex min-h-[74px] min-w-0 flex-1 items-stretch gap-2">
+    <div className="flex min-w-0 flex-1 items-stretch gap-2">
       <div className="flex min-w-0 flex-[0.72] self-stretch flex-col items-center justify-center rounded-lg bg-neutral-900 px-2.5 py-1">
         <div className="flex min-w-0 items-center gap-4 whitespace-nowrap">
           <span className="shrink-0 text-caption text-neutral-500">잔고</span>

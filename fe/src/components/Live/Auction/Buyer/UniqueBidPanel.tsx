@@ -7,7 +7,7 @@ interface Props {
 
 export default function UniqueBidPanel({ bid }: Props) {
   return (
-    <div className="flex min-h-[74px] flex-1 items-stretch gap-2">
+    <div className="flex min-w-0 flex-1 items-stretch gap-2">
       <div className="flex w-[65%] self-stretch flex-col gap-1.5">
         <div className="flex min-h-[28px] items-center justify-center rounded-lg bg-neutral-900 px-3 py-1">
           <div className="flex items-center gap-2">
@@ -30,6 +30,12 @@ export default function UniqueBidPanel({ bid }: Props) {
             value={formatNumericInputValue(bid.freeInput)}
             onChange={(event) => bid.handleFreeInput(event.target.value)}
             onBlur={bid.handleUniqueInputBlur}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                if (!bid.isBidDisabled) bid.handleBidPlace();
+              }
+            }}
             placeholder="입찰가 입력"
             disabled={bid.hasPlacedUniqueBid}
             className="min-w-0 flex-1 bg-transparent text-center text-price-md font-black tabular-nums text-neutral-100 outline-none placeholder:text-neutral-600 disabled:cursor-not-allowed disabled:text-neutral-500"
@@ -46,15 +52,15 @@ export default function UniqueBidPanel({ bid }: Props) {
         <div className="flex flex-1 flex-col items-center gap-0.5">
           <span className="text-lg font-black">{bid.hasPlacedUniqueBid ? '입찰 완료' : '입찰'}</span>
           {bid.freeInput ? (
-            <span className="text-caption font-bold tabular-nums text-gold-light">
+            <span className="text-caption font-bold tabular-nums text-white/80">
               {bid.effectiveBidAmount.toLocaleString()}원
             </span>
           ) : null}
-          <span className="text-caption font-bold text-gold-light">
+          <span className="text-caption font-bold text-white/70">
             {bid.hasPlacedUniqueBid ? '1회 입찰 완료' : '1회 입찰 가능'}
           </span>
         </div>
-        <span className="rounded bg-warm/15 px-1.5 py-2.5 text-caption font-bold text-gold-light">ENTER</span>
+        <span className="rounded bg-black/20 px-1.5 py-2.5 text-caption font-bold text-white/90">ENTER</span>
       </button>
     </div>
   );
