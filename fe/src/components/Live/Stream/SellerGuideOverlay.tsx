@@ -37,7 +37,7 @@ const guideSteps = [
 ] as const;
 
 export default function SellerGuideOverlay({
-  defaultOpen = true,
+  defaultOpen = false,
   forceOpen = false,
   panelRef,
   panelClassName,
