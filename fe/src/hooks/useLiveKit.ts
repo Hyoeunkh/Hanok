@@ -27,6 +27,7 @@ interface UseLiveKitReturn {
   isCameraOn: boolean;
   isRemoteAudioMuted: boolean;
   viewerCount: number;
+  micLevel: number;
 }
 
 export function useLiveKit({ serverUrl, token, isHost }: UseLiveKitOptions): UseLiveKitReturn {
@@ -35,6 +36,7 @@ export function useLiveKit({ serverUrl, token, isHost }: UseLiveKitOptions): Use
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isRemoteAudioMuted, setIsRemoteAudioMuted] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
+  const [micLevel, setMicLevel] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const bgVideoRef = useRef<HTMLVideoElement | null>(null);
   const roomRef = useRef<Room | null>(null);
@@ -43,6 +45,9 @@ export function useLiveKit({ serverUrl, token, isHost }: UseLiveKitOptions): Use
   const togglingCameraRef = useRef(false);
   const audioElementsRef = useRef<Set<HTMLMediaElement>>(new Set());
   const isRemoteAudioMutedRef = useRef(false);
+  const micAudioCtxRef = useRef<AudioContext | null>(null);
+  const micAnalyserRef = useRef<AnalyserNode | null>(null);
+  const micRafRef = useRef<number>(0);
   isHostRef.current = isHost;
 
   const syncViewerCount = useCallback((room: Room) => {
@@ -162,6 +167,30 @@ export function useLiveKit({ serverUrl, token, isHost }: UseLiveKitOptions): Use
           }
           setIsMicOn(true);
           setIsCameraOn(true);
+
+          // 마이크 트랙에서 오디오 레벨 분석 시작
+          const micPub = room.localParticipant.getTrackPublication(Track.Source.Microphone);
+          const micTrack = micPub?.track?.mediaStreamTrack;
+          if (micTrack) {
+            const audioCtx = new AudioContext();
+            const source = audioCtx.createMediaStreamSource(new MediaStream([micTrack]));
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            analyser.smoothingTimeConstant = 0.8;
+            source.connect(analyser);
+            micAudioCtxRef.current = audioCtx;
+            micAnalyserRef.current = analyser;
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const tick = () => {
+              analyser.getByteFrequencyData(dataArray);
+              const sum = dataArray.reduce((a, b) => a + b, 0);
+              const avg = sum / dataArray.length;
+              setMicLevel(Math.min(avg / 80, 1));
+              micRafRef.current = requestAnimationFrame(tick);
+            };
+            tick();
+          }
         }
       } catch (err) {
         if (cancelled) return;
@@ -182,6 +211,11 @@ export function useLiveKit({ serverUrl, token, isHost }: UseLiveKitOptions): Use
       room.disconnect();
       roomRef.current = null;
       setViewerCount(0);
+      cancelAnimationFrame(micRafRef.current);
+      micAudioCtxRef.current?.close();
+      micAudioCtxRef.current = null;
+      micAnalyserRef.current = null;
+      setMicLevel(0);
     };
   }, [serverUrl, token, attachTrackToVideo, syncViewerCount]);
 
@@ -240,5 +274,6 @@ export function useLiveKit({ serverUrl, token, isHost }: UseLiveKitOptions): Use
     isCameraOn,
     isRemoteAudioMuted,
     viewerCount,
+    micLevel,
   };
 }

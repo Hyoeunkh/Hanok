@@ -7,6 +7,7 @@ interface Props {
   streamTitle: string;
   isLive: boolean;
   startedAt: string | null;
+  isSeller?: boolean;
   showEndButton?: boolean;
   isEndDisabled?: boolean;
   isEnding?: boolean;
@@ -49,6 +50,7 @@ export default function LiveHeader({
   streamTitle,
   isLive,
   startedAt,
+  isSeller = false,
   showEndButton = false,
   isEndDisabled = false,
   isEnding = false,
@@ -85,11 +87,11 @@ export default function LiveHeader({
       </div>
 
       <div className="flex h-full shrink-0 items-center gap-4 px-2">
-        {isLive ? (
+        {isSeller && (isLive ? (
           <span className={`font-mono-num tabular-nums text-neutral-400 ${compact ? 'text-xs' : 'text-base'}`}>{formatElapsed(elapsed)}</span>
         ) : (
           <span className={`text-neutral-600 ${compact ? 'text-xs' : 'text-base'}`}>방송 대기중</span>
-        )}
+        ))}
         {showEndButton && (
           <button
             type="button"
