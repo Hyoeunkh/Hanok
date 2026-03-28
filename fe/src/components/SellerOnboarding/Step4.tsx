@@ -106,49 +106,49 @@ export default function Step4({
         <div className="rounded-xl border border-neutral-800 overflow-hidden divide-y divide-neutral-800">
           {/* YouTube */}
           <div className="flex items-center h-14 focus-within:bg-neutral-900 transition-colors group">
-            <div className="flex items-center gap-2 px-4 w-44 shrink-0">
+            <div className="flex items-center gap-2 px-4 w-12 shrink-0">
               <FaYoutube className="text-red-500 text-base shrink-0" />
-              <span className="text-sm text-neutral-400 font-medium">YouTube</span>
             </div>
             <div className="w-px h-5 bg-neutral-700 shrink-0" />
+            <span className="pl-4 text-sm text-neutral-500 shrink-0">{SOCIAL_PREFIX.youtube}</span>
             <input
               type="text"
               value={youtubeLink}
               onChange={(e) => setYoutubeLink(e.target.value)}
-              placeholder="예) HanokAuction"
-              className="flex-1 bg-transparent text-white px-4 text-sm outline-none font-[inherit] placeholder:text-neutral-600"
+              placeholder="HanokAuction"
+              className="flex-1 bg-transparent text-white px-1 text-sm outline-none font-[inherit] placeholder:text-neutral-600"
             />
           </div>
 
           {/* Instagram */}
           <div className="flex items-center h-14 focus-within:bg-neutral-900 transition-colors group">
-            <div className="flex items-center gap-2 px-4 w-44 shrink-0">
+            <div className="flex items-center gap-2 px-4 w-12 shrink-0">
               <FaInstagram className="text-pink-500 text-base shrink-0" />
-              <span className="text-sm text-neutral-400 font-medium">Instagram</span>
             </div>
             <div className="w-px h-5 bg-neutral-700 shrink-0" />
+            <span className="pl-4 text-sm text-neutral-500 shrink-0">{SOCIAL_PREFIX.instagram}</span>
             <input
               type="text"
               value={instaLink}
               onChange={(e) => setInstaLink(e.target.value)}
-              placeholder="예) hanok_official"
-              className="flex-1 bg-transparent text-white px-4 text-sm outline-none font-[inherit] placeholder:text-neutral-600"
+              placeholder="hanok_official"
+              className="flex-1 bg-transparent text-white px-1 text-sm outline-none font-[inherit] placeholder:text-neutral-600"
             />
           </div>
 
           {/* TikTok */}
           <div className="flex items-center h-14 focus-within:bg-neutral-900 transition-colors group">
-            <div className="flex items-center gap-2 px-4 w-44 shrink-0">
+            <div className="flex items-center gap-2 px-4 w-12 shrink-0">
               <FaTiktok className="text-neutral-300 text-base shrink-0" />
-              <span className="text-sm text-neutral-400 font-medium">TikTok</span>
             </div>
             <div className="w-px h-5 bg-neutral-700 shrink-0" />
+            <span className="pl-4 text-sm text-neutral-500 shrink-0">{SOCIAL_PREFIX.tiktok}</span>
             <input
               type="text"
               value={tictokLink}
               onChange={(e) => setTictokLink(e.target.value)}
-              placeholder="예) hanok_official"
-              className="flex-1 bg-transparent text-white px-4 text-sm outline-none font-[inherit] placeholder:text-neutral-600"
+              placeholder="hanok_official"
+              className="flex-1 bg-transparent text-white px-1 text-sm outline-none font-[inherit] placeholder:text-neutral-600"
             />
           </div>
         </div>
