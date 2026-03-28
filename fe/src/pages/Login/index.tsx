@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { FiX } from 'react-icons/fi';
 
 import { login } from '@/api/hooks/usePostLogin';
 import { getMe } from '@/api/hooks/useGetMe';
 import Button from '@/components/common/Button';
+import { useToast } from '@/hooks/useToast';
 
 type ErrorField = 'email' | 'password' | '';
 type FormError = { message: string; field: ErrorField };
 const EMPTY_ERROR: FormError = { message: '', field: '' };
+type LoginLocationState = {
+  toast?: {
+    type?: 'success' | 'error' | 'warning' | 'info';
+    title?: string;
+    message: string;
+    duration?: number;
+  };
+} | null;
 
 const INPUT_BASE =
   'flex items-center border rounded-(--radius-control) h-[52px] px-3 bg-transparent focus-within:border-primary transition-colors';
 const INPUT_ERROR = 'border-accent-light/60 bg-accent-muted/10';
 const INPUT_NORMAL = 'border-neutral-800';
-const INPUT_CLASS = 'flex-1 bg-transparent text-[15px] text-neutral-100 px-2 focus:outline-none placeholder-neutral-600';
+const INPUT_CLASS =
+  'flex-1 bg-transparent text-[15px] text-neutral-100 px-2 focus:outline-none placeholder-neutral-600';
 const ICON_CLASS = 'w-5 h-5 text-neutral-600';
 
 function inputContainerClass(field: ErrorField, errorField: ErrorField) {
@@ -24,13 +34,27 @@ function inputContainerClass(field: ErrorField, errorField: ErrorField) {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState(() => localStorage.getItem('savedEmail') ?? '');
   const [password, setPassword] = useState('');
   const [rememberEmail, setRememberEmail] = useState(() => !!localStorage.getItem('savedEmail'));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<FormError>(EMPTY_ERROR);
+  const locationState = location.state as LoginLocationState;
+
+  useEffect(() => {
+    const toast = locationState?.toast;
+
+    if (!toast) {
+      return;
+    }
+
+    showToast(toast);
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+  }, [location.pathname, location.search, locationState, navigate, showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +69,7 @@ export default function LoginPage() {
       return;
     }
     if (!email.split('@')[1]?.includes('.')) {
-      setError({ message: "도메인이 올바르지 않습니다.\n(예: example@hanok.com)", field: 'email' });
+      setError({ message: '도메인이 올바르지 않습니다.\n(예: example@hanok.com)', field: 'email' });
       return;
     }
     if (!password) {
@@ -81,18 +105,14 @@ export default function LoginPage() {
   return (
     <div className="flex w-full flex-1 items-center justify-center px-5 py-12 sm:px-6">
       <div className="w-full max-w-[440px]">
-        <div className="mb-8 text-center">
-          <h1 className="text-[28px] font-bold text-neutral-100 sm:text-[32px]">로그인</h1>
-          <p className="mt-3 text-[14px] text-neutral-400 sm:text-[15px]">한옥의 경매에 참여해 보세요!</p>
+        <div className="mb-6 text-center">
+          <h1 className="text-[32px] font-bold text-neutral-100">로그인</h1>
+          <p className="mt-2 text-h3 text-neutral-400">한옥의 경매에 참여해 보세요!</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="flex flex-col gap-5"
-        >
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="ml-1 text-[13px] font-medium text-neutral-300">이메일</label>
+            <label className="ml-1 text-body-md font-medium text-neutral-300">이메일</label>
             <div className={inputContainerClass('email', error.field)}>
               <svg className={ICON_CLASS} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -124,7 +144,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="ml-1 text-[13px] font-medium text-neutral-300">비밀번호</label>
+            <label className="ml-1 text-body-md font-medium text-neutral-300">비밀번호</label>
             <div className={inputContainerClass('password', error.field)}>
               <svg className={ICON_CLASS} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -172,7 +192,7 @@ export default function LoginPage() {
                 </svg>
               )}
             </div>
-            <span className="text-sm text-neutral-300">이메일 기억하기</span>
+            <span className="text-body-md text-neutral-300">이메일 기억하기</span>
           </label>
 
           {error.message && (
@@ -185,9 +205,9 @@ export default function LoginPage() {
             {isLoading ? '로그인 중...' : '로그인'}
           </Button>
 
-          <p className="mt-1 flex items-center justify-center gap-2 text-center text-[13px] text-neutral-500">
+          <p className="mt-1 flex items-center justify-center gap-2 text-center text-h4 text-neutral-500">
             아직 계정이 없으신가요?
-            <button type="button" onClick={() => navigate('/signup')} className="btn-primary-ghost text-[13px]">
+            <button type="button" onClick={() => navigate('/signup')} className="btn-primary-ghost font-semibold">
               회원가입
             </button>
           </p>
