@@ -1,12 +1,11 @@
 import { Suspense, lazy } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import Loading from '@/components/common/layouts/Loading';
 import MainLayout from '@/components/common/layouts/MainLayout';
 import AdminOnlyRoute from '@/routes/AdminOnlyRoute';
 import SellerOnlyRoute from '@/routes/SellerOnlyRoute';
 
-import LandingPage from './pages/Landing';
 import MainPage from './pages/Main';
 import ProfilePage from './pages/Profile';
 import SellerOnboardingPage from './pages/SellerOnboarding';
@@ -28,7 +27,7 @@ function App() {
   return (
     <Suspense fallback={<Loading size={32} />}>
       <Routes>
-        <Route index element={<LandingPage />} />
+        <Route index element={<Navigate to="/main" replace />} />
 
         <Route path="live/:id" element={<LivePage />} />
 
