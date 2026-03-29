@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { FaChevronLeft, FaChevronRight, FaImage } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
+import Logo from '@/assets/Logo.png';
 import { MAIN_CATEGORY_ITEMS } from '@/components/Main/mainCategoryItems';
 import EditDeleteActions from '@/components/common/EditDeleteActions';
 import { getItemConditionLabel } from '@/constants/itemCondition';
@@ -37,6 +38,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const currentStatus = statusClassMap[product.status] || { label: product.status, bg: 'bg-neutral-600' };
   const images = product.images.filter(Boolean);
+  const displayImages = images.length > 0 ? images : [Logo];
   const tagText = product.tags.map((tag) => `#${tag}`).join(' ');
   const showActionButtons = product.status === 'READY' || product.status === 'SCHEDULED';
 
@@ -61,9 +63,13 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
           {currentStatus.label}
         </div>
 
-        {images.length > 0 ? (
+        {
           <>
-            <img src={images[currentIndex]} alt={product.name} className="h-full w-full object-cover" />
+            <img
+              src={displayImages[currentIndex]}
+              alt={product.name}
+              className={`h-full w-full ${images.length > 0 ? 'object-cover' : 'object-contain p-4'}`}
+            />
             {images.length > 1 && (
               <>
                 <button
@@ -91,12 +97,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
               </>
             )}
           </>
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center bg-neutral-800 text-[13px] text-neutral-500">
-            <FaImage size={28} className="mb-2 opacity-50" />
-            이미지 없음
-          </div>
-        )}
+        }
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
