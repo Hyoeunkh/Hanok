@@ -56,7 +56,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
 
   return (
     <div className="mb-4 flex items-center justify-center gap-6 rounded-2xl border border-neutral-800 bg-surface-elevated p-6 transition-colors hover:bg-surface">
-      <div className="group relative h-[160px] w-[160px] shrink-0 overflow-hidden rounded-xl bg-white">
+      <div className="group relative h-[160px] w-[160px] shrink-0 overflow-hidden rounded-xl bg-neutral-900">
         <div
           className={`absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-white ${currentStatus.bg}`}
         >
@@ -68,7 +68,7 @@ export default function ProductCard({ product, onEdit, onDelete }: ProductCardPr
             <img
               src={displayImages[currentIndex]}
               alt={product.name}
-              className={`h-full w-full ${images.length > 0 ? 'object-cover' : 'object-contain p-4'}`}
+              className={`h-full w-full ${images.length > 0 ? 'object-cover' : 'object-contain p-5'}`}
             />
             {images.length > 1 && (
               <>
