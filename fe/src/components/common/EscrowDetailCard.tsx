@@ -6,6 +6,7 @@ import DeliveryTracker from '@/components/common/DeliveryTracker';
 import type { EscrowDetailResponse } from '@/types';
 import { formatDateTime } from '@/utils/formatDateTime';
 import { formatPrice } from '@/utils/formatPrice';
+import Logo from '@/assets/Logo.png';
 
 type EscrowDetailCardProps = {
   detail: EscrowDetailResponse;
@@ -47,15 +48,11 @@ export default function EscrowDetailCard({
 
       <div className="mb-8 flex gap-5">
         <div className="h-[120px] w-[120px] shrink-0 overflow-hidden rounded-2xl bg-neutral-800">
-          {detail.winningInfo.image ? (
-            <img
-              src={detail.winningInfo.image}
-              alt={detail.winningInfo.itemName}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-neutral-500">이미지 준비중</div>
-          )}
+          <img
+            src={detail.winningInfo.image || Logo}
+            alt={detail.winningInfo.itemName}
+            className={`h-full w-full ${detail.winningInfo.image ? 'object-cover' : 'object-contain p-3'}`}
+          />
         </div>
         <div className="flex flex-1 flex-col justify-center">
           <p className="mb-2 break-keep text-xl leading-[1.3] font-bold text-neutral-100">
