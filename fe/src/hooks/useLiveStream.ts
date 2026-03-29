@@ -136,6 +136,8 @@ const isUniqueAlreadyBidError = (payload?: StompErrorPayload) => payload?.code =
 const TIMER_SNAPSHOT_TOLERANCE_MS = 1000;
 const UNIQUE_WINNER_RESOLVE_DELAY_MS = 250;
 
+type SyncedTimerMode = 'auto' | 'remainingSnapshot';
+
 export type WinnerInfoState = {
   payload: BidWinnerPayload;
   itemCond: ItemSyncItem['itemCondition'] | '';
@@ -147,13 +149,14 @@ export type UniqueAuctionResultState = {
   winnerInfo: WinnerInfoState | null;
 };
 
-const createSyncedTimer = (timer: StreamTimerPayload): SyncedAuctionTimer => {
+const createSyncedTimer = (timer: StreamTimerPayload, mode: SyncedTimerMode = 'auto'): SyncedAuctionTimer => {
   const serverNowMs = Date.parse(timer.serverNow);
   const serverStartedAtMs = Date.parse(timer.serverStartedAt);
   const isRemainingSnapshot =
-    !Number.isNaN(serverNowMs) &&
-    !Number.isNaN(serverStartedAtMs) &&
-    serverNowMs - serverStartedAtMs > timer.durationSeconds * 1000 + TIMER_SNAPSHOT_TOLERANCE_MS;
+    mode === 'remainingSnapshot' ||
+    (!Number.isNaN(serverNowMs) &&
+      !Number.isNaN(serverStartedAtMs) &&
+      serverNowMs - serverStartedAtMs > timer.durationSeconds * 1000 + TIMER_SNAPSHOT_TOLERANCE_MS);
 
   return {
     ...timer,
@@ -372,7 +375,7 @@ export function useLiveStream(
       setBidSync(payload ?? null);
       const snipingAge = Date.now() - snipingTimerSetAtRef.current;
       if (payload?.timer && snipingAge > 2000) {
-        setTimer(createSyncedTimer(payload.timer));
+        setTimer(createSyncedTimer(payload.timer, 'remainingSnapshot'));
       }
     };
 
