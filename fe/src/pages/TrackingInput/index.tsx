@@ -22,6 +22,7 @@ import { formatDateTime } from '@/utils/formatDateTime';
 import { formatPrice } from '@/utils/formatPrice';
 import { useToast } from '@/hooks/useToast';
 import { sellerSidebarItems } from '@/constants/sidebar';
+import Logo from '@/assets/Logo.png';
 
 function CompletedItemRow({
   item,
@@ -46,13 +47,11 @@ function CompletedItemRow({
       >
         <div className="flex items-center gap-5">
           <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-            {item.image ? (
-              <img src={item.image} alt={item.itemName} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-neutral-500 text-xs">
-                이미지 준비중
-              </div>
-            )}
+            <img
+              src={item.image || Logo}
+              alt={item.itemName}
+              className={`w-full h-full ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+            />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-gold-light text-xs font-bold">{getEscrowStateUI(item.escrowStatus).label}</span>
@@ -250,13 +249,11 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-                        {item.image ? (
-                          <img src={item.image} alt={item.itemName} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-neutral-500 text-xs">
-                            이미지 준비중
-                          </div>
-                        )}
+                        <img
+                          src={item.image || Logo}
+                          alt={item.itemName}
+                          className={`w-full h-full ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+                        />
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-lg font-bold text-neutral-100">{item.itemName}</span>
@@ -310,13 +307,11 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-                        {item.image ? (
-                          <img src={item.image} alt={item.itemName} className="w-full h-full object-cover grayscale" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-neutral-500 text-xs">
-                            이미지 준비중
-                          </div>
-                        )}
+                        <img
+                          src={item.image || Logo}
+                          alt={item.itemName}
+                          className={`w-full h-full grayscale ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+                        />
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-neutral-500 text-xs font-bold">거래 취소</span>

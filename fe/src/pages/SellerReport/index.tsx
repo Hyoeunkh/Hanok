@@ -20,6 +20,7 @@ import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import { getCategoryLabel } from '@/constants/category';
 import type { TopHotItem } from '@/types';
 import { sellerSidebarItems } from '@/constants/sidebar';
+import Logo from '@/assets/Logo.png';
 
 const formatPrice = (price: number) => price.toLocaleString('ko-KR') + '원';
 
@@ -267,9 +268,9 @@ export default function SellerReportPage() {
                 >
                   <span className="text-gold-light font-bold text-lg w-8 text-center">{idx + 1}</span>
                   <img
-                    src={item.imageUrl}
+                    src={item.imageUrl || Logo}
                     alt={item.itemName}
-                    className="w-14 h-14 rounded-lg object-cover bg-neutral-700"
+                    className={`w-14 h-14 rounded-lg bg-neutral-700 ${item.imageUrl ? 'object-cover' : 'object-contain p-2'}`}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium m-0 truncate">{item.itemName}</p>
