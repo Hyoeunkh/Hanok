@@ -53,17 +53,17 @@ public class StreamReconnectService {
 
         log.info("[Stream] 판매자 연결 끊김 - streamId: {}", streamId);
 
-        // 현재 경매중인 경우, 현재 경매 남은 시간을 저장하고, 기존 ttl이 흐르던 경매 시간 데이터를 삭제
-        auctionRepository.findByStreamIdAndAuctionStatus(streamId, LIVE)
-                .ifPresent(auction -> {
-                    // 해당 상품의 redis timer 정보 저장
-                    long remainingSeconds = auctionTimerRepository.findRemainingSecondsByAuctionId(auction.getId());
-
-                    if (remainingSeconds > 0) {
-                        auctionTimerPausedRepository.save(auction.getId(), remainingSeconds); // 잔여 시간 임시 저장
-                        auctionTimerRepository.delete(auction.getId());  // 해당 상품의 redis timer key 제거 - ttl 중단
-                    }
-                });
+//        // 현재 경매중인 경우, 현재 경매 남은 시간을 저장하고, 기존 ttl이 흐르던 경매 시간 데이터를 삭제
+//        auctionRepository.findByStreamIdAndAuctionStatus(streamId, LIVE)
+//                .ifPresent(auction -> {
+//                    // 해당 상품의 redis timer 정보 저장
+//                    long remainingSeconds = auctionTimerRepository.findRemainingSecondsByAuctionId(auction.getId());
+//
+//                    if (remainingSeconds > 0) {
+//                        auctionTimerPausedRepository.save(auction.getId(), remainingSeconds); // 잔여 시간 임시 저장
+//                        auctionTimerRepository.delete(auction.getId());  // 해당 상품의 redis timer key 제거 - ttl 중단
+//                    }
+//                });
 
         // Stream 상태 PAUSED로 변경
         stream.pause();
@@ -93,17 +93,17 @@ public class StreamReconnectService {
 
         log.info("[Stream] 판매자 재연결 성공 - streamId: {}", streamId);
 
-        // 경매중이였다면 경매 시간 TTL 재설정
-        auctionRepository.findByStreamIdAndAuctionStatus(streamId, LIVE)
-                .ifPresent(auction -> {
-                    // 잔여 시간 확인
-                    Long remainingSeconds = auctionTimerPausedRepository.findByAuctionId(auction.getId()).orElse(null);
-
-                    if (remainingSeconds != null && remainingSeconds > 0) {
-                        auctionTimerRepository.save(auction.getId(), remainingSeconds); // 타이머 재설정
-                        auctionTimerPausedRepository.delete(auction.getId()); // 잔여시간 데이터 삭제
-                    }
-                });
+//        // 경매중이였다면 경매 시간 TTL 재설정
+//        auctionRepository.findByStreamIdAndAuctionStatus(streamId, LIVE)
+//                .ifPresent(auction -> {
+//                    // 잔여 시간 확인
+//                    Long remainingSeconds = auctionTimerPausedRepository.findByAuctionId(auction.getId()).orElse(null);
+//
+//                    if (remainingSeconds != null && remainingSeconds > 0) {
+//                        auctionTimerRepository.save(auction.getId(), remainingSeconds); // 타이머 재설정
+//                        auctionTimerPausedRepository.delete(auction.getId()); // 잔여시간 데이터 삭제
+//                    }
+//                });
 
         // 타이머 취소
         reconnectRedisRepository.cancelTimer(streamId);
