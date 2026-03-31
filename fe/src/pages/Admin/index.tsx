@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetWithdraws } from '@/api/hooks/useGetWithdraws';
 import { usePostWithdrawComplete } from '@/api/hooks/usePostWithdrawComplete';
+import PictureWithFallback from '@/components/common/PictureWithFallback';
 import { clearAdminRouteAuthenticated } from '@/constants/adminAccess';
 import { BANKS } from '@/constants/sellerRegister';
 import { useToast } from '@/hooks/useToast';
 import Logo from '@/assets/Logo.png';
+import LogoWebp from '@/assets/Logo.webp';
 import type { WithdrawStatus, WithdrawItem } from '@/types';
 import { formatDateTime } from '@/utils/formatDateTime';
 
@@ -64,8 +66,9 @@ export default function AdminPage() {
     <div className="min-h-screen bg-background text-white">
       {/* Admin Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between h-16 px-6 border-b border-neutral-800 bg-surface">
-        <img
-          src={Logo}
+        <PictureWithFallback
+          webpSrc={LogoWebp}
+          fallbackSrc={Logo}
           alt="Logo"
           className="h-10 w-auto object-contain brightness-0 invert sepia saturate-50 hue-rotate-[350deg]"
         />

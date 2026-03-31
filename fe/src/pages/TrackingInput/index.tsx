@@ -9,8 +9,10 @@ import { useGetEscrowsSeller } from '@/api/hooks/useGetEscrowsSeller';
 import { validateTrackingInput } from '@/api/hooks/useGetTracking';
 import { usePostTrackingInfo } from '@/api/hooks/usePostTrackingInfo';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
+import FallbackImg from '@/components/common/FallbackImg';
 import SideBar from '@/components/common/layouts/SideBar';
 import { CARRIERS } from '@/constants/sellerRegister';
+import { useEscrowActions } from '@/hooks/useEscrowActions';
 import type { EscrowItem } from '@/types';
 import {
   getEscrowStateUI,
@@ -22,7 +24,6 @@ import { formatDateTime } from '@/utils/formatDateTime';
 import { formatPrice } from '@/utils/formatPrice';
 import { useToast } from '@/hooks/useToast';
 import { sellerSidebarItems } from '@/constants/sidebar';
-import Logo from '@/assets/Logo.png';
 
 function CompletedItemRow({
   item,
@@ -47,10 +48,11 @@ function CompletedItemRow({
       >
         <div className="flex items-center gap-5">
           <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-            <img
-              src={item.image || Logo}
+            <FallbackImg
+              src={item.image}
               alt={item.itemName}
-              className={`w-full h-full ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+              className="w-full h-full object-cover"
+              fallbackClassName="w-full h-full object-contain p-2"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -130,8 +132,8 @@ export default function TrackingInput() {
   const { data: escrowsResponse } = useGetEscrowsSeller();
   const items = escrowsResponse?.data || [];
 
-  const { mutate: submitTracking } = usePostTrackingInfo();
-  const { mutate: cancelEscrow } = usePostCancelEscrow();
+  const { mutate: submitTracking, isPending: isSubmittingTracking } = usePostTrackingInfo();
+  const { mutate: cancelEscrow, isPending: isCancellingEscrow } = usePostCancelEscrow();
   const { showToast } = useToast();
 
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -156,9 +158,8 @@ export default function TrackingInput() {
   }, [showCarrierModal]);
 
   const currentSelectedItem = items.find((item) => String(item.escrowId) === activeSelectedItemId);
-  const isTrackingSubmitted = currentSelectedItem
-    ? isTrackingSubmittedEscrowState(currentSelectedItem.escrowStatus)
-    : false;
+  const escrowActions = useEscrowActions(currentSelectedItem ?? null, 'seller');
+  const isTrackingSubmitted = escrowActions.isTrackingSubmitted;
 
   const { data: detailResponse } = useGetEscrowDetail(activeSelectedItemId);
   const selectedItemDetail = detailResponse?.data;
@@ -186,7 +187,7 @@ export default function TrackingInput() {
   };
 
   const handleCancelConfirm = (cancelReason: string) => {
-    if (!activeSelectedItemId) return;
+    if (!activeSelectedItemId || !escrowActions.canCancelEscrow) return;
     const normalizedReason = cancelReason.trim();
 
     if (!normalizedReason) {
@@ -249,10 +250,11 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-                        <img
-                          src={item.image || Logo}
+                        <FallbackImg
+                          src={item.image}
                           alt={item.itemName}
-                          className={`w-full h-full ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+                          className="w-full h-full object-cover"
+                          fallbackClassName="w-full h-full object-contain p-2"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -307,10 +309,11 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-                        <img
-                          src={item.image || Logo}
+                        <FallbackImg
+                          src={item.image}
                           alt={item.itemName}
-                          className={`w-full h-full grayscale ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+                          className="w-full h-full object-cover grayscale"
+                          fallbackClassName="w-full h-full object-contain p-2 grayscale"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -343,8 +346,10 @@ export default function TrackingInput() {
                       <div className="relative w-[130px] shrink-0" ref={carrierDropdownRef}>
                         <button
                           type="button"
-                          onClick={() => activeSelectedItemId && setShowCarrierModal((prev) => !prev)}
-                          disabled={!activeSelectedItemId}
+                          onClick={() =>
+                            activeSelectedItemId && escrowActions.canSubmitTracking && setShowCarrierModal((prev) => !prev)
+                          }
+                          disabled={!activeSelectedItemId || !escrowActions.canSubmitTracking || isSubmittingTracking}
                           className="w-full h-[48px] bg-transparent border border-neutral-700 rounded-lg px-3 text-left cursor-pointer flex items-center justify-between hover:border-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <span
@@ -397,6 +402,9 @@ export default function TrackingInput() {
                       <button
                         type="button"
                         onClick={async () => {
+                          if (!escrowActions.canSubmitTracking || isSubmittingTracking) {
+                            return;
+                          }
                           if (!carrier || !trackingNumber || !activeSelectedItemId) {
                             showToast({ type: 'warning', message: '택배사와 송장 번호를 모두 입력해주세요.' });
                             return;
@@ -427,14 +435,20 @@ export default function TrackingInput() {
                             },
                           );
                         }}
-                        className="btn-primary w-[120px] h-12 rounded-lg text-base font-bold cursor-pointer"
+                        disabled={!escrowActions.canSubmitTracking || isSubmittingTracking}
+                        className="btn-primary w-[120px] h-12 rounded-lg text-base font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         등록
                       </button>
                       <button
                         type="button"
-                        onClick={() => setShowCancelModal(true)}
-                        className="bg-transparent border-none text-neutral-500 text-[13px] underline cursor-pointer hover:text-neutral-300 transition-colors"
+                        onClick={() => {
+                          if (escrowActions.canCancelEscrow && !isCancellingEscrow) {
+                            setShowCancelModal(true);
+                          }
+                        }}
+                        disabled={!escrowActions.canCancelEscrow || isCancellingEscrow}
+                        className="bg-transparent border-none text-neutral-500 text-[13px] underline cursor-pointer hover:text-neutral-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         거래취소
                       </button>

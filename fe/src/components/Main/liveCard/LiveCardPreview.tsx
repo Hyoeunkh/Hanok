@@ -1,4 +1,4 @@
-import Logo from '@/assets/Logo.png';
+import FallbackImg from '@/components/common/FallbackImg';
 
 import { SCHEDULED_BADGE_LABEL } from '@/constants/liveCard';
 
@@ -32,8 +32,8 @@ export default function LiveCardPreview({
 
   return (
     <div className={livePreviewClassName}>
-      <img
-        src={thumbnailUri ?? Logo}
+      <FallbackImg
+        src={thumbnailUri}
         alt={title}
         loading="lazy"
         decoding="async"
