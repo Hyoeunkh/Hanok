@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { getFetchInstance } from '../instance';
 import type { PostTrackingInfoPayload } from '@/types';
 import { queryClient } from '../instance';
+import { patchEscrowTrackingCaches } from '@/utils/escrowCache';
 
 export const postTrackingInfoPath = (escrowId: string | number) => `/v1/escrows/${escrowId}/tracking`;
 
@@ -18,8 +19,10 @@ export const usePostTrackingInfo = () => {
   return useMutation({
     mutationFn: postTrackingInfo,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['escrowsSeller'] });
-      queryClient.invalidateQueries({ queryKey: ['escrowDetail', variables.escrowId] });
+      patchEscrowTrackingCaches(queryClient, variables.escrowId, {
+        carrierName: variables.carrierName,
+        trackingNumber: variables.trackingNumber,
+      });
     },
   });
 };
