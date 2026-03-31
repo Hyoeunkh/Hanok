@@ -3,11 +3,9 @@ import { memo } from 'react';
 import SellerStats from '../Seller/SellerStats';
 import SellerPriceInfo from '../Seller/SellerPriceInfo';
 import BidFeed from '../Seller/BidFeed';
-import { useRenderStats } from '@/hooks/useRenderStats';
 import type { AuctionStatisticsPayload, LiveAuctionType, UniqueBidSyncPayload } from '@/types';
 import { formatPrice } from '@/utils/formatPrice';
 import { isAuctionStatisticsEqual, isUniqueBidSyncEqual } from '@/utils/liveEquality';
-import { isLiveStructureOptimizationEnabled } from '@/utils/liveOptimization';
 
 interface Props {
   isSeller: boolean;
@@ -18,8 +16,6 @@ interface Props {
 }
 
 function AuctionPanel({ isSeller, auctionType, auctionStatistics, uniqueBidSync, currentUserId }: Props) {
-  useRenderStats('AuctionPanel');
-
   if (auctionType === 'UNIQUE_TOP') {
     const bidRange = uniqueBidSync?.bidRange;
 
@@ -89,10 +85,6 @@ function AuctionPanel({ isSeller, auctionType, auctionStatistics, uniqueBidSync,
 }
 
 export default memo(AuctionPanel, (prev, next) => {
-  if (!isLiveStructureOptimizationEnabled()) {
-    return false;
-  }
-
   return (
     prev.isSeller === next.isSeller &&
     prev.auctionType === next.auctionType &&

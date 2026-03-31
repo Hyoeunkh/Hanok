@@ -13,9 +13,7 @@ import { AUCTION_TYPE_DESCRIPTIONS } from '@/constants/auction';
 import type { BidSyncPayload, LiveAuctionType, UniqueBidSyncPayload } from '@/types';
 import { useBidState, CUSTOM_UNIT_OPTIONS } from '@/hooks/useBidState';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { useRenderStats } from '@/hooks/useRenderStats';
 import { isBidSyncEqual, isUniqueBidSyncEqual } from '@/utils/liveEquality';
-import { isLiveStructureOptimizationEnabled } from '@/utils/liveOptimization';
 
 export type ControlBarVariant = 'overlay' | 'inline';
 
@@ -47,8 +45,6 @@ function BuyerControlBar({
   variant = 'overlay',
   showChatToggle = true,
 }: Props) {
-  useRenderStats('BuyerControlBar');
-
   const bid = useBidState({ auctionType, bidSync, uniqueBidSync, activeAuctionId });
   const auctionTypeDescription = auctionType ? AUCTION_TYPE_DESCRIPTIONS[auctionType] : null;
 
@@ -232,10 +228,6 @@ function BuyerControlBar({
 }
 
 export default memo(BuyerControlBar, (prev, next) => {
-  if (!isLiveStructureOptimizationEnabled()) {
-    return false;
-  }
-
   return (
     prev.auctionType === next.auctionType &&
     prev.activeAuctionId === next.activeAuctionId &&
