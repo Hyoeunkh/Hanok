@@ -13,10 +13,12 @@ import { useGetWallet } from '@/api/hooks/useGetWallet';
 import HistoryRowSkeleton from '@/components/Wallet/HistoryRowSkeleton';
 import PointManagementModal, { type PointModalType } from '@/components/common/modal/PointManagementModal';
 import Button from '@/components/common/Button';
+import PictureWithFallback from '@/components/common/PictureWithFallback';
 import { MIN_WALLET_CHARGE_AMOUNT } from '@/constants/wallet';
 import type { TradeReportItem } from '@/types';
 import { requestPointChargePayment } from '@/utils/requestPointChargePayment';
 import coins from '@/assets/coins.png';
+import coinsWebp from '@/assets/coins.webp';
 import { useToast } from '@/hooks/useToast';
 
 type WalletType = 'charge' | 'withdraw' | 'settlement';
@@ -268,7 +270,12 @@ export default function WalletPage() {
                 </div>
               </div>
 
-              <img src={coins} alt="coins" className="absolute right-4 top-4 w-50 md:block" />
+              <PictureWithFallback
+                webpSrc={coinsWebp}
+                fallbackSrc={coins}
+                alt="coins"
+                className="absolute right-4 top-4 w-50 md:block"
+              />
             </article>
 
             <article className="flex flex-col justify-between rounded-(--radius-panel) bg-surface-elevated px-8 py-6 shadow-[0_30px_80px_rgba(0,0,0,0.28)]">

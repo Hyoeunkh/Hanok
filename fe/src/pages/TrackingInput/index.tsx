@@ -9,6 +9,7 @@ import { useGetEscrowsSeller } from '@/api/hooks/useGetEscrowsSeller';
 import { validateTrackingInput } from '@/api/hooks/useGetTracking';
 import { usePostTrackingInfo } from '@/api/hooks/usePostTrackingInfo';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
+import FallbackImg from '@/components/common/FallbackImg';
 import SideBar from '@/components/common/layouts/SideBar';
 import { CARRIERS } from '@/constants/sellerRegister';
 import { useEscrowActions } from '@/hooks/useEscrowActions';
@@ -23,7 +24,6 @@ import { formatDateTime } from '@/utils/formatDateTime';
 import { formatPrice } from '@/utils/formatPrice';
 import { useToast } from '@/hooks/useToast';
 import { sellerSidebarItems } from '@/constants/sidebar';
-import Logo from '@/assets/Logo.png';
 
 function CompletedItemRow({
   item,
@@ -48,10 +48,11 @@ function CompletedItemRow({
       >
         <div className="flex items-center gap-5">
           <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-            <img
-              src={item.image || Logo}
+            <FallbackImg
+              src={item.image}
               alt={item.itemName}
-              className={`w-full h-full ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+              className="w-full h-full object-cover"
+              fallbackClassName="w-full h-full object-contain p-2"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -249,10 +250,11 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-                        <img
-                          src={item.image || Logo}
+                        <FallbackImg
+                          src={item.image}
                           alt={item.itemName}
-                          className={`w-full h-full ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+                          className="w-full h-full object-cover"
+                          fallbackClassName="w-full h-full object-contain p-2"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -307,10 +309,11 @@ export default function TrackingInput() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-[80px] h-[80px] bg-neutral-800 rounded-xl overflow-hidden shrink-0">
-                        <img
-                          src={item.image || Logo}
+                        <FallbackImg
+                          src={item.image}
                           alt={item.itemName}
-                          className={`w-full h-full grayscale ${item.image ? 'object-cover' : 'object-contain p-2'}`}
+                          className="w-full h-full object-cover grayscale"
+                          fallbackClassName="w-full h-full object-contain p-2 grayscale"
                         />
                       </div>
                       <div className="flex flex-col gap-1">

@@ -8,10 +8,12 @@ import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import { useGetUnreadCount } from '@/api/hooks/useGetUnreadCount';
 import { useGetAddresses } from '@/api/hooks/useGetAddresses';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
+import PictureWithFallback from '@/components/common/PictureWithFallback';
 import { useSSE } from '@/hooks/useSSE';
 import type { NotificationPage } from '@/types';
 import { applyEscrowNotificationPatch, prependIncomingNotification } from '@/utils/escrowCache';
 import Logo from '@/assets/Logo.png';
+import LogoWebp from '@/assets/Logo.webp';
 import Button from '../Button';
 import NotificationPanel from '../NotificationPanel';
 import SearchBar from '../SearchBar';
@@ -97,8 +99,9 @@ export default function Header() {
           className="flex items-center gap-2.5 transition-opacity hover:opacity-85"
           aria-label="Go to home"
         >
-          <img
-            src={Logo}
+          <PictureWithFallback
+            webpSrc={LogoWebp}
+            fallbackSrc={Logo}
             alt="Logo"
             className="h-14 w-auto object-contain brightness-0 invert sepia saturate-50 hue-rotate-[350deg]"
           />
