@@ -5,7 +5,7 @@ import { FiAlertCircle, FiCheck, FiClock, FiCopy, FiExternalLink } from 'react-i
 import { useGetNftReceipt } from '@/api/hooks/useGetNftReceipt';
 import { getExplorerUrl, shortenTxHash } from '@/utils/blockchain';
 import { formatPrice } from '@/utils/formatPrice';
-import woodTexture from '@/assets/beautiful-wood-textured-background-design.jpg';
+import woodTexture from '@/assets/wood.jpg';
 import hanokLogo from '@/assets/Logo.png';
 
 type NftReceiptDetailContentProps = {

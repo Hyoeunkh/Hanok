@@ -1,4 +1,5 @@
 import type { EscrowState } from '@/types';
+import { isEscrowCancelled, isEscrowPending, isEscrowTrackingSubmitted } from '@/hooks/useEscrowActions';
 
 export type EscrowStatusFilter = EscrowState | 'ALL';
 
@@ -43,8 +44,8 @@ export const getEscrowStateUI = (state: EscrowState) => {
   };
 };
 
-export const isTrackingSubmittedEscrowState = (state: EscrowState) => state === 'SHIPPED' || state === 'COMPLETED';
+export const isTrackingSubmittedEscrowState = isEscrowTrackingSubmitted;
 
-export const isPendingEscrowState = (state: EscrowState) => state === 'DEPOSITED';
+export const isPendingEscrowState = isEscrowPending;
 
-export const isCancelledEscrowState = (state: EscrowState) => state === 'CANCELLED';
+export const isCancelledEscrowState = isEscrowCancelled;

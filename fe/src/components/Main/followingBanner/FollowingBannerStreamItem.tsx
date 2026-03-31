@@ -1,6 +1,6 @@
 import { Eye } from 'lucide-react';
 
-import Logo from '@/assets/Logo.png';
+import FallbackImg from '@/components/common/FallbackImg';
 import type { LiveCardData } from '@/types';
 
 import { getViewerLabel } from './types';
@@ -21,8 +21,8 @@ export default function FollowingBannerStreamItem({ stream, isSelected, onClick 
       }`}
     >
       <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-2xl bg-neutral-800">
-        <img
-          src={stream.thumbnailUri ?? Logo}
+        <FallbackImg
+          src={stream.thumbnailUri}
           alt={stream.title}
           loading="lazy"
           decoding="async"

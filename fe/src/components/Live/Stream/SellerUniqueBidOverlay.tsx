@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
+import PictureWithFallback from '@/components/common/PictureWithFallback';
 import coinImage from '@/assets/coin.png';
+import coinImageWebp from '@/assets/coin.webp';
 
 type SellerUniqueBidOverlayProps = {
   participantCount: number;
@@ -124,9 +126,7 @@ export default function SellerUniqueBidOverlay({ participantCount }: SellerUniqu
                 }}
                 className="absolute top-[-40px] -translate-x-1/2 drop-shadow-[0_12px_28px_rgba(235,184,64,0.24)]"
               >
-                <motion.img
-                  src={coinImage}
-                  alt=""
+                <motion.div
                   draggable={false}
                   initial={{ rotate: coin.spinStart }}
                   animate={{ rotate: coin.spinEnd }}
@@ -135,8 +135,16 @@ export default function SellerUniqueBidOverlay({ participantCount }: SellerUniqu
                     delay: coin.delay,
                     ease: 'linear',
                   }}
-                  className="h-full w-full object-contain"
-                />
+                  className="h-full w-full"
+                >
+                  <PictureWithFallback
+                    webpSrc={coinImageWebp}
+                    fallbackSrc={coinImage}
+                    alt=""
+                    aria-hidden
+                    className="h-full w-full object-contain"
+                  />
+                </motion.div>
               </motion.div>
             ))}
           </AnimatePresence>

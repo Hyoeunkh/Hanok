@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Logo from '@/assets/Logo.png';
+import FallbackImg from '@/components/common/FallbackImg';
+import PictureWithFallback from '@/components/common/PictureWithFallback';
 import bannerFrame from '@/assets/banner.png';
+import bannerFrameWebp from '@/assets/banner.webp';
 import useInfiniteScrollTrigger from '@/hooks/useInfiniteScrollTrigger';
 
 import FollowingBannerFeaturedCard from './followingBanner/FollowingBannerFeaturedCard';
@@ -30,8 +32,9 @@ export default function FollowingBanner({ streams, hasNextPage, isFetchingNextPa
   if (streams.length === 0) {
     return (
       <section className={bannerShellClassName}>
-        <img
-          src={bannerFrame}
+        <PictureWithFallback
+          webpSrc={bannerFrameWebp}
+          fallbackSrc={bannerFrame}
           alt=""
           aria-hidden
           className="pointer-events-none absolute inset-x-0 inset-y-[10px] m-auto z-0 h-[calc(100%-20px)] w-[calc(100%-24px)] object-fill opacity-80"
@@ -51,16 +54,17 @@ export default function FollowingBanner({ streams, hasNextPage, isFetchingNextPa
 
   return (
     <section className={bannerShellClassName}>
-      <img
-        src={featuredStream.thumbnailUri ?? Logo}
+      <FallbackImg
+        src={featuredStream.thumbnailUri}
         alt={featuredStream.title}
         className="absolute inset-x-0 inset-y-[10px] m-auto z-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 z-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0.1)_30%,rgba(0,0,0,0)_100%)]" />
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.05),transparent_30%)]" />
       <div className="absolute inset-y-0 right-0 z-0 hidden w-[42%] bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.08)_8%,rgba(0,0,0,0.18)_16%,rgba(0,0,0,0.34)_26%,rgba(0,0,0,0.56)_40%,rgba(0,0,0,0.8)_58%,rgba(0,0,0,0.94)_76%,rgba(0,0,0,0.99)_100%)] xl:block" />
-      <img
-        src={bannerFrame}
+      <PictureWithFallback
+        webpSrc={bannerFrameWebp}
+        fallbackSrc={bannerFrame}
         alt=""
         aria-hidden
         className="pointer-events-none absolute inset-x-0 m-auto inset-y-[10px] z-30 h-[calc(100%-20px)] w-[calc(100%-24px)] object-fill opacity-80"

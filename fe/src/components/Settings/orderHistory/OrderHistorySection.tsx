@@ -7,6 +7,7 @@ import { usePostCompleteEscrow } from '@/api/hooks/usePostCompleteEscrow';
 import EscrowDetailCard from '@/components/common/EscrowDetailCard';
 import NftReceiptCard from '@/components/common/NftReceiptCard';
 import NoItem from '@/components/common/NoItem';
+import { useEscrowActions } from '@/hooks/useEscrowActions';
 import { useToast } from '@/hooks/useToast';
 import type { EscrowStatusFilter } from '@/utils/getEscrowStateUI';
 
@@ -31,7 +32,7 @@ export default function OrderHistorySection() {
   const { data: detailResponse, isLoading: isDetailLoading } = useGetEscrowDetail(activeSelectedItemId);
   const selectedItemDetail = detailResponse?.data;
   const selectedEscrow = items.find((item) => String(item.escrowId) === activeSelectedItemId) ?? null;
-  const canCompletePurchase = selectedEscrow?.escrowStatus === 'SHIPPED';
+  const escrowActions = useEscrowActions(selectedEscrow, 'buyer');
 
   const { totalCount, totalAmount } = getOrderHistorySummary(items);
   const filteredAndSorted = getFilteredAndSortedEscrows(items, statusFilter, sortBy);
@@ -46,7 +47,7 @@ export default function OrderHistorySection() {
   };
 
   const handleCompletePurchase = async () => {
-    if (!activeSelectedItemId || !canCompletePurchase) {
+    if (!activeSelectedItemId || !escrowActions.canCompleteEscrow) {
       return;
     }
 
@@ -108,7 +109,7 @@ export default function OrderHistorySection() {
                 showHeaderCloseButton={false}
                 footer={
                   <div className="mt-6 flex flex-col gap-3">
-                    {selectedEscrow?.escrowStatus === 'COMPLETED' && <NftReceiptCard escrowId={activeSelectedItemId} />}
+                    {escrowActions.canOpenNftReceipt && <NftReceiptCard escrowId={activeSelectedItemId} />}
                     <div className="flex gap-3">
                       <button
                         type="button"
@@ -117,7 +118,7 @@ export default function OrderHistorySection() {
                       >
                         닫기
                       </button>
-                      {canCompletePurchase && (
+                      {escrowActions.canCompleteEscrow && (
                         <button
                           type="button"
                           onClick={() => void handleCompletePurchase()}

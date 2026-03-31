@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react';
 import { User, Bell, Home, MapPin, Wallet, X } from 'lucide-react';
 import { GrMoney } from 'react-icons/gr';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 
 import { useGetSellerStatus } from '@/api/hooks/useGetSellerStatus';
 import { useGetUnreadCount } from '@/api/hooks/useGetUnreadCount';
 import { useGetAddresses } from '@/api/hooks/useGetAddresses';
 import { useGetWallet } from '@/api/hooks/useGetWallet';
+import PictureWithFallback from '@/components/common/PictureWithFallback';
 import { useSSE } from '@/hooks/useSSE';
+import type { NotificationPage } from '@/types';
+import { applyEscrowNotificationPatch, prependIncomingNotification } from '@/utils/escrowCache';
 import Logo from '@/assets/Logo.png';
+import LogoWebp from '@/assets/Logo.webp';
 import Button from '../Button';
 import NotificationPanel from '../NotificationPanel';
 import SearchBar from '../SearchBar';
@@ -58,8 +62,13 @@ export default function Header() {
     enabled: isLoggedIn,
     onNotification: (notification) => {
       showToast({ title: notification.title, message: notification.body });
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      queryClient.setQueryData<InfiniteData<NotificationPage, string | undefined> | undefined>(['notifications'], (prev) =>
+        prependIncomingNotification(prev, notification),
+      );
+      queryClient.setQueryData<number | undefined>(['notifications', 'unread-count'], (prev) =>
+        (prev ?? 0) + (notification.isRead ? 0 : 1),
+      );
+      applyEscrowNotificationPatch(queryClient, notification);
     },
   });
 
@@ -90,8 +99,9 @@ export default function Header() {
           className="flex items-center gap-2.5 transition-opacity hover:opacity-85"
           aria-label="Go to home"
         >
-          <img
-            src={Logo}
+          <PictureWithFallback
+            webpSrc={LogoWebp}
+            fallbackSrc={Logo}
             alt="Logo"
             className="h-14 w-auto object-contain brightness-0 invert sepia saturate-50 hue-rotate-[350deg]"
           />
