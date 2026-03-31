@@ -1,6 +1,5 @@
 package com.ssafy.be.domain.search.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.be.domain.follow.repository.FollowRepository;
 import com.ssafy.be.domain.search.dto.SellerSearchRow;
 import com.ssafy.be.domain.search.dto.StreamSearchRow;
@@ -13,9 +12,7 @@ import com.ssafy.be.domain.search.dto.response.StreamSearchResult;
 import com.ssafy.be.domain.search.repository.StreamSearchRepositoryCustom;
 import com.ssafy.be.domain.stream.entity.StreamStatus;
 import com.ssafy.be.domain.stream.service.StreamViewerService;
-import com.ssafy.be.global.infra.redis.RedisService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,20 +21,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SearchService {
 
-    private static final long SEARCH_CACHE_TTL_SECONDS = 60L;
-
     private final StreamSearchRepositoryCustom searchRepository;
     private final StreamViewerService streamViewerService;
     private final FollowRepository followRepository;
-    private final RedisService redisService;
-    private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
     public StreamSearchPage search(String keyword, int page, int size) {
@@ -47,35 +39,44 @@ public class SearchService {
         if (safeKeyword.isEmpty()) return StreamSearchPage.builder()
                 .data(new ArrayList<>()).page(page).size(size).totalCount(0).build();
 
-        String cacheKey = "search:" + safeKeyword + ":" + page + ":" + size;
-        String cached = redisService.get(cacheKey);
-        if (cached != null) {
-            try {
-                return objectMapper.readValue(cached, StreamSearchPage.class);
-            } catch (Exception e) {
-                log.warn("search cache deserialize 실패, DB 조회로 fallback. key={}", cacheKey);
-            }
-        }
+        int limit = (page + 1) * size;
 
-        int perQueryLimit = (page + 1) * size;
+        CompletableFuture<List<StreamSearchRow>> titleFuture =
+                CompletableFuture.supplyAsync(() ->
+                        searchRepository.searchByStreamTitle(safeKeyword, limit));
 
-        List<StreamSearchRow> rows = searchRepository.searchUnion(safeKeyword, perQueryLimit);
+        CompletableFuture<List<StreamSearchRow>> itemFuture =
+                CompletableFuture.supplyAsync(() ->
+                        searchRepository.searchByItemName(safeKeyword, limit));
+
+        CompletableFuture<List<StreamSearchRow>> tagFuture =
+                CompletableFuture.supplyAsync(() ->
+                        searchRepository.searchByTagName(safeKeyword, limit));
+
+        CompletableFuture.allOf(titleFuture, itemFuture, tagFuture).join();
 
         Map<Long, StreamSearchResult> resultMap = new LinkedHashMap<>();
-        for (StreamSearchRow row : rows) {
-            StreamSearchResult result = resultMap.computeIfAbsent(row.streamId(), id -> toResult(row));
-            MatchReason reason = switch (row.matchType()) {
-                case "ITEM_NAME" -> MatchReason.builder()
-                        .type(MatchType.ITEM_NAME).matchedValue(safeKeyword).build();
-                case "TAG" -> MatchReason.builder()
-                        .type(MatchType.TAG).matchedValue("#" + safeKeyword).build();
-                default -> MatchReason.builder()
-                        .type(MatchType.STREAM_TITLE).matchedValue(row.title()).build();
-            };
-            if (result.matchReasons().stream().noneMatch(r -> r.type() == reason.type())) {
-                result.addReason(reason);
-            }
-        }
+
+        titleFuture.join().forEach(row ->
+                resultMap.computeIfAbsent(row.streamId(), id -> toResult(row))
+                        .addReason(MatchReason.builder()
+                                .type(MatchType.STREAM_TITLE)
+                                .matchedValue(row.title())
+                                .build()));
+
+        itemFuture.join().forEach(row ->
+                resultMap.computeIfAbsent(row.streamId(), id -> toResult(row))
+                        .addReason(MatchReason.builder()
+                                .type(MatchType.ITEM_NAME)
+                                .matchedValue(safeKeyword)
+                                .build()));
+
+        tagFuture.join().forEach(row ->
+                resultMap.computeIfAbsent(row.streamId(), id -> toResult(row))
+                        .addReason(MatchReason.builder()
+                                .type(MatchType.TAG)
+                                .matchedValue("#" + safeKeyword)
+                                .build()));
 
         List<StreamSearchResult> merged = new ArrayList<>(resultMap.values());
         int totalCount = merged.size();
@@ -84,17 +85,8 @@ public class SearchService {
                 ? new ArrayList<>()
                 : merged.subList(from, Math.min(from + size, totalCount));
 
-        StreamSearchPage result = StreamSearchPage.builder()
+        return StreamSearchPage.builder()
                 .data(paged).page(page).size(size).totalCount(totalCount).build();
-
-        try {
-            redisService.save(cacheKey, objectMapper.writeValueAsString(result),
-                    SEARCH_CACHE_TTL_SECONDS, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.warn("search cache 저장 실패. key={}", cacheKey);
-        }
-
-        return result;
     }
 
     @Transactional(readOnly = true)
@@ -130,7 +122,6 @@ public class SearchService {
     }
 
     private StreamSearchResult toResult(StreamSearchRow row) {
-        //SCHEDULED 상태는 시청자 없으니 0으로 처리
         StreamStatus status = row.status() != null ? StreamStatus.valueOf(row.status()) : null;
         return StreamSearchResult.builder()
                 .streamId(row.streamId())
