@@ -62,11 +62,13 @@ export default function Header() {
     enabled: isLoggedIn,
     onNotification: (notification) => {
       showToast({ title: notification.title, message: notification.body });
-      queryClient.setQueryData<InfiniteData<NotificationPage, string | undefined> | undefined>(['notifications'], (prev) =>
-        prependIncomingNotification(prev, notification),
+      queryClient.setQueryData<InfiniteData<NotificationPage, string | undefined> | undefined>(
+        ['notifications'],
+        (prev) => prependIncomingNotification(prev, notification),
       );
-      queryClient.setQueryData<number | undefined>(['notifications', 'unread-count'], (prev) =>
-        (prev ?? 0) + (notification.isRead ? 0 : 1),
+      queryClient.setQueryData<number | undefined>(
+        ['notifications', 'unread-count'],
+        (prev) => (prev ?? 0) + (notification.isRead ? 0 : 1),
       );
       applyEscrowNotificationPatch(queryClient, notification);
     },
@@ -91,87 +93,81 @@ export default function Header() {
 
   return (
     <>
-    <nav className="fixed left-0 right-0 top-0 z-[1000] flex h-16 items-center gap-4 border-b border-white/5 bg-background/94 backdrop-blur-[20px]">
-      <div className="flex w-[240px] shrink-0 items-center justify-between pl-6">
-        <button
-          type="button"
-          onClick={() => navigate('/main')}
-          className="flex items-center gap-2.5 transition-opacity hover:opacity-85"
-          aria-label="Go to home"
-        >
-          <PictureWithFallback
-            webpSrc={LogoWebp}
-            fallbackSrc={Logo}
-            alt="Logo"
-            className="h-14 w-auto object-contain brightness-0 invert sepia saturate-50 hue-rotate-[350deg]"
+      <nav className="fixed left-0 right-0 top-0 z-[1000] flex h-16 items-center gap-4 border-b border-white/5 bg-background/94 backdrop-blur-[20px]">
+        <div className="flex w-[240px] shrink-0 items-center justify-between pl-6">
+          <button
+            type="button"
+            onClick={() => navigate('/main')}
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-85"
+            aria-label="Go to home"
+          >
+            <PictureWithFallback
+              webpSrc={LogoWebp}
+              fallbackSrc={Logo}
+              alt="Logo"
+              className="h-9 w-auto object-contain brightness-0 invert sepia saturate-50 hue-rotate-[350deg]"
+            />
+          </button>
+        </div>
+
+        <div className="flex min-w-0 flex-1 justify-center px-4">
+          <SearchBar
+            key={location.pathname === '/search' ? location.search : location.pathname}
+            defaultValue={searchKeyword}
+            onSearch={handleSearch}
+            maxLength={50}
           />
-        </button>
-      </div>
+        </div>
 
-      <div className="flex min-w-0 flex-1 justify-center px-4">
-        <SearchBar
-          key={location.pathname === '/search' ? location.search : location.pathname}
-          defaultValue={searchKeyword}
-          onSearch={handleSearch}
-          maxLength={50}
-        />
-      </div>
+        <div className="flex shrink-0 items-center gap-2 pr-6">
+          <button
+            type="button"
+            onClick={handleSellerButtonClick}
+            className="flex h-(--nav-btn-height) items-center gap-1.5 whitespace-nowrap rounded-(--nav-btn-radius) bg-surface-elevated px-3.5 text-subtitle-sm text-primary-light transition-all hover:bg-surface hover:text-neutral-100"
+          >
+            <Home size={14} className="opacity-85" />
+            <span>{sellerButtonLabel}</span>
+          </button>
 
-      <div className="flex shrink-0 items-center gap-2 pr-6">
-        <button
-          type="button"
-          onClick={handleSellerButtonClick}
-          className="flex h-(--nav-btn-height) items-center gap-1.5 whitespace-nowrap rounded-(--nav-btn-radius) bg-surface-elevated px-3.5 text-subtitle-sm text-primary-light transition-all hover:bg-surface hover:text-neutral-100"
-        >
-          <Home size={14} className="opacity-85" />
-          <span>{sellerButtonLabel}</span>
-        </button>
-
-        {isLoggedIn ? (
-          <>
-            <HeaderIcon onClick={() => navigate('/wallet')} ariaLabel="Go to wallet" tooltip="가상머니">
-              <GrMoney size={20} />
-            </HeaderIcon>
-            <div className="relative">
-              <HeaderIcon
-                onClick={() => {
-                  setIsNotifOpen((prev) => !prev);
-                }}
-                ariaLabel="Open alerts"
-                tooltip="알림"
-                badgeCount={unreadCount > 0 ? unreadCount : undefined}
-                hasNoti
-              >
-                <Bell size={20} />
+          {isLoggedIn ? (
+            <>
+              <HeaderIcon onClick={() => navigate('/wallet')} ariaLabel="Go to wallet" tooltip="가상머니">
+                <GrMoney size={20} />
               </HeaderIcon>
-              {isNotifOpen && <NotificationPanel onClose={() => setIsNotifOpen(false)} />}
-            </div>
-            <HeaderIcon
-              onClick={handleMyPageClick}
-              ariaLabel="Go to my page"
-              tooltip="마이페이지"
-            >
-              <User size={20} />
-            </HeaderIcon>
-          </>
-        ) : (
-          <>
-            <Button variant="navSignup" onClick={() => navigate('/signup')} className="px-[18px]">
-              회원가입
-            </Button>
-            <Button variant="navLogin" onClick={() => navigate('/login')} className="px-[18px]">
-              로그인
-            </Button>
-          </>
-        )}
-      </div>
-    </nav>
+              <div className="relative">
+                <HeaderIcon
+                  onClick={() => {
+                    setIsNotifOpen((prev) => !prev);
+                  }}
+                  ariaLabel="Open alerts"
+                  tooltip="알림"
+                  badgeCount={unreadCount > 0 ? unreadCount : undefined}
+                  hasNoti
+                >
+                  <Bell size={20} />
+                </HeaderIcon>
+                {isNotifOpen && <NotificationPanel onClose={() => setIsNotifOpen(false)} />}
+              </div>
+              <HeaderIcon onClick={handleMyPageClick} ariaLabel="Go to my page" tooltip="마이페이지">
+                <User size={20} />
+              </HeaderIcon>
+            </>
+          ) : (
+            <>
+              <Button variant="navSignup" onClick={() => navigate('/signup')} className="px-[18px]">
+                회원가입
+              </Button>
+              <Button variant="navLogin" onClick={() => navigate('/login')} className="px-[18px]">
+                로그인
+              </Button>
+            </>
+          )}
+        </div>
+      </nav>
 
       {showBanner && (
         <div className="fixed left-0 right-0 top-16 z-[999] flex items-center justify-center gap-5 bg-gradient-to-r from-gold-light/[0.08] via-gold-light/[0.05] to-gold-light/[0.08] px-6 py-3 backdrop-blur-sm">
-          <span className="text-[14px] font-medium text-gold-light">
-            경매 참여를 위해 설정을 완료해주세요
-          </span>
+          <span className="text-[14px] font-medium text-gold-light">경매 참여를 위해 설정을 완료해주세요</span>
           <div className="flex items-center gap-2.5">
             {hasNoAddress && (
               <button

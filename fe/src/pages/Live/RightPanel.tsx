@@ -37,8 +37,7 @@ function RightPanel({
   const { messages, sendMessage, sendMacro, connectionState } = useStompChat(category);
   const [followStateOverride, setFollowStateOverride] = useState<{ sellerId: number; value: boolean } | null>(null);
   const { mutate: postFollow, isPending: isFollowPending } = usePostFollow();
-  const effectiveFollowing =
-    followStateOverride?.sellerId === sellerId ? followStateOverride.value : isFollowing;
+  const effectiveFollowing = followStateOverride?.sellerId === sellerId ? followStateOverride.value : isFollowing;
 
   const handleFollowToggle = () => {
     if (sellerId <= 0 || isFollowPending) {
@@ -102,7 +101,7 @@ function RightPanel({
                     : 'bg-gold/15 text-gold hover:bg-gold/25'
                 } disabled:cursor-not-allowed disabled:opacity-50`}
               >
-                {effectiveFollowing ? '팔로잉' : '팔로우'}
+                {effectiveFollowing ? '✓ 팔로잉' : '+ 팔로우'}
               </button>
             )}
           </div>
