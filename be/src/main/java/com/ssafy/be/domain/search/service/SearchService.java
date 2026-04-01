@@ -46,7 +46,7 @@ public class SearchService {
 
         int limit = (page + 1) * size;
 
-        List<StreamSearchRow> unionRows = searchRepository.searchUnion(safeKeyword, limit);
+        List<StreamSearchRow> unionRows = new ArrayList<>(searchRepository.searchUnion(safeKeyword, limit));
         unionRows.sort((a, b) -> Double.compare(b.score(), a.score()));
 
         Map<Long, StreamSearchResult> resultMap = new LinkedHashMap<>();
