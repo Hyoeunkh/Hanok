@@ -234,7 +234,7 @@ export default function LivePage() {
     }
   }, [markStreamEnded, navigate, numericStreamId, postEndStream]);
 
-  const streamTitle = activeStreamEnter?.title ?? '방송 ?�목';
+  const streamTitle = activeStreamEnter?.title ?? '방송 제목';
 
   useEffect(() => {
     if (
@@ -307,7 +307,7 @@ export default function LivePage() {
       eventType: 'UNIQUE_AUCTION_CALCULATING',
       payload: {
         auctionId: activeBidAuctionId,
-        message: '집계 중입?�다...',
+        message: '집계 중입니다...',
       },
     }).catch((error) => {
       uniqueCalculatingSentAuctionIdRef.current = null;
